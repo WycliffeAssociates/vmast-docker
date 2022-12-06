@@ -1,0 +1,11 @@
+*.DS_Store
+.idea/
+.vscode/
+access.log
+logs/error.log
+www/errorlog.html
+/www/app/Storage/Logs/error.log
+/.project
+nbproject
+.vscode/launch.json
+node_modules/

@@ -1,0 +1,12 @@
+FROM php:7.2-fpm-buster
+
+RUN apt-get update && apt-get install -y libzip-dev libicu-dev g++ git sudo
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install intl zip sockets
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /var/www/html
+COPY ./php_start.sh /php_start.sh
+
+ENTRYPOINT ["/php_start.sh"]

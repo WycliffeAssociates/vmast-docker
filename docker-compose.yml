@@ -1,0 +1,149 @@
+version: '3.1'
+
+services:
+  web:
+    build:
+      context: .
+    container_name: web
+    platform: linux/amd64
+    depends_on:
+      - db
+      - php
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    volumes:
+      - ./htdocs:/var/www/html
+      - ./ssl:/etc/nginx/ssl
+      - ./web/nginx:/etc/nginx/conf.d
+
+  php:
+    build: 
+      context: .
+      dockerfile: PhpDockerfile
+    container_name: php
+    platform: linux/amd64
+    environment:
+      APP_URL: ${APP_URL}
+      APP_EMAIL: ${APP_EMAIL}
+      APP_ENV: ${APP_ENV}
+      APP_PREFIX: ${APP_PREFIX}
+      APP_TYPE: ${APP_TYPE}
+      APP_MAINTENANCE: ${APP_MAINTENANCE}
+      APP_MAINTENANCE_IPS: ${APP_MAINTENANCE_IPS}
+      MAIN_HOST: ${MAIN_HOST}
+      SOCKET_PORT: ${SOCKET_PORT}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      MAIL_APP: ${MAIL_APP}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET: ${RECAPTCHA_SECRET}
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_DSN_JS: ${SENTRY_DSN_JS}
+      LOG_ROCKET: ${LOG_ROCKET}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+      RABBITMQ_ROUTING: ${RABBITMQ_ROUTING}
+    volumes:
+        - ./htdocs:/var/www/html
+        - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+
+  db:
+    build:
+      context: .
+      dockerfile: DbDockerfile
+    container_name: db
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    ports:
+      - 3306:3306
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./db/conf:/etc/mysql/mysql.conf.d
+      - ./db/backup:/backup
+    restart: always
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 512M
+    ports:
+      - 8081:80
+
+  node:
+    build: 
+      context: .
+      dockerfile: NodeDockerfile
+    container_name: node
+    volumes:
+        - ./node:/node
+        - ./ssl:/etc/nginx/ssl
+        - ./scripts:/scripts
+    environment:
+      APP_TYPE: ${APP_TYPE}
+      MAIN_HOST: ${MAIN_HOST}
+      SOCKET_PORT: ${SOCKET_PORT}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_NAME: ${MAIL_NAME}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      SSL_CRT: ${SSL_CRT}
+      SSL_KEY: ${SSL_KEY}
+      SSL_CA: ${SSL_CA}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASS: ${REDIS_PASS}
+      REDIS_DB: ${REDIS_DB}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+    ports:
+      - 8001:8001
+    depends_on:
+      - rabbitmq
+      - redis
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server --requirepass ${REDIS_PASS}
+
+volumes:
+  dbdata:
