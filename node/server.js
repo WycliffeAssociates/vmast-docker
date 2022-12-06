@@ -461,7 +461,7 @@ function registerNewMemberEvent(data, sct, member) {
         }
     };
 
-    xhr.open("GET", `htpp://${process.env.MAIN_HOST}/members/rpc/auth/${data.memberID}/${data.eventID}/${data.aT}`);
+    xhr.open("GET", `http://${process.env.MAIN_HOST}/members/rpc/auth/${data.memberID}/${data.eventID}/${data.aT}`);
     xhr.send();
 }
 

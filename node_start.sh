@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[[ $APP_TYPE == "local" ]] && /scripts/hosts.sh
+/scripts/hosts.sh
 
 yarn install
 
