@@ -8,6 +8,9 @@ use Support\Facades\View;
 
 class AMQPMailer
 {
+    private $connection;
+    private $channel;
+
     public function __construct() {
         try {
             $this->connection = new AMQPStreamConnection(
