@@ -3114,7 +3114,7 @@ use Helpers\Constants\StepsStates;
                             <div class="step_light"></div>
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
-                            <img class="img_waiting" src="https://id.v-mast.com/templates/default/assets/img/waiting.png">
+                            <img class="img_waiting" src="<?php echo template_url("img/waiting.png") ?>">
                         </div>
                         <div class="clear"></div>
                     </div>

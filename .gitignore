@@ -31,3 +31,4 @@ db/backup/*/
 .env
 
 .DS_Store
+.idea/

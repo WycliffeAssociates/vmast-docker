@@ -60,9 +60,9 @@ class FileEnvironmentVariablesLoader implements EnvironmentVariablesLoaderInterf
     protected function getFile($environment)
     {
         if ($environment) {
-            return $this->path.'/.env.'.$environment.'.php';
+            return $this->path.'/.env22.'.$environment.'.php';
         } else {
-            return $this->path.'/.env.php';
+            return $this->path.'/.env22.php';
         }
     }
 

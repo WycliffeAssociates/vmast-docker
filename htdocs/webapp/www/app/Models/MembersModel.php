@@ -270,7 +270,7 @@ class MembersModel extends Model {
     {
         $this->db->setTablePrefix("");
         $builder = $this->db->table("turn_secret")
-            ->where("realm", "v-mast.com");
+            ->where("realm", $_ENV["MAIN_HOST"]);
 
         $res = $builder->get();
 
@@ -283,7 +283,7 @@ class MembersModel extends Model {
     {
         $this->db->setTablePrefix("");
         $upd = $this->db->table("turn_secret")
-            ->where("realm", "v-mast.com")
+            ->where("realm", $_ENV["MAIN_HOST"])
             ->update($data);
 
         $this->db->setTablePrefix("vm_");
@@ -323,7 +323,7 @@ class MembersModel extends Model {
                 "firstName" => "User".$i,
                 "lastName" => "N",
                 "password" => $password,
-                "email" => "user".$i."@v-mast.com",
+                "email" => "user".$i."@".$_ENV["MAIN_HOST"],
                 "active" => true,
                 "verified" => true
             ];

@@ -2,6 +2,7 @@
 
 namespace App\Domain;
 
+use Exception;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Support\Facades\View;
@@ -20,9 +21,9 @@ class AMQPMailer
                 $_ENV["RABBITMQ_PASS"]
             );
             $this->channel = $this->connection->channel();
-            $this->channel->queue_declare($_ENV["RABBITMQ_QUEUE"], false, false, false, false);
-        } catch (\Exception $e) {
-
+            $this->channel->queue_declare($_ENV["RABBITMQ_QUEUE"], false, true, false, false);
+        } catch (Exception $e) {
+            //pr($e->getTraceAsString(),1);
         }
     }
 

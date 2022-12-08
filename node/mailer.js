@@ -15,10 +15,16 @@ amqp.connect(`amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@$
     if (error0) {
         throw error0;
     }
+
+    console.log("AMQP: Connected successfully");
+
     connection.createChannel(function(error1, channel) {
         if (error1) {
             throw error1;
         }
+
+        console.log("AMQP: Channel created successfully");
+
         const queue = process.env.RABBITMQ_QUEUE;
 
         channel.assertQueue(queue, {
@@ -26,22 +32,28 @@ amqp.connect(`amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@$
         });
 
         channel.consume(queue, function (msg) {
-            const data = JSON.parse(msg.content.toString());
-            if (typeof data.emails != "undefined"
-                && typeof data.subject != "undefined"
-                && typeof data.message != "undefined") {
-                data.emails.forEach(async function(to) {
-                    const message = {
-                        from: `"${process.env.MAIL_NAME}" ${process.env.MAIL_FROM}`,
-                        to: to,
-                        subject: data.subject,
-                        html: data.message,
-                    };
-                    if (typeof data.replyTo != "undefined") {
-                        message.replyTo = data.replyTo;
-                    }
-                    await systemTransporter.sendMail(message);
-                });
+            try {
+                const data = JSON.parse(msg.content.toString());
+                if (typeof data.emails != "undefined"
+                    && typeof data.subject != "undefined"
+                    && typeof data.message != "undefined") {
+                    data.emails.forEach(async function(to) {
+                        const message = {
+                            from: `"${process.env.MAIL_NAME}" ${process.env.MAIL_FROM}`,
+                            to: to,
+                            subject: data.subject,
+                            html: data.message,
+                        };
+                        if (typeof data.replyTo != "undefined") {
+                            message.replyTo = data.replyTo;
+                        }
+                        await systemTransporter.sendMail(message);
+                    });
+                } else {
+                    console.log("Incorrect data");
+                }
+            } catch (error) {
+                console.log(error);
             }
         }, {
             noAck: true

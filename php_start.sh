@@ -1,6 +1,5 @@
 #!/bin/bash
 
-cd $MAIN_HOST/www
+composer update
 
-sudo -u www-data php composer.phar update
 php-fpm

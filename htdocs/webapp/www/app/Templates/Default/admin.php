@@ -75,7 +75,7 @@ if(!isset($data)) $data = ["menu" => 1];
                 LogRocket && LogRocket.init('<?php echo Config::get("logrocket.project") ?>', {
                     release: '<?php echo Config::get("version.release") ?>',
                     dom: {
-                        baseHref: 'https://v-mast.com/',
+                        baseHref: '<?php echo $_ENV["APP_URL"] ?>',
                     },
                 });
             }

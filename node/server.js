@@ -1,11 +1,16 @@
-const app = require('express')(),
-    fs = require('fs'),
-    https = require('https'),
-    server = https.createServer({
+/*
+https = require('https'),
+    server = http.createServer({
         key:    fs.readFileSync(process.env.SSL_KEY),
         cert:   fs.readFileSync(process.env.SSL_CRT),
         ca:     fs.readFileSync(process.env.SSL_CA)
     }, app).listen(process.env.SOCKET_PORT),
+ */
+
+const app = require('express')(),
+    fs = require('fs'),
+    http = require('http'),
+    server = http.createServer(app).listen(process.env.SOCKET_PORT),
     io = require('socket.io')(server),
     redis = require("redis"),
     util = require("util"),
@@ -461,7 +466,7 @@ function registerNewMemberEvent(data, sct, member) {
         }
     };
 
-    xhr.open("GET", `http://${process.env.MAIN_HOST}/members/rpc/auth/${data.memberID}/${data.eventID}/${data.aT}`);
+    xhr.open("GET", `http://web/members/rpc/auth/${data.memberID}/${data.eventID}/${data.aT}`);
     xhr.send();
 }
 

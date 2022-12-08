@@ -17,13 +17,15 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
       - ./htdocs:/var/www/html
       - ./ssl:/etc/nginx/ssl
       - ./web/nginx:/etc/nginx/conf.d
+      - ./db/dump:/db_dump
 
   php:
-    build: 
+    build:
       context: .
       dockerfile: PhpDockerfile
     container_name: php
@@ -80,7 +82,7 @@ services:
       - ./db/conf:/etc/mysql/mysql.conf.d
       - ./db/backup:/backup
     restart: always
-  
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: pma
@@ -95,7 +97,7 @@ services:
       - 8081:80
 
   node:
-    build: 
+    build:
       context: .
       dockerfile: NodeDockerfile
     container_name: node
@@ -135,6 +137,9 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
 
   redis:
     image: redis:latest
