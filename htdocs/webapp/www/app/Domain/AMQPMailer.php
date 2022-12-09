@@ -21,14 +21,14 @@ class AMQPMailer
                 $_ENV["RABBITMQ_PASS"]
             );
             $this->channel = $this->connection->channel();
-            $this->channel->queue_declare($_ENV["RABBITMQ_QUEUE"], false, true, false, false);
+            $this->channel->queue_declare($_ENV["RABBITMQ_QUEUE"], false, false, false, false);
         } catch (Exception $e) {
-            //pr($e->getTraceAsString(),1);
+            pr($e->getTraceAsString(),1);
         }
     }
 
     public function sendHtml($html, $emails, $subject, $replyTo = null) {
-        if ($this->channel) {
+        if ($this->channel && $this->channel->is_open()) {
             $message = [
                 "emails" => $emails,
                 "subject" => $subject,
