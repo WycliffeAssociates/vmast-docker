@@ -24,8 +24,7 @@ const members = [];
 
 const clientRedis = redis.createClient({
     host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    auth_pass: process.env.REDIS_PASS
+    port: process.env.REDIS_PORT
 });
 
 clientRedis.on("connect", function() {
