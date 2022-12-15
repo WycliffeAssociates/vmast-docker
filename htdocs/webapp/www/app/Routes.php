@@ -389,7 +389,14 @@ Route::group(["prefix" => "members", "namespace" => "App\Controllers"], function
         ]);
     Router::any("rpc/search_members", "MembersController@searchMembers");
     Router::any("rpc/send_message", "MembersController@sendMessageToAdmin");
-    Router::any("rpc/cloud_login", "MembersController@cloudLogin");
+    Router::any("oauth/{server}", "MembersController@oauth")
+        ->where([
+            "server" => "(dcs|wacs)"
+        ]);
+    Router::any("oauth_check/{server}", "MembersController@oauthCheck")
+        ->where([
+            "server" => "(dcs|wacs)"
+        ]);
 });
 
 

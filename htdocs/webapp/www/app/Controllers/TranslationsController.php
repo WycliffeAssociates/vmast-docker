@@ -6,9 +6,9 @@ use App\Data\Resource\ResourceChunkType;
 use App\Domain\EventContributors;
 use App\Domain\ProjectContributors;
 use App\Models\ApiModel;
-use App\Models\CloudModel;
 use App\Models\TranslationsModel;
 use App\Models\EventsModel;
+use App\Repositories\Cloud\ICloudRepository;
 use App\Repositories\Event\IEventRepository;
 use App\Repositories\Member\IMemberRepository;
 use App\Repositories\Project\IProjectRepository;
@@ -37,17 +37,20 @@ class TranslationsController extends Controller
     private $eventsRepo;
     private $projectsRepo;
     private $memberRepo;
+    private $cloudRepo;
 
     public function __construct(
         IProjectRepository $projectsRepo,
         IEventRepository $eventsRepo,
-        IMemberRepository $memberRepo
+        IMemberRepository $memberRepo,
+        ICloudRepository $cloudRepo
     ) {
         parent::__construct();
 
         $this->projectsRepo = $projectsRepo;
         $this->eventsRepo = $eventsRepo;
         $this->memberRepo = $memberRepo;
+        $this->cloudRepo = $cloudRepo;
 
         if(Config::get("app.isMaintenance")
             && !in_array($_SERVER['REMOTE_ADDR'], Config::get("app.ips"))) {
@@ -477,13 +480,13 @@ class TranslationsController extends Controller
         $response = ["success" => false];
 
         // Check if user is logged in to the server
-        if(Session::exists($server))
-        {
+        $this->cloudRepo->initialize($server);
+
+        if($this->cloudRepo->isAuthenticated()) {
             $repoName = null;
             $projectFiles = [];
 
-            if(in_array($bookProject, ["tn","tq","tw","obs","bc","bca"]))
-            {
+            if(Tools::isHelp($bookProject)) {
                 switch ($bookProject) {
                     case "obs":
                         $repoName = "{$lang}_obs";
@@ -495,61 +498,44 @@ class TranslationsController extends Controller
                         $repoName = "{$lang}_{$bookCode}_{$bookProject}";
                 }
 
-                if($bookProject == "tw")
-                {
+                if($bookProject == "tw") {
                     $books = $this->_model->getTranslation($lang, "tw", $sourceBible, $bookCode);
-                    if(!empty($books) && isset($books[0]))
-                    {
+                    if(!empty($books) && isset($books[0])) {
                         $projectFiles = $this->getMdTwProjectFiles($books, true);
                     }
-                }
-                elseif (in_array($bookProject, ["obs","bc","bca"]))
-                {
+                } elseif (in_array($bookProject, ["obs","bc","bca"])) {
                     $books = $this->_model->getTranslation($lang, $bookProject, $sourceBible, $bookCode);
-                    if(!empty($books) && isset($books[0]))
-                    {
+                    if(!empty($books) && isset($books[0])) {
                         $projectFiles = $this->getResourceProjectFiles($books, true);
                     }
-                }
-                else
-                {
+                } else {
                     $books = $this->_model->getTranslation($lang, $bookProject, $sourceBible, $bookCode);
-                    if(!empty($books) && isset($books[0]))
-                    {
+                    if(!empty($books) && isset($books[0])) {
                         $projectFiles = $this->getMdProjectFiles($books, true);
                     }
                 }
-            }
-            elseif (in_array($bookProject, ["ulb", "udb", "sun"]))
-            {
-                if($sourceBible != "odb")
-                {
+            } elseif (in_array($bookProject, ["ulb", "udb", "sun"])) {
+                if($sourceBible != "odb") {
                     $repoName = "{$lang}_{$bookCode}_text_{$bookProject}";
                     $books = $this->_model->getTranslation($lang, $bookProject, $sourceBible, $bookCode);
-                    if(!empty($books) && isset($books[0]))
-                    {
+                    if(!empty($books) && isset($books[0])) {
                         $projectFiles = $this->getUsfmProjectFiles($books);
                     }
                 }
             }
 
-            $cloudModel = new CloudModel($server, Session::get($server)["username"], null, "", Session::get($server)["token"]);
-            $result = $cloudModel->uploadRepo($repoName, $projectFiles);
+            $result = $this->cloudRepo->uploadRepo($repoName, $projectFiles);
 
-            if($result["success"])
-            {
+            if($result->success) {
                 $response["success"] = true;
-                $response["url"] = $result["message"]["html_url"];
+                $response["url"] = $result->repo->html_url;
+            } else {
+                $response["error"] = $result->message;
             }
-            else
-            {
-                $response["error"] = $result["message"];
-            }
-        }
-        else
-        {
+        } else {
             $response["authenticated"] = false;
             $response["server"] = $server;
+            $response["url"] = $this->cloudRepo->prepareAuthRequestUrl();
         }
 
         echo json_encode($response);

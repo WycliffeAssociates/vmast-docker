@@ -117,7 +117,8 @@ Config::set('app', array(
         'App\Providers\BookInfoServiceProvider',
         'App\Providers\ResourcesServiceProvider',
         'App\Providers\PreferencesServiceProvider',
-        'App\Providers\AMQPMailerProvider'
+        'App\Providers\AMQPMailerProvider',
+        'App\Providers\CloudServiceProvider',
     ),
 
     /**

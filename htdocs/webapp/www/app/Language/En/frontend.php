@@ -134,4 +134,6 @@ return array(
     "ready_to_check" => "Ready",
     "sent" => "Sent",
     "importFromRepo" => "Import from {repo_server}",
+    "authorizing" => "Authorizing... Please wait.",
+    "authorizeServer" => "Click OK to authorize {repo_server}"
 );

@@ -123,7 +123,7 @@ Assets::js([
     template_url('js/bootstrap-toggle.min.js'),
     template_url('js/summernote/summernote.min.js'),
     ($languageFull != "en-US" ? template_url('js/i18n/summernote-'.$languageFull.'.js') : ""),
-    template_url('js/main.js?v=139', 'Default'),
+    template_url('js/main.js?v=140', 'Default'),
     (Session::get("isBookAdmin")
     || Session::get("isProjectAdmin")
     || Session::get("isGlAdmin")

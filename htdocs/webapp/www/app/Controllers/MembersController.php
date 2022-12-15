@@ -2,8 +2,8 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Models\CloudModel;
 use App\Models\NewsModel;
+use App\Repositories\Cloud\ICloudRepository;
 use App\Repositories\Event\IEventRepository;
 use App\Repositories\Language\ILanguageRepository;
 use App\Repositories\Member\IMemberRepository;
@@ -33,16 +33,18 @@ class MembersController extends Controller
     private $_news;
     private $_newNewsCount;
 
-    protected $memberRepo = null;
-    protected $languageRepo = null;
-    protected $eventsRepo = null;
+    private $memberRepo = null;
+    private $languageRepo = null;
+    private $eventsRepo = null;
+    private $cloudRepo;
 
     private $_member = null;
 
     public function __construct(
         IMemberRepository $memberRepo,
         ILanguageRepository $languageRepo,
-        IEventRepository $eventsRepo
+        IEventRepository $eventsRepo,
+        ICloudRepository $cloudRepo
     )
     {
         parent::__construct();
@@ -50,6 +52,7 @@ class MembersController extends Controller
         $this->memberRepo = $memberRepo;
         $this->languageRepo = $languageRepo;
         $this->eventsRepo = $eventsRepo;
+        $this->cloudRepo = $cloudRepo;
 
         if(Config::get("app.isMaintenance")
             && !in_array($_SERVER['REMOTE_ADDR'], Config::get("app.ips")))
@@ -1316,51 +1319,32 @@ class MembersController extends Controller
         echo json_encode($response);
     }
 
+    public function oauth($server) {
+        $data = Gump::xss_clean($_REQUEST);
 
-    public function cloudLogin() {
-        $response = ["success" => false];
+        if (isset($data["state"]) && $data["state"] == $this->cloudRepo->getStateHash()) {
+            $this->cloudRepo->initialize($server);
+            $request = $this->cloudRepo->requestAccessToken($data["code"]);
 
-        if(!empty($_POST)) {
-
-            $_POST = Gump::xss_clean($_POST);
-
-            $server = isset($_POST["server"]) && $_POST["server"] != "" ? $_POST["server"] : null;
-            $username = isset($_POST["username"]) && $_POST["username"] != "" ? $_POST["username"] : null;
-            $password = isset($_POST["password"]) && $_POST["password"] != "" ? $_POST["password"] : null;
-            $otp = isset($_POST["otp"]) && $_POST["otp"] != "" ? $_POST["otp"] : "";
-
-            if ($server != null && $username != null && $password != null)
-            {
-                $cloudModel = new CloudModel($server, $username, $password, $otp);
-                $data = $cloudModel->getAccessTokens();
-                $token = $cloudModel->getVmastAccessToken($data);
-
-                if(empty($token) || $token["sha1"] == "")
-                {
-                    if (isset($token["id"]))
-                        $cloudModel->deleteAccessToken($token["id"]);
-                    $data = $cloudModel->createAccessToken();
-                    $token = $cloudModel->getVmastAccessToken($data);
-                }
-
-                if(!empty($token))
-                {
-                    Session::set($server, [
-                        "username" => $username,
-                        "token" => $token["sha1"]
-                    ]);
-
-                    $response["success"] = true;
-                }
-                else
-                {
-                    $response["error"] = "could_not_get_token";
-                }
+            if (!isset($request->error)) {
+                echo "<script>window.close();</script>";
+            } else {
+                echo $request->error_description;
             }
+        } else {
+            echo "State is wrong";
         }
+    }
 
+    public function oauthCheck($server) {
+        $response = ["success" => false];
+        $this->cloudRepo->initialize($server, false);
+        if($this->cloudRepo->isAuthenticated()) {
+            $response["success"] = true;
+        }
         echo json_encode($response);
     }
+
 
     /**
      * Show success veiw

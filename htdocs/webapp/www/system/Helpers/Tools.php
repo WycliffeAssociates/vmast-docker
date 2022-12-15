@@ -9,7 +9,6 @@
 namespace Helpers;
 
 
-use Helpers\Constants\EventCheckSteps;
 use Helpers\Constants\EventSteps;
 
 class Tools {
@@ -210,4 +209,29 @@ class Tools {
         }
         return $modifiedStep;
     }
+
+    public static function http_request($url, $postData = [])
+    {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        if(!empty($postData)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+        }
+
+        $data = curl_exec($ch);
+
+        if(curl_errno($ch)) {
+            return '{"error": true, "error_description":"'.curl_error($ch).'"}';
+        }
+
+        curl_close($ch);
+
+        return $data;
+    }
+
 }

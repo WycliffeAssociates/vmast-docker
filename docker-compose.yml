@@ -58,6 +58,10 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
       RABBITMQ_ROUTING: ${RABBITMQ_ROUTING}
+      WACS_CLIENT_ID: ${WACS_CLIENT_ID}
+      WACS_CLIENT_SECRET: ${WACS_CLIENT_SECRET}
+      DCS_CLIENT_ID: ${DCS_CLIENT_ID}
+      DCS_CLIENT_SECRET: ${DCS_CLIENT_SECRET}
     volumes:
         - ./htdocs:/var/www/html
         - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
