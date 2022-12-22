@@ -90,7 +90,7 @@ class UsfmParser
                     $vText = join(" ", $vData);
 
                     // Word listing (remove - beginning)
-                    $vText = preg_replace("/(?:\\\\zaln-s.*)(\\\\w.*\\\\w\\*)(?:\\\\zaln-e\\\\?\\*)/Uui", "$1", $vText);
+                    $vText = preg_replace("/(?:\\\\zaln-s.*)(\\\\w.*\\\\w\\*)?(?:\\\\zaln-e\\\\?\\*)/Uui", "$1", $vText);
                     $vText = preg_replace("/\\\\w\s?(.*)\\|.*\\\\w\\*/Uui", "$1", $vText);
 
                     $vText = htmlspecialchars($vText, ENT_COMPAT | ENT_SUBSTITUTE, "UTF-8");
