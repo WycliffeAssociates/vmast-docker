@@ -8,8 +8,8 @@ use Helpers\Tools;
 use File;
 
 class CloudRepository implements ICloudRepository {
-    private $wacsServer = "https://content-dev.bibletranslationtools.org/api/v1";
-    private $wacsHostname = "content-dev.bibletranslationtools.org";
+    private $wacsServer = "https://content.bibletranslationtools.org/api/v1";
+    private $wacsHostname = "content.bibletranslationtools.org";
     private $door43Server = "https://git.door43.org/api/v1";
     private $door43Hostname = "git.door43.org";
 
