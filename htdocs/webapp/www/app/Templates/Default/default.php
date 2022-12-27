@@ -118,7 +118,7 @@ Assets::js([
     template_url('js/jquery.ui.touch-punch.min.js'),
     template_url('js/jquery.actual.min.js'),
     template_url('js/unicornFormatter.js'),
-    template_url('js/autosize.js?v=4'),
+    template_url('js/autosize.js?v=5'),
     template_url('js/offline.min.js'),
     template_url('js/bootstrap-toggle.min.js'),
     template_url('js/summernote/summernote.min.js'),

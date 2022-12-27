@@ -115,7 +115,7 @@ Assets::js([
     template_url('js/jquery.ui.touch-punch.min.js', 'Default'),
     template_url('js/jquery.actual.min.js', 'Default'),
     template_url('js/unicornFormatter.js', 'Default'),
-    template_url('js/autosize.js?v=4', 'Default'),
+    template_url('js/autosize.js?v=5', 'Default'),
     template_url('js/offline.min.js', 'Default'),
     template_url('js/summernote/summernote.min.js', 'Default'),
     ($languageFull != "en-US" ? template_url('js/i18n/summernote-'.$languageFull.'.js', 'Default') : ""),

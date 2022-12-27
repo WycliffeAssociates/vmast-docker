@@ -12,10 +12,12 @@
 
             const resizeObserver = new ResizeObserver((entries) => {
                 setHeight();
+                setHeightDelayed();
             });
 
             const mutationObserver = new MutationObserver(function (mutations) {
                 setHeight();
+                setHeightDelayed();
             });
 
             initialize();
@@ -34,6 +36,7 @@
                         attributeOldValue: true
                     });
                     setHeight();
+                    setHeightDelayed();
                 });
             }
 
@@ -41,14 +44,26 @@
                 $this.on("input", function() {
                     setHeight();
                 });
+                $this.on("autosize:update", function() {
+                    setHeight();
+                });
             }
 
             function setHeight() {
+                textarea.style.minHeight = settings.minHeight;
+                textarea.style.height = "1px";
+                textarea.style.height = `${textarea.scrollHeight}px`;
+            }
+
+            /**
+             * To fix an issue when fonts are not loaded and
+             * scrollHeight is not calculated correctly
+             * @param delay
+             */
+            function setHeightDelayed(delay = 500) {
                 setTimeout(function() {
-                    textarea.style.minHeight = settings.minHeight;
-                    textarea.style.height = "1px";
-                    textarea.style.height = textarea.scrollHeight + 0 + "px";
-                }, 100);
+                    setHeight();
+                }, delay);
             }
         });
     }
