@@ -83,7 +83,7 @@ class Tools {
     public static function trim($mixed) {
         if(is_array($mixed)) {
             return array_map(function($elm) {
-                return Tools::trim($elm);
+                return self::trim($elm);
             }, $mixed);
         } else {
             return trim(html_entity_decode($mixed), " \t\n\r\0\x0B\xC2\xA0");
@@ -98,7 +98,7 @@ class Tools {
     public static function strip_tags($mixed) {
         if(is_array($mixed)) {
             return array_map(function($elm) {
-                return Tools::strip_tags($elm);
+                return self::strip_tags($elm);
             }, $mixed);
         } else {
             return strip_tags($mixed);
@@ -113,11 +113,36 @@ class Tools {
     public static function html_entity_decode($mixed) {
         if(is_array($mixed)) {
             return array_map(function($elm) {
-                return Tools::html_entity_decode($elm);
+                return self::html_entity_decode($elm);
             }, $mixed);
         } else {
             return html_entity_decode($mixed);
         }
+    }
+
+    /**
+     * Advanced htmlspecialchars_decode
+     * @param $mixed
+     * @return array|string
+     */
+    public static function htmlspecialchars_decode($mixed) {
+        if(is_array($mixed)) {
+            return array_map(function($elm) {
+                return self::htmlspecialchars_decode($elm);
+            }, $mixed);
+        } else {
+            return htmlspecialchars_decode($mixed, ENT_QUOTES);
+        }
+    }
+
+    /**
+     * Advanced unescape
+     * @param $mixed
+     * @return array|string
+     */
+    public static function special_unescape($mixed) {
+        $mixed = self::html_entity_decode($mixed);
+        return self::htmlspecialchars_decode($mixed);
     }
 
     /**
@@ -128,7 +153,7 @@ class Tools {
     public static function htmlentities($mixed) {
         if(is_array($mixed)) {
             return array_map(function($elm) {
-                return Tools::htmlentities($elm);
+                return self::htmlentities($elm);
             }, $mixed);
         } else {
             return htmlentities($mixed, ENT_QUOTES|ENT_SUBSTITUTE);
@@ -144,13 +169,13 @@ class Tools {
         if(is_array($mixed)) {
             foreach ($mixed as $elm) {
                 if(is_array($elm)) {
-                    return Tools::empty(Tools::trim($elm));
+                    return self::empty(self::trim($elm));
                 } else {
-                    return empty(Tools::trim($elm));
+                    return empty(self::trim($elm));
                 }
             }
         } else {
-            return empty(Tools::trim($mixed));
+            return empty(self::trim($mixed));
         }
     }
 

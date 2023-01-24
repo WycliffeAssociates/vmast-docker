@@ -242,6 +242,8 @@ class TranslationsController extends Controller
                                 $replacement = " <span data-toggle=\"tooltip\" data-placement=\"auto auto\" title=\"$2\" class=\"booknote mdi mdi-bookmark\"></span> ";
                                 $text = preg_replace("/\\\\f[+\s]+(.*)\\\\ft[+\s]+(.*)\\\\f\\*/Uui", $replacement, $text);
                                 $text = preg_replace("/\\\\[a-z0-9-]+\\s?\\\\?\\*?/", "", $text);
+                                $text = Tools::special_unescape($text);
+
                                 $data['book'] .= '<strong><sup>'.$verse.'</sup></strong> '.$text." ";
                             }
                         } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
@@ -250,6 +252,8 @@ class TranslationsController extends Controller
                                 $replacement = " <span data-toggle=\"tooltip\" data-placement=\"auto auto\" title=\"$2\" class=\"booknote mdi mdi-bookmark\"></span> ";
                                 $text = preg_replace("/\\\\f[+\s]+(.*)\\\\ft[+\s]+(.*)\\\\f\\*/Uui", $replacement, $text);
                                 $text = preg_replace("/\\\\[a-z0-9-]+\\s?\\\\?\\*?/", "", $text);
+                                $text = Tools::special_unescape($text);
+
                                 $data['book'] .= '<strong><sup>'.$verse.'</sup></strong> '.$text." ";
                             }
                         } else {
@@ -281,6 +285,8 @@ class TranslationsController extends Controller
                                         $replacement = " <span data-toggle=\"tooltip\" data-placement=\"auto auto\" title=\"$2\" class=\"booknote mdi mdi-bookmark\"></span> ";
                                         $text = preg_replace("/\\\\f[+\s]+(.*)\\\\ft[+\s]+(.*)\\\\f\\*/Uui", $replacement, $text);
                                         $text = preg_replace("/\\\\[a-z0-9-]+\\s?\\\\?\\*?/", "", $text);
+                                        $text = Tools::special_unescape($text);
+
                                         $data['book'] .= '<strong><sup>'.$verse.'</sup></strong> '.$text." ";
                                     }
                                 }
@@ -637,19 +643,19 @@ class TranslationsController extends Controller
             if(!empty($verses->{EventMembers::L3_CHECKER}->verses))
             {
                 foreach ($verses->{EventMembers::L3_CHECKER}->verses as $verse => $text) {
-                    $usfm_books[$code] .= "\\v ".$verse." ".html_entity_decode($text, ENT_QUOTES)."\n";
+                    $usfm_books[$code] .= "\\v ".$verse." ".Tools::special_unescape($text)."\n";
                 }
             }
             elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses))
             {
                 foreach ($verses->{EventMembers::L2_CHECKER}->verses as $verse => $text) {
-                    $usfm_books[$code] .= "\\v ".$verse." ".html_entity_decode($text, ENT_QUOTES)."\n";
+                    $usfm_books[$code] .= "\\v ".$verse." ".Tools::special_unescape($text)."\n";
                 }
             }
             else
             {
                 foreach ($verses->{EventMembers::TRANSLATOR}->verses as $verse => $text) {
-                    $usfm_books[$code] .= "\\v ".$verse." ".html_entity_decode($text, ENT_QUOTES)."\n";
+                    $usfm_books[$code] .= "\\v ".$verse." ".Tools::special_unescape($text)."\n";
                 }
             }
 
@@ -762,6 +768,7 @@ class TranslationsController extends Controller
                     {
                         if(array_key_exists($vNum, $chk))
                         {
+                            $vText = Tools::special_unescape($vText);
                             $bookChunks[$chunk->chapter][$index][$vNum] = "\\v $vNum ".$vText;
                         }
                     }

@@ -1136,16 +1136,16 @@
         },
         {
             "name": "php-amqplib/php-amqplib",
-            "version": "v3.4.0",
+            "version": "v3.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-amqplib/php-amqplib.git",
-                "reference": "5c537cb724f2e181183c202e63f4303935344c5f"
+                "reference": "2c565476269889544e020d76da0cdf3471675b52"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-amqplib/php-amqplib/zipball/5c537cb724f2e181183c202e63f4303935344c5f",
-                "reference": "5c537cb724f2e181183c202e63f4303935344c5f",
+                "url": "https://api.github.com/repos/php-amqplib/php-amqplib/zipball/2c565476269889544e020d76da0cdf3471675b52",
+                "reference": "2c565476269889544e020d76da0cdf3471675b52",
                 "shasum": ""
             },
             "require": {
@@ -1211,9 +1211,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-amqplib/php-amqplib/issues",
-                "source": "https://github.com/php-amqplib/php-amqplib/tree/v3.4.0"
+                "source": "https://github.com/php-amqplib/php-amqplib/tree/v3.5.1"
             },
-            "time": "2022-10-18T20:52:02+00:00"
+            "time": "2023-01-20T01:02:33+00:00"
         },
         {
             "name": "php-http/client-common",
@@ -2375,16 +2375,16 @@
         },
         {
             "name": "sentry/sentry",
-            "version": "3.12.0",
+            "version": "3.12.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php.git",
-                "reference": "4902f43640963ed45517fd7c1da7fdd5511bb304"
+                "reference": "155bb9b78438999de4529d6f051465be15a58bc5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/4902f43640963ed45517fd7c1da7fdd5511bb304",
-                "reference": "4902f43640963ed45517fd7c1da7fdd5511bb304",
+                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/155bb9b78438999de4529d6f051465be15a58bc5",
+                "reference": "155bb9b78438999de4529d6f051465be15a58bc5",
                 "shasum": ""
             },
             "require": {
@@ -2463,7 +2463,7 @@
             ],
             "support": {
                 "issues": "https://github.com/getsentry/sentry-php/issues",
-                "source": "https://github.com/getsentry/sentry-php/tree/3.12.0"
+                "source": "https://github.com/getsentry/sentry-php/tree/3.12.1"
             },
             "funding": [
                 {
@@ -2475,7 +2475,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2022-11-22T10:57:08+00:00"
+            "time": "2023-01-12T12:24:27+00:00"
         },
         {
             "name": "stack/builder",
@@ -3036,16 +3036,16 @@
         },
         {
             "name": "symfony/http-client",
-            "version": "v5.4.16",
+            "version": "v5.4.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/http-client.git",
-                "reference": "0f43af12a27733a060b92396b7bde84a4376da0a"
+                "reference": "772129f800fc0bfaa6bd40c40934d544f0957d30"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/http-client/zipball/0f43af12a27733a060b92396b7bde84a4376da0a",
-                "reference": "0f43af12a27733a060b92396b7bde84a4376da0a",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/772129f800fc0bfaa6bd40c40934d544f0957d30",
+                "reference": "772129f800fc0bfaa6bd40c40934d544f0957d30",
                 "shasum": ""
             },
             "require": {
@@ -3103,7 +3103,7 @@
             "description": "Provides powerful methods to fetch HTTP resources synchronously or asynchronously",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/http-client/tree/v5.4.16"
+                "source": "https://github.com/symfony/http-client/tree/v5.4.17"
             },
             "funding": [
                 {
@@ -3119,7 +3119,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-11-09T11:27:39+00:00"
+            "time": "2022-12-13T11:07:37+00:00"
         },
         {
             "name": "symfony/http-client-contracts",
