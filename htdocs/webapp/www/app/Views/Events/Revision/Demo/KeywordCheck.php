@@ -3,6 +3,7 @@ use Helpers\Constants\EventCheckSteps;
 
 require(app_path() . "Views/Components/CommentEditor.php");
 require(app_path() . "Views/Components/FootnotesEditor.php");
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 
 <div id="translator_contents" class="row panel-body">
@@ -687,8 +688,11 @@ require(app_path() . "Views/Components/FootnotesEditor.php");
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-primary ttools" data-tool="tw"><?php echo __("show_keywords") ?></button>
-            <button class="btn btn-warning ttools" data-tool="rubric"><?php echo __("show_rubric") ?></button>
+            <?php
+            renderTw($data["twLangID"]);
+            renderRubric();
+            ?>
+
         </div>
 
         <div class="checker_view">

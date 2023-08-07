@@ -176,6 +176,7 @@
                                 <label for="toolsTn"><?php echo __("tn") ?></label>
                                 <select name="toolsTn" id="toolsTn" class="form-control" data-placeholder="">
                                     <option value=""></option>
+                                    <option value=""> <?php echo ucfirst(__("none")) ?> </option>
                                     <?php foreach ($gwLangs as $lang): ?>
                                         <option value="<?php echo $lang->langID ?>">
                                             <?php echo "[".$lang->langID."] " . $lang->langName .
@@ -189,6 +190,7 @@
                                 <label for="toolsTq"><?php echo __("tq") ?></label>
                                 <select name="toolsTq" id="toolsTq" class="form-control" data-placeholder="">
                                     <option value=""></option>
+                                    <option value=""> <?php echo ucfirst(__("none")) ?> </option>
                                     <?php foreach ($gwLangs as $lang): ?>
                                         <option value="<?php echo $lang->langID ?>">
                                             <?php echo "[".$lang->langID."] " . $lang->langName .
@@ -202,6 +204,7 @@
                                 <label for="toolsTw"><?php echo __("tw") ?></label>
                                 <select name="toolsTw" id="toolsTw" class="form-control" data-placeholder="">
                                     <option value=""></option>
+                                    <option value=""> <?php echo ucfirst(__("none")) ?> </option>
                                     <?php foreach ($gwLangs as $lang): ?>
                                         <option value="<?php echo $lang->langID ?>">
                                             <?php echo "[".$lang->langID."] " . $lang->langName .
@@ -215,6 +218,7 @@
                                 <label for="toolsBc"><?php echo __("bc") ?></label>
                                 <select name="toolsBc" id="toolsBc" class="form-control" data-placeholder="">
                                     <option value=""></option>
+                                    <option value=""> <?php echo ucfirst(__("none")) ?> </option>
                                     <?php foreach ($gwLangs as $lang): ?>
                                         <option value="<?php echo $lang->langID ?>">
                                             <?php echo "[".$lang->langID."] " . $lang->langName .

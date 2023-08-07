@@ -2278,13 +2278,13 @@ function resetProjectForm() {
     $("button[name=project]").text(Language.create);
     $("#projectAction").val("create");
     $(".toolsTn").removeClass("hidden");
-    $("#toolsTn").val("en").trigger("chosen:updated");
+    $("#toolsTn").val("").trigger("chosen:updated");
     $(".toolsTq").removeClass("hidden");
-    $("#toolsTq").val("en").trigger("chosen:updated");
+    $("#toolsTq").val("").trigger("chosen:updated");
     $(".toolsTw").removeClass("hidden");
-    $("#toolsTw").val("en").trigger("chosen:updated");
+    $("#toolsTw").val("").trigger("chosen:updated");
     $(".toolsBc").removeClass("hidden");
-    $("#toolsBc").val("en").trigger("chosen:updated");
+    $("#toolsBc").val("").trigger("chosen:updated");
 }
 
 function setProjectForm(data) {

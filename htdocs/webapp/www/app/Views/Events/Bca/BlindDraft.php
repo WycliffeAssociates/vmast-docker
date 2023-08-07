@@ -3,6 +3,8 @@ use Helpers\Constants\EventSteps;
 use Helpers\Constants\EventMembers;
 
 if(isset($data["error"])) return;
+
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
@@ -99,9 +101,7 @@ if(isset($data["error"])) return;
         </div>
 
         <div class="tr_tools">
-            <?php if (str_contains($data["event"][0]->targetLang, "sgn")): ?>
-            <button class="btn btn-warning ttools" data-tool="saildict"><?php echo __("show_dictionary") ?></button>
-            <?php endif; ?>
+            <?php renderSailDict($data["event"][0]->targetLang, false); ?>
         </div>
     </div>
 </div>

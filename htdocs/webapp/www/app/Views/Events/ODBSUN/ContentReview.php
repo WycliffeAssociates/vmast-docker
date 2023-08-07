@@ -7,6 +7,7 @@ if(isset($data["error"])) return;
 $textDirection = $data["event"][0]->tLangDir;
 $fontLanguage = $data["event"][0]->targetLang;
 require(app_path() . "Views/Components/CommentEditor.php");
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 
 <div id="translator_contents" class="row panel-body">
@@ -136,8 +137,10 @@ require(app_path() . "Views/Components/CommentEditor.php");
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-warning ttools" data-tool="saildict"><?php echo __("show_dictionary") ?></button>
-            <button class="btn btn-primary ttools" data-tool="sunbible"><?php echo __("go_sun_bible") ?></button>
+            <?php
+                renderSailDict();
+                renderSunBible();
+            ?>
         </div>
     </div>
 </div>

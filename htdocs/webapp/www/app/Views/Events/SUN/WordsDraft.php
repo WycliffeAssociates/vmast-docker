@@ -1,5 +1,7 @@
 <?php
 if(isset($data["error"])) return;
+
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
@@ -106,9 +108,11 @@ if(isset($data["error"])) return;
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-warning ttools" data-tool="saildict"><?php echo __("show_dictionary") ?></button>
-            <button class="btn btn-primary ttools" data-tool="tn"><?php echo __("show_notes") ?></button>
-            <button class="btn btn-primary ttools" data-tool="tw"><?php echo __("show_keywords") ?></button>
+            <?php
+            renderSailDict();
+            renderTn($data["event"][0]->tnLangID);
+            renderTw($data["event"][0]->twLangID);
+            ?>
         </div>
     </div>
 </div>

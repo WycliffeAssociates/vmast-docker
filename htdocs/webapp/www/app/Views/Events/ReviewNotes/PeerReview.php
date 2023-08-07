@@ -12,6 +12,7 @@ $fontLanguage = $data["event"][0]->targetLang;
 $level = 3;
 $enableFootNotes = false;
 require(app_path() . "Views/Components/CommentEditor.php");
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 
 <div id="translator_contents" class="row panel-body">
@@ -211,7 +212,7 @@ require(app_path() . "Views/Components/CommentEditor.php");
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-primary ttools" data-tool="tn"><?php echo __("show_notes") ?></button>
+            <?php renderTn($data["event"][0]->tnLangID); ?>
         </div>
     </div>
 </div>

@@ -387,9 +387,9 @@ $(document).ready(function() {
                     })
                         .done(function(data) {
                             if(data.success) {
-                                $(".unsaved_alert").hide();
                                 if (!changesQueued) {
                                     hasChangesOnPage = false;
+                                    $(".unsaved_alert").hide();
                                 } else {
                                     changesQueued = false;
                                 }

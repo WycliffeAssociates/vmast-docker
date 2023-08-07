@@ -7,6 +7,7 @@ $addUri = $data["inputMode"] != InputMode::NORMAL ? "-" . $data["inputMode"] : "
 
 require(app_path() . "Views/Components/CommentEditor.php");
 require(app_path() . "Views/Components/FootnotesEditor.php");
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 
 <div id="translator_contents" class="row panel-body">
@@ -253,10 +254,12 @@ require(app_path() . "Views/Components/FootnotesEditor.php");
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-primary ttools" data-tool="tn"><?php echo __("show_notes") ?></button>
-            <button class="btn btn-primary ttools" data-tool="tq"><?php echo __("show_questions") ?></button>
-            <button class="btn btn-primary ttools" data-tool="bc"><?php echo __("show_bible_commentaries") ?></button>
-            <button class="btn btn-warning ttools" data-tool="rubric"><?php echo __("show_rubric") ?></button>
+            <?php
+            renderTn($data["tnLangID"]);
+            renderTq($data["tqLangID"]);
+            renderBc($data["bcLangID"]);
+            renderRubric();
+            ?>
         </div>
     </div>
 </div>

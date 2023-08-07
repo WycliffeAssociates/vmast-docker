@@ -123,7 +123,7 @@ Assets::js([
     template_url('js/bootstrap-toggle.min.js'),
     template_url('js/summernote/summernote.min.js'),
     ($languageFull != "en-US" ? template_url('js/i18n/summernote-'.$languageFull.'.js') : ""),
-    template_url('js/main.js?v=140', 'Default'),
+    template_url('js/main.js?v=141', 'Default'),
     (Session::get("isBookAdmin")
     || Session::get("isProjectAdmin")
     || Session::get("isGlAdmin")
@@ -131,7 +131,7 @@ Assets::js([
     (Session::get("isBookAdmin")
     || Session::get("isProjectAdmin")
     || Session::get("isGlAdmin")
-    || Session::get("isSuperAdmin") ?  template_url('js/admin.js?v=68') : ''),
+    || Session::get("isSuperAdmin") ?  template_url('js/admin.js?v=69') : ''),
 ]);
 
 echo $js ?? ''; // Place to pass data / pluggable hook zone

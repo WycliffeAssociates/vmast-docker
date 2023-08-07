@@ -1,5 +1,6 @@
 <?php
 if(isset($data["error"])) return;
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
@@ -64,7 +65,7 @@ if(isset($data["error"])) return;
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-warning ttools" data-tool="rubric"><?php echo __("show_rubric") ?></button>
+            <?php renderRubric(); ?>
         </div>
     </div>
 </div>
