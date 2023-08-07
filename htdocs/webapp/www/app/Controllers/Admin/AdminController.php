@@ -955,6 +955,7 @@ class AdminController extends Controller {
         $toolsTn = isset($_POST['toolsTn']) && $_POST['toolsTn'] != "" ? $_POST['toolsTn'] : null;
         $toolsTq = isset($_POST['toolsTq']) && $_POST['toolsTq'] != "" ? $_POST['toolsTq'] : null;
         $toolsTw = isset($_POST['toolsTw']) && $_POST['toolsTw'] != "" ? $_POST['toolsTw'] : null;
+        $toolsBc = isset($_POST['toolsBc']) && $_POST['toolsBc'] != "" ? $_POST['toolsBc'] : null;
         $projectType = isset($_POST['projectType']) && $_POST['projectType'] != "" ? $_POST['projectType'] : null;
         $act = isset($_POST['act']) && $_POST['act'] != "" ? $_POST['act'] : "create";
         $projectID = isset($_POST['projectID']) && $_POST['projectID'] != "" ? $_POST['projectID'] : null;
@@ -1059,15 +1060,12 @@ class AdminController extends Controller {
                     "bookProject" => $projType,
                     "sourceBible" => $sourceTrPair[0],
                     "sourceLangID" => $sourceTrPair[1],
-                    "resLangID" => $sourceTools
+                    "resLangID" => $sourceTools,
+                    "tnLangID" => $toolsTn,
+                    "tqLangID" => $toolsTq,
+                    "twLangID" => $toolsTw,
+                    "bcLangID" => $toolsBc,
                 );
-
-                if($toolsTn)
-                    $postdata["tnLangID"] = $toolsTn;
-                if($toolsTq)
-                    $postdata["tqLangID"] = $toolsTq;
-                if($toolsTw)
-                    $postdata["twLangID"] = $toolsTw;
 
                 $project = $this->projectRepo->create($postdata, $gatewayLanguage);
                 $project->admins()->sync($admins);
@@ -1133,12 +1131,10 @@ class AdminController extends Controller {
                 $project->sourceLangID = $sourceTrPair[1];
                 $project->resLangID = $sourceTools;
 
-                if($toolsTn)
-                    $project->tnLangID = $toolsTn;
-                if($toolsTq)
-                    $project->tqLangID = $toolsTq;
-                if($toolsTw)
-                    $project->twLangID = $toolsTw;
+                $project->tnLangID = $toolsTn;
+                $project->tqLangID = $toolsTq;
+                $project->twLangID = $toolsTw;
+                $project->bcLangID = $toolsBc;
 
                 $project->save();
                 $project->admins()->sync($admins);
