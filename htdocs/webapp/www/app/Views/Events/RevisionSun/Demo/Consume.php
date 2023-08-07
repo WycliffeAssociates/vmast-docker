@@ -1,3 +1,5 @@
+<?php require(app_path() . "Views/Components/HelpTools.php"); ?>
+
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
         <div class="main_content_title">
@@ -339,7 +341,7 @@
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-warning ttools" data-tool="saildict"><?php echo __("show_dictionary") ?></button>
+            <?php renderSailDict(); ?>
         </div>
     </div>
 </div>

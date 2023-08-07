@@ -1,5 +1,6 @@
 <?php
 require(app_path() . "Views/Components/CommentEditor.php");
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 
 <div id="translator_contents" class="row panel-body">
@@ -596,7 +597,7 @@ require(app_path() . "Views/Components/CommentEditor.php");
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-primary ttools" data-tool="tn"><?php echo __("show_notes") ?></button>
+            <?php renderTn($data["tnLangID"]); ?>
         </div>
 
         <div class="checker_view">

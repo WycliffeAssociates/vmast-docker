@@ -17,6 +17,7 @@ $fontLanguage = $data["event"][0]->targetLang;
 $level = 2;
 $enableFootNotes = false;
 require(app_path() . "Views/Components/CommentEditor.php");
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 
 <div id="translator_contents" class="row panel-body">
@@ -138,9 +139,7 @@ require(app_path() . "Views/Components/CommentEditor.php");
         </div>
 
         <div class="tr_tools">
-            <?php if (str_contains($data["event"][0]->targetLang, "sgn")): ?>
-                <button class="btn btn-warning ttools" data-tool="saildict"><?php echo __("show_dictionary") ?></button>
-            <?php endif; ?>
+            <?php renderSailDict($data["event"][0]->targetLang, false); ?>
         </div>
     </div>
 </div>

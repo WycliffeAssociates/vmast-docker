@@ -12,6 +12,7 @@ $level = 2;
 $enableFootNotes = false;
 require(app_path() . "Views/Components/CommentEditor.php");
 require(app_path() . "Views/Components/FootnotesEditor.php");
+require(app_path() . "Views/Components/HelpTools.php");
 ?>
 
 <div id="translator_contents" class="row panel-body">
@@ -192,14 +193,13 @@ require(app_path() . "Views/Components/FootnotesEditor.php");
         </div>
 
         <div class="tr_tools">
-            <button class="btn btn-primary ttools" data-tool="tn"><?php echo __("show_notes") ?></button>
-            <button class="btn btn-primary ttools" data-tool="tq"><?php echo __("show_questions") ?></button>
-            <button class="btn btn-primary ttools" data-tool="tw"><?php echo __("show_keywords") ?></button>
-            <?php if (str_contains($data["event"][0]->targetLang, "sgn")): ?>
-                <button class="btn btn-warning ttools" data-tool="saildict"><?php echo __("show_dictionary") ?></button>
-            <?php else: ?>
-                <button class="btn btn-warning ttools" data-tool="rubric"><?php echo __("show_rubric") ?></button>
-            <?php endif; ?>
+            <?php
+            renderTn($data["event"][0]->tnLangID);
+            renderTq($data["event"][0]->tqLangID);
+            renderTw($data["event"][0]->twLangID);
+            renderSailDict($data["event"][0]->targetLang, false);
+            renderRubric($data["event"][0]->targetLang, false);
+            ?>
         </div>
     </div>
 </div>
