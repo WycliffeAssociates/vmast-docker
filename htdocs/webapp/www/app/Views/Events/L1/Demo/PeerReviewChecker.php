@@ -238,6 +238,7 @@ require(app_path() . "Views/Components/HelpTools.php");
             <?php
             renderTn($data["tnLangID"]);
             renderTq($data["tqLangID"]);
+            renderTw($data["twLangID"]);
             renderBc($data["bcLangID"]);
             renderRubric();
             ?>
