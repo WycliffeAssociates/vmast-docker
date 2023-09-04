@@ -9,11 +9,11 @@ require(app_path() . "Views/Components/HelpTools.php");
 
     <div class="">
         <div class="main_content">
-            <div class="main_content_text" dir="<?php echo $data["event"][0]->sLangDir ?>">
-                <h4><?php echo $data["event"][0]->tLang." - "
-                        .__($data["event"][0]->bookProject)." - "
-                        .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
-                        ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
+            <div class="main_content_text" dir="<?php echo $data["project"]->gatewayLanguage->direction ?>">
+                <h4><?php echo $data["project"]->targetLanguage->langName." - "
+                        .__($data["project"]->bookProject)." - "
+                        .($data["event"]->bookInfo->sort <= 39 ? __("old_test") : __("new_test"))." - "
+                        ."<span class='book_name'>".$data["event"]->bookInfo->name." ".$data["translator"]->currentChapter.":1-".sizeof($data["text"])."</span>"?></h4>
 
                 <?php foreach($data["text"] as $verse => $text): ?>
                     <p class="verse_p">
@@ -70,7 +70,7 @@ require(app_path() . "Views/Components/HelpTools.php");
         <div class="event_info">
             <div class="participant_info">
                 <div class="additional_info">
-                    <a href="/events/information/<?php echo $data["event"][0]->eventID ?>"><?php echo __("event_info") ?></a>
+                    <a href="/events/information/<?php echo $data["event"]->eventID ?>"><?php echo __("event_info") ?></a>
                 </div>
             </div>
         </div>

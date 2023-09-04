@@ -31,8 +31,7 @@ class Event extends Model
 
     public function translators() {
         return $this->belongsToMany(Member::class, "translators", "eventID", "memberID")
-            ->withPivot("trID", "step", "currentChapter", "currentChunk",
-                "verbCheck", "peerCheck", "kwCheck", "crCheck", "otherCheck", "isChecker");
+            ->withPivot("trID", "step", "currentChapter", "currentChunk", "isChecker");
     }
 
     public function translations() {

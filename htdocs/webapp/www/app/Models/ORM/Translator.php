@@ -19,18 +19,26 @@ class Translator extends Model
         return $this->belongsTo(Member::class, "memberID", "memberID");
     }
 
-    public function chapters()
-    {
+    public function chapters() {
         return $this->hasMany(Chapter::class, "trID", "trID");
     }
 
-    public function wordGroup()
-    {
+    public function wordGroup() {
         return $this->hasOne(WordGroup::class, "groupID", "currentChapter");
     }
 
-    public function word()
-    {
+    public function word() {
         return $this->hasOne(Word::class, "wordID", "currentChapter");
+    }
+
+    public function checkers() {
+        return $this->hasMany(
+            Checker::class,
+            "trID"
+        );
+    }
+
+    public function translations() {
+        return $this->hasMany(Translation::class, "trID");
     }
 }

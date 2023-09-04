@@ -30,4 +30,8 @@ class Chapter extends Model
     public function word() {
         return $this->hasOne(Word::class, "wordID", "chapter");
     }
+
+    public function event() {
+        return $this->belongsTo(Event::class, "eventID", "eventID");
+    }
 }

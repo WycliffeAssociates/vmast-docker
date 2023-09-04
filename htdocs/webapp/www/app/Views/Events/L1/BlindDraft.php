@@ -12,14 +12,14 @@ require(app_path() . "Views/Components/HelpTools.php");
         <form action="" method="post" id="main_form">
             <div class="main_content_text">
                 <div class="row">
-                    <h4 dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["event"][0]->tLang." - "
-                            .__($data["event"][0]->bookProject)." - "
-                            .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
-                            ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1]."</span>"?></h4>
+                    <h4><?php echo $data["project"]->targetLanguage->langName." - "
+                            .__($data["project"]->bookProject)." - "
+                            .($data["event"]->bookInfo->sort <= 39 ? __("old_test") : __("new_test"))." - "
+                            ."<span class='book_name'>".$data["event"]->bookInfo->name." ".$data["translator"]->currentChapter.":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1]."</span>"?></h4>
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-12" dir="<?php echo $data["event"][0]->tLangDir ?>">
+                    <div class="col-sm-12" dir="<?php echo $data["project"]->targetLanguage->direction ?>">
                         <textarea name="draft" rows="10" class="blind_ta textarea"><?php
                             echo $data["blind"] ?? ""
                             ?></textarea>
@@ -74,7 +74,7 @@ require(app_path() . "Views/Components/HelpTools.php");
         <div class="event_info">
             <div class="participant_info">
                 <div class="additional_info">
-                    <a href="/events/information/<?php echo $data["event"][0]->eventID ?>"><?php echo __("event_info") ?></a>
+                    <a href="/events/information/<?php echo $data["event"]->eventID ?>"><?php echo __("event_info") ?></a>
                 </div>
             </div>
         </div>

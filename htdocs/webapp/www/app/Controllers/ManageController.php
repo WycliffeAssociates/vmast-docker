@@ -145,11 +145,11 @@ class ManageController extends Controller {
                 $tmp["memberID"] = $chapter["memberID"];
                 $tmp["chunks"] = json_decode($chapter["chunks"], true);
                 $tmp["done"] = $chapter["done"];
-                $tmp["verbCheck"] = (array)json_decode($chapter["verbCheck"], true);
-                $tmp["kwCheck"] = (array)json_decode($chapter["kwCheck"], true);
-                $tmp["crCheck"] = (array)json_decode($chapter["crCheck"], true);
-                $tmp["peerCheck"] = (array)json_decode($chapter["peerCheck"], true);
-                $tmp["otherCheck"] = (array)json_decode($chapter["otherCheck"], true);
+                //$tmp["verbCheck"] = (array)json_decode($chapter["verbCheck"], true);
+                //$tmp["kwCheck"] = (array)json_decode($chapter["kwCheck"], true);
+                //$tmp["crCheck"] = (array)json_decode($chapter["crCheck"], true);
+                //$tmp["peerCheck"] = (array)json_decode($chapter["peerCheck"], true);
+                //$tmp["otherCheck"] = (array)json_decode($chapter["otherCheck"], true);
                 $tmp["step"] = $chapter["step"];
                 $tmp["currentChapter"] = $chapter["currentChapter"];
 
@@ -1658,53 +1658,6 @@ class ManageController extends Controller {
             return;
         }
 
-        /*if ($userType == EventMembers::L2_CHECKER || $userType == EventMembers::L3_CHECKER) {
-            $education = (array)json_decode($appliedMember->profile->education);
-            if (empty($education)) {
-                $data["errors"][] = __("education_public");
-            } else {
-                foreach ($education as $item) {
-                    if (!preg_match("/^(BA|MA|PHD)$/", $item)) {
-                        $data["errors"][] = __("education_public");
-                        break;
-                    }
-                }
-            }
-
-            $ed_area = (array)json_decode($appliedMember->profile->ed_area);
-            if (empty($ed_area))
-                $data["errors"][] = __("ed_area");
-            else {
-                foreach ($ed_area as $item) {
-                    if (!preg_match("/^(Theology|Pastoral Ministry|Bible Translation|Exegetics)$/", $item)) {
-                        $data["errors"][] = __("ed_area");
-                        break;
-                    }
-                }
-            }
-
-            if (empty($appliedMember->profile->ed_place))
-                $data["errors"][] = __("ed_place");
-
-            if (empty($appliedMember->profile->hebrew_knwlg))
-                $data["errors"][] = __("hebrew_knwlg");
-
-            if (empty($appliedMember->profile->greek_knwlg))
-                $data["errors"][] = __("greek_knwlg");
-
-            $church_role = (array)json_decode($appliedMember->profile->church_role);
-            if (empty($church_role))
-                $data["errors"][] = __("church_role_public");
-            else {
-                foreach ($church_role as $item) {
-                    if (!preg_match("/^(Elder|Bishop|Pastor|Teacher|Denominational Leader|Seminary Professor)$/", $item)) {
-                        $data["errors"][] = __("church_role_public");
-                        break;
-                    }
-                }
-            }
-        }*/
-
         if (empty($data["errors"])) {
             $event = $this->eventRepo->get($eventID);
 
@@ -1757,7 +1710,7 @@ class ManageController extends Controller {
 
                 case EventMembers::L3_CHECKER:
                     if (!$exists) {
-                        $chapter = in_array($mode, ["tn"]) ? -1 : 0;
+                        $chapter = $mode == "tn" ? -1 : 0;
                         $l3Data = array(
                             "step" => EventSteps::NONE,
                             "currentChapter" => $chapter

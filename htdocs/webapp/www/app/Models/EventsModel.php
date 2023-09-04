@@ -1603,7 +1603,7 @@ class EventsModel extends Model
         $notifications = $this->db->select($sql, $prepare);
         $notifs = [];
 
-        foreach ($notifications as $notification) {
+        /*foreach ($notifications as $notification) {
             $peerCheck = (array)json_decode($notification->peerCheck, true);
             $kwCheck = (array)json_decode($notification->kwCheck, true);
             $crCheck = (array)json_decode($notification->crCheck, true);
@@ -1649,7 +1649,7 @@ class EventsModel extends Model
                 $note->checkerID = 0;
                 $notifs[] = $note;
             }
-        }
+        }*/
 
         return $notifs;
     }

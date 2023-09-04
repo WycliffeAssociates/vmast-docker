@@ -9,7 +9,7 @@ if(isset($data["error"])) return;
     <div class="">
         <div class="main_content">
             <div class="main_content_text pray_step">
-                <?php echo __((!$data["event"][0]->justStarted ? "prep_" : "")."pray_text")?>
+                <?php echo __((!$data["justStarted"] ? "prep_" : "")."pray_text")?>
             </div>
 
             <div class="main_content_footer row">
@@ -46,7 +46,7 @@ if(isset($data["error"])) return;
         <div class="event_info">
             <div class="participant_info">
                 <div class="additional_info">
-                    <a href="/events/information/<?php echo $data["event"][0]->eventID ?>"><?php echo __("event_info") ?></a>
+                    <a href="/events/information/<?php echo $data["event"]->eventID ?>"><?php echo __("event_info") ?></a>
                 </div>
             </div>
         </div>

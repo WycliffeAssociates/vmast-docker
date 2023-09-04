@@ -79,6 +79,16 @@ class Member extends Model
         );
     }
 
+    public function translatorCheckers()
+    {
+        return $this->belongsToMany(
+            Translator::class,
+            "checkers",
+            "memberID",
+            "trID"
+        );
+    }
+
     public function chapters() {
         return $this->hasMany(Chapter::class, "memberID", "memberID");
     }

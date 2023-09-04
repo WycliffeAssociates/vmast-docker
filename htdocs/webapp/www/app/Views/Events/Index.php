@@ -314,37 +314,27 @@ use Helpers\Tools;
 <?php endif ?>
 
 <div id="my_translations_content" class="my_content">
-    <?php foreach($data["myTranslatorEvents"] as $key => $event): ?>
+    <?php foreach($data["myTranslatorEvents"] as $key => $translator): ?>
         <?php
-        $mode = $event->bookProject;
+        $project = $translator->event->project;
+        $event = $translator->event;
+        $mode = $project->bookProject;
 
-        if(in_array($mode, ["ulb","udb"]))
-        {
+        if(in_array($mode, ["ulb","udb"])) {
             $eventType = $event->inputMode == InputMode::NORMAL ? __("8steps_vmast") : __($event->inputMode);
-        }
-        elseif ($mode == "sun")
-        {
-            $eventType = $event->sourceBible == "odb" ? __("odb") : __("vsail");
-        }
-        else
-        {
+        } elseif ($mode == "sun") {
+            $eventType = $project->sourceBible == "odb" ? __("odb") : __("vsail");
+        } else {
             $eventType = "";
         }
 
-        if($event->inputMode != InputMode::NORMAL)
-        {
+        if($event->inputMode != InputMode::NORMAL) {
             $eventImg = template_url("img/steps/big/consume.png");
-        }
-        elseif ($mode == "sun")
-        {
+        } elseif ($mode == "sun") {
             $eventImg = template_url("img/steps/big/vsail.png");
-        }
-        elseif ($mode == "rad")
-        {
+        } elseif ($mode == "rad") {
             $eventImg = template_url("img/steps/big/radio.png");
-        }
-        else
-        {
+        } else {
             $eventImg = template_url("img/steps/big/peer-review.png");
         }
 
@@ -354,17 +344,17 @@ use Helpers\Tools;
         <div class="event_block <?php echo $key%2 == 0 ? "green-marked" : "" ?>">
             <div class="event_logo translation">
                 <div class="event_type"><?php echo $eventType ?></div>
-                <div class="event_mode <?php echo $event->bookProject ?>"><?php echo __($event->bookProject) ?></div>
+                <div class="event_mode <?php echo $project->bookProject ?>"><?php echo __($project->bookProject) ?></div>
                 <div class="event_img">
                     <img width="146" src="<?php echo $eventImg?>">
                 </div>
             </div>
             <div class="event_project">
-                <div class="event_book"><?php echo $event->name ?></div>
+                <div class="event_book"><?php echo $event->bookInfo->name ?></div>
                 <div class="event_proj">
-                    <div><?php echo $event->sourceBible == "odb" ? __($event->sourceBible) : __($event->bookProject) ?></div>
-                    <div><?php echo $event->tLang .
-                            (Tools::isScripture($event->bookProject) ? ", " . ($event->sort < 41
+                    <div><?php echo $project->sourceBible == "odb" ? __($project->sourceBible) : __($project->bookProject) ?></div>
+                    <div><?php echo $project->targetLanguage->langName .
+                            (Tools::isScripture($project->bookProject) ? ", " . ($event->bookInfo->sort < 41
                                     ? __("old_test")
                                     : __("new_test")) : "")?></div>
                 </div>
@@ -380,55 +370,51 @@ use Helpers\Tools;
                 </div>
             </div>
             <div class="event_current_pos">
-                <?php if($event->step != EventSteps::NONE): ?>
-                    <div class="event_current_title"><?php echo __("you_are_at") ?></div>
-                    <div class="event_curr_step">
-                        <?php
-                        $step = $event->step;
-                        if($step == EventSteps::READ_CHUNK)
-                            $step = EventSteps::BLIND_DRAFT;
-                        ?>
-                        <img class='img_current' src="<?php echo template_url("img/steps/green_icons/". $step. ".png") ?>">
-                        <div class="step_current">
-                            <div>
-                                <?php echo ($event->currentChapter > 0
+                <div class="event_current_title"><?php echo __("you_are_at") ?></div>
+                <div class="event_curr_step">
+                    <?php
+                    $step = $translator->step;
+                    if($step == EventSteps::READ_CHUNK)
+                        $step = EventSteps::BLIND_DRAFT;
+                    ?>
+                    <img class='img_current' src="<?php echo template_url("img/steps/green_icons/". $step. ".png") ?>">
+                    <div class="step_current">
+                        <div>
+                            <?php echo ($translator->currentChapter > 0
                                 ? ($wordsGroup
                                     ? "[".$wordsGroup[0]."...".$wordsGroup[sizeof($wordsGroup)-1]."]"
-                                    : ($word ?: __("chapter_number", ["chapter" => $event->currentChapter])))
-                                : ($event->currentChapter == 0 && $event->bookProject == "tn"
+                                    : ($word ?: __("chapter_number", ["chapter" => $translator->currentChapter])))
+                                : ($translator->currentChapter == 0 && $project->bookProject == "tn"
                                     ? __("front")
                                     : "")) ?>
-                            </div>
-                            <div>
-                                <?php echo __($event->step . ($event->bookProject == "tn" && $event->step != EventSteps::PRAY ? "_tn" :
-                                        ($event->bookProject == "sun" && $event->step == EventSteps::CHUNKING ? "_sun" : ""))) ?>
-                            </div>
+                        </div>
+                        <div>
+                            <?php echo __($translator->step . ($project->bookProject == "tn" && $translator->step != EventSteps::PRAY ? "_tn" :
+                                    ($project->bookProject == "sun" && $translator->step == EventSteps::CHUNKING ? "_sun" : ""))) ?>
                         </div>
                     </div>
-                <?php endif; ?>
+                </div>
             </div>
             <div class="event_action">
                 <div class="event_link">
                     <?php
-                    $chapterLink = in_array($event->step, [
+                    $chapterLink = in_array($translator->step, [
                             EventSteps::PEER_REVIEW,
                             EventSteps::KEYWORD_CHECK,
                             EventSteps::CONTENT_REVIEW,
                             EventSteps::FINAL_REVIEW,
                     ])
-                        && in_array($event->bookProject, ["ulb","udb"])
-                        && $event->currentChapter > 0
-                            ? "/" . $event->currentChapter : "";
+                        && in_array($project->bookProject, ["ulb","udb"])
+                        && $translator->currentChapter > 0
+                            ? "/" . $translator->currentChapter : "";
                     ?>
-                    <a href="/events/translator<?php echo ($event->sourceBible == "odb" ? "-odb" : "")
-                            .(Tools::isHelpExtended($event->bookProject) ? "-".
-                            $event->bookProject : "") ?>/<?php echo $event->eventID . $chapterLink?>">
+                    <a href="/events/translator<?php echo ($project->sourceBible == "odb" ? "-odb" : "")
+                            .(Tools::isHelpExtended($project->bookProject) ? "-".
+                            $project->bookProject : "") ?>/<?php echo $event->eventID . $chapterLink?>">
                         <?php echo __("continue") ?>
                     </a>
                 </div>
                 <div class="event_members">
-                    <!--<div><?php /*echo __("translators") */?></div>-->
-                    <!--<div class="trs_num"><?php /*echo $event->currTrs */?></div>-->
                 </div>
             </div>
         </div>

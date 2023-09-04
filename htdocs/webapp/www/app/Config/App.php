@@ -119,6 +119,7 @@ Config::set('app', array(
         'App\Providers\PreferencesServiceProvider',
         'App\Providers\AMQPMailerProvider',
         'App\Providers\CloudServiceProvider',
+        'App\Providers\TranslationServiceProvider'
     ),
 
     /**

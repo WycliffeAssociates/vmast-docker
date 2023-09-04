@@ -12,7 +12,7 @@ require(app_path() . "Views/Components/HelpTools.php");
     <div class="">
         <div class="main_content">
             <div class="main_content_text">
-                <?php if($data["event"][0]->checkerName == null): ?>
+                <?php if($data["checkers"]->isEmpty()): ?>
                 <div class="add_cheker">
                     <div class="checkers-search">
                         <div class="form-group">
@@ -31,13 +31,13 @@ require(app_path() . "Views/Components/HelpTools.php");
                 </div>
                 <?php endif; ?>
 
-                <h4 dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["event"][0]->tLang." - "
-                        .__($data["event"][0]->bookProject)." - "
-                        .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
-                        ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
+                <h4 dir="<?php echo $data["project"]->gatewayLanguage->direction ?>"><?php echo $data["project"]->targetLanguage->langName." - "
+                        .__($data["project"]->bookProject)." - "
+                        .($data["event"]->bookInfo->sort <= 39 ? __("old_test") : __("new_test"))." - "
+                        ."<span class='book_name'>".$data["event"]->bookInfo->name." ".$data["translator"]->currentChapter.":1-".sizeof($data["text"])."</span>"?></h4>
 
                 <?php foreach($data["text"] as $verse => $text): ?>
-                    <p dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?></p>
+                    <p dir="<?php echo $data["project"]->gatewayLanguage->direction ?>"><?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?></p>
                 <?php endforeach; ?>
             </div>
 
@@ -89,10 +89,14 @@ require(app_path() . "Views/Components/HelpTools.php");
             <div class="participant_info">
                 <div class="participant_name">
                     <span><?php echo __("your_checker") ?>:</span>
-                    <span class="checker_name_span"><?php echo $data["event"][0]->checkerName !== null ? $data["event"][0]->checkerName : __("not_available") ?></span>
+                    <span class="checker_name_span"><?php echo !$data["checkers"]->isEmpty() ?
+                            ($data["checkers"]->first()->memberID > 0 ?
+                                $data["checkers"]->first()->member->firstName . " " . mb_substr($data["checkers"]->first()->member->lastName, 0, 1)."." :
+                                $data["checkers"]->first()->name) :
+                            __("not_available") ?></span>
                 </div>
                 <div class="additional_info">
-                    <a href="/events/information/<?php echo $data["event"][0]->eventID ?>"><?php echo __("event_info") ?></a>
+                    <a href="/events/information/<?php echo $data["event"]->eventID ?>"><?php echo __("event_info") ?></a>
                 </div>
             </div>
         </div>

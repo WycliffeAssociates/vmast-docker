@@ -20,4 +20,15 @@ class CheckerL3 extends Model
     {
         return $this->hasMany(Chapter::class, "l3chID", "l3chID");
     }
+
+    public function translations() {
+        return $this->hasMany(Translation::class, "l3chID");
+    }
+
+    public function checkers() {
+        return $this->hasMany(
+            Checker::class,
+            "l3chID"
+        );
+    }
 }
