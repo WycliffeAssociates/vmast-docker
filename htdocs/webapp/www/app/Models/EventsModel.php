@@ -222,8 +222,7 @@ class EventsModel extends Model
     private function modifiedCheckerEvent($event, $chapter, $data, $step, $manageMode = "l1") {
         $ev = clone $event;
 
-        $checkerFName = null;
-        $checkerLName = null;
+        $checkers = [];
         $checkerID = 0;
         $ev->step = $step;
         $ev->checkDone = false;
@@ -235,17 +234,32 @@ class EventsModel extends Model
                 "lastName"
             ], ["memberID", $data["memberID"]]);
             if (!empty($member)) {
-                $checkerFName = $member[0]->firstName;
-                $checkerLName = $member[0]->lastName;
+                $checkers[] = [
+                    "name" => $member[0]->firstName . " " . mb_substr($member[0]->lastName, 0, 1).".",
+                    "id" => $data["memberID"]
+                ];
                 $checkerID = $data["memberID"];
             }
             $ev->checkDone = $data["done"] == 1;
         }
+        if (isset($data["memberID2"]) && $data["memberID2"] != 0) {
+            $memberModel = new MembersModel();
+            $member = $memberModel->getMember([
+                "firstName",
+                "lastName"
+            ], ["memberID", $data["memberID2"]]);
+            if (!empty($member)) {
+                $checkers[] = [
+                    "name" => $member[0]->firstName . " " . mb_substr($member[0]->lastName, 0, 1).".",
+                    "id" => $data["memberID2"]
+                ];
+            }
+            $ev->checkDone2 = $data["done2"] == 1;
+        }
 
         $ev->currentChapter = $chapter;
         $ev->checkerID = $checkerID;
-        $ev->checkerFName = $checkerFName;
-        $ev->checkerLName = $checkerLName;
+        $ev->checkers = $checkers;
 
         $chapters = $this->getChapters($event->eventID, $event->myMemberID, $chapter, $manageMode); // Should be one
         $chunks = !empty($chapters) ? $chapters[0]["chunks"] : "";
@@ -350,11 +364,27 @@ class EventsModel extends Model
             foreach ($crCheck as $chap => $data) {
                 // Exclude translator's events
                 if ($event->memberID == $memberID) continue;
-                // Exclude finished events
-                if ($data["done"] > 0) continue;
+
+                $checkerID = 0;
+                $vChecker = 0;
+                if (isset($data["memberID"]) && $data["memberID"] == $memberID) {
+                    $checkerID = $data["memberID"];
+                    $vChecker = 1;
+
+                    // Exclude finished events
+                    if (isset($data["done"]) && $data["done"] > 0) continue;
+
+                } elseif (isset($data["memberID2"]) && $data["memberID2"] == $memberID) {
+                    $checkerID = $data["memberID2"];
+                    $vChecker = 2;
+
+                    // Exclude finished events
+                    if (isset($data["done2"]) && $data["done2"] > 0) continue;
+                }
+
                 // Exclude other checkers events
-                if ($data["memberID"] != $memberID) continue;
-                // Filter to secific chapter
+                if ($checkerID == 0) continue;
+                // Filter to specific chapter
                 if ($chapter && $chapter != $chap) continue;
 
                 $chapters = $this->getChapters($event->eventID, $event->memberID, $chapter); // Should be one
@@ -363,7 +393,8 @@ class EventsModel extends Model
                 $ev = clone $event;
                 $ev->step = EventSteps::CONTENT_REVIEW;
                 $ev->currentChapter = $chap;
-                $ev->checkerID = $data["memberID"];
+                $ev->checkerID = $checkerID;
+                $ev->vChecker = $vChecker;
                 $ev->chunks = $chunks;
                 $filtered[] = $ev;
             }
@@ -1637,17 +1668,28 @@ class EventsModel extends Model
             }
 
             foreach ($crCheck as $chapter => $data) {
-                // Exclude taken chapters
-                if ($data["memberID"] > 0) continue;
-
                 // Exclude member that is translator
                 if ($notification->memberID == $myMemberID) continue;
 
-                $note = clone $notification;
-                $note->currentChapter = $chapter;
-                $note->step = EventSteps::CONTENT_REVIEW;
-                $note->checkerID = 0;
-                $notifs[] = $note;
+                // First checker
+                // Exclude taken chapters
+                if (isset($data["memberID"]) && $data["memberID"] <= 0) {
+                    $note = clone $notification;
+                    $note->currentChapter = $chapter;
+                    $note->step = EventSteps::CONTENT_REVIEW;
+                    $note->checkerID = 0;
+                    $note->vChecker = 1;
+                    $notifs[] = $note;
+                }
+
+                if (isset($data["memberID2"]) && $data["memberID2"] <= 0) {
+                    $note = clone $notification;
+                    $note->currentChapter = $chapter;
+                    $note->step = EventSteps::CONTENT_REVIEW;
+                    $note->checkerID = 0;
+                    $note->vChecker = 2;
+                    $notifs[] = $note;
+                }
             }
         }
 

@@ -139,8 +139,10 @@ if(!isset($error)):
                                     <div class="step_name">2. <?php echo __(EventSteps::PEER_REVIEW."_tq"); ?></div>
                                     <?php if($chapter["peerChk"]["checkerID"] != "na"): ?>
                                         <div class="step_checker">
-                                            <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                            <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                            <div>
+                                                <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
+                                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                            </div>
                                             <?php if($chapter["peerChk"]["state"] == StepsStates::CHECKED || $chapter["peerChk"]["state"] == StepsStates::FINISHED): ?>
                                                 <span class="glyphicon glyphicon-ok checked"></span>
                                             <?php endif; ?>
@@ -236,6 +238,6 @@ if(!isset($error)):
 
     <script src="<?php echo template_url("js/socket.io.min.js")?>"></script>
     <script src="<?php echo template_url("js/chat-plugin.js?v=6")?>"></script>
-    <script src="<?php echo template_url("js/socket.js?v=15")?>"></script>
+    <script src="<?php echo template_url("js/socket.js?v=16")?>"></script>
 
 <?php endif; ?>

@@ -4,10 +4,13 @@ require(app_path() . "Views/Components/CommentEditor.php");
 
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
-        <div class="main_content_title">
+        <div class="action_type_container">
             <div class="demo_title"><?php echo __("demo") . " (".__("tn").")" ?></div>
-            <div><?php echo __("step_num", ["step_number" => 5]) . ": " . __("peer-review_tn")?></div>
             <div class="action_type type_checking"><?php echo __("type_checking1"); ?></div>
+            <div class="action_region"></div>
+        </div>
+        <div class="main_content_title">
+            <div><?php echo __("step_num", ["step_number" => 5]) . ": " . __("peer-review_tn")?></div>
         </div>
     </div>
 

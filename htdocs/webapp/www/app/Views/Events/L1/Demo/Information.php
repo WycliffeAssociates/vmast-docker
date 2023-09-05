@@ -87,8 +87,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/verbalize.png") ?>"></div>
                             <div class="step_name">2. <?php echo __(EventSteps::VERBALIZE) ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                <div>Mark P.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
+                                    <div>Mark P.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -133,8 +135,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png") ?>"></div>
                             <div class="step_name"><?php echo $data["inputMode"] == InputMode::NORMAL ? "6" : "3" ?>. <?php echo __(EventSteps::PEER_REVIEW) ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                <div>Paul G.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
+                                    <div>Paul G.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -147,8 +151,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/keyword-check.png") ?>"></div>
                             <div class="step_name">7. <?php echo __(EventSteps::KEYWORD_CHECK) ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                <div>John B.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
+                                    <div>John B.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -225,8 +231,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/verbalize.png") ?>"></div>
                             <div class="step_name">2. <?php echo __(EventSteps::VERBALIZE) ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                <div>Marge S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
+                                    <div>Marge S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>

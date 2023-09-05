@@ -919,7 +919,7 @@ class ManageController extends Controller {
             case EventSteps::CONTENT_REVIEW:
                 $crCheck = (array)json_decode($member->crCheck, true);
                 $otherCheck = (array)json_decode($member->otherCheck, true);
-                $crCheck[$chapter] = ["memberID" => 0, "done" => 0];
+                $crCheck[$chapter] = ["memberID" => 0, "done" => 0, "memberID2" => 0, "done2" => 0];
                 if (array_key_exists($chapter, $otherCheck))
                     unset($otherCheck[$chapter]);
                 $postData["crCheck"] = json_encode($crCheck);

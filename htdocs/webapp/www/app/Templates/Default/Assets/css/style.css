@@ -114,6 +114,10 @@ html, body, .container {
     background: url("/templates/default/assets/img/bg_sky.jpg?2") 0 0 repeat-x;
 }
 
+.hide {
+    display: none;
+}
+
 .hide_img {
     bottom: -100%;
     left: 0;
@@ -1267,23 +1271,29 @@ div.ui-datepicker {
     width: 100%;
 }
 
-.main_content_title .demo_title {
-    position: absolute;
-    top: -10px;
+.main_content_header .demo_title {
+    flex: 1;
     font-size: 18px;
 }
 
+.action_type_container {
+    display: flex;
+    justify-content: center;
+}
+
 .action_type {
-    position: absolute;
-    top: -10px;
-    left: calc(50% - 150px);
     border-radius: 0 0 10px 10px;
     color: #fff;
-    width: 300px;
+    width: max-content;
     height: 43px;
     text-align: center;
-    padding-top: 5px;
+    padding: 5px 10px;
     font-size: 22px;
+    margin-top: -10px;
+}
+
+.action_region {
+    flex: 1;
 }
 
 .action_type.type_translation {
@@ -2657,13 +2667,18 @@ span.mdi.mdi-lead-pencil {
     overflow: hidden;
     white-space: nowrap;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .section_step .step_checker .checked {
     color: #249b45;
-    position: absolute;
-    top: 20px;
-    right: 20px;
+}
+
+.section_step .step_checker_container {
+    display: flex;
+    justify-content: space-around;
 }
 
 .section_step .step_chunks {

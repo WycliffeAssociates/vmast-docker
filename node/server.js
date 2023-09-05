@@ -137,9 +137,7 @@ io.on('connection', function(socket) {
             const client = {
                 memberID: member.memberID,
                 userName: member.userName,
-                fullName: member.firstName + " " + member.lastName.charAt(0) + ".",
-                //firstName: member.firstName,
-                //lastName: member.lastName
+                fullName: member.firstName + " " + member.lastName.charAt(0) + "."
             };
             const event = getMemberEvent(member, chatData.eventID);
 
@@ -218,7 +216,8 @@ io.on('connection', function(socket) {
                             if(!_.isEmpty(checkEvent)) {
                                 // Send message to check member
                                 for(const skt in checkEvent.sockets) {
-                                    io.to(checkEvent.sockets[skt]).emit('system message', {type: "checkDone"});
+                                    const name = member.firstName + " " + member.lastName.charAt(0) + ".";
+                                    io.to(checkEvent.sockets[skt]).emit('system message', {type: "checkDone", name: name});
                                 }
                             }
                         }
@@ -228,7 +227,7 @@ io.on('connection', function(socket) {
                         const commentData = {
                             type: "comment",
                             memberID: member.memberID,
-                            name: member.firstName + " " + member.lastName,
+                            name: member.firstName + " " + member.lastName.charAt(0) + ".",
                             verse: _.escape(data.verse || ""),
                             text: _.escape(data.text || ""),
                             level: _.escape(data.level || 1),

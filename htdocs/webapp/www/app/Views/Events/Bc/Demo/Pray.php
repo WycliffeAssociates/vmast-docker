@@ -4,8 +4,10 @@ use Helpers\Constants\EventSteps;
 
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
+        <div class="action_type_container">
+            <div class="demo_title"><?php echo __("demo") . " (" . __("bc") . ")" ?></div>
+        </div>
         <div class="main_content_title">
-            <div class="demo_title"><?php echo __("demo") . " (".__("bc").")" ?></div>
             <div><?php echo __(EventSteps::PRAY)?></div>
         </div>
     </div>

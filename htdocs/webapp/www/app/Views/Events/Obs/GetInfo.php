@@ -113,8 +113,10 @@ foreach ($data["chapters"] as $key => $chapter):?>
                         <div class="step_name">4. <?php echo __(EventSteps::PEER_REVIEW."_tq"); ?></div>
                         <?php if($chapter["peerChk"]["checkerID"] != "na"): ?>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
+                                    <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                </div>
                                 <?php if($chapter["peerChk"]["state"] == StepsStates::CHECKED || $chapter["peerChk"]["state"] == StepsStates::FINISHED): ?>
                                     <span class="glyphicon glyphicon-ok checked"></span>
                                 <?php endif; ?>

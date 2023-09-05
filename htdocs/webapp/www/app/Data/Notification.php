@@ -64,8 +64,15 @@ class Notification {
             "level" => $this->level."</b>"
         ];
 
-        $tail = $this->isHelp && !$this->isReviewMode
-            ? " (".($this->notification->step == "other" ? "#1" : "#2").")" : null;
+        $tail = null;
+
+        if ($this->isHelp && !$this->isReviewMode) {
+            $tail = " (".($this->notification->step == "other" ? "#1" : "#2").")";
+        } elseif ($this->isScriptureMode && $this->notification->step == EventSteps::CONTENT_REVIEW) {
+            if (isset($this->notification->vChecker)) {
+                $tail = " (".($this->notification->vChecker == 1 ? __("l1_v1_checker") : __("l1_v2_checker")).")";
+            }
+        }
 
         switch ($this->notification->bookProject) {
             case "tw":
@@ -114,6 +121,7 @@ class Notification {
             if ($this->manageMode) {
                 $url .= $this->notification->currentChapter."/";
             }
+            $url .= ($this->notification->vChecker ?? 1)."/";
             switch ($this->type) {
                 case NotificationType::READY:
                     $url .= "notified";

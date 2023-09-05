@@ -127,8 +127,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>John C.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>John C.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -281,8 +283,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>John C.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>John C.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -620,8 +624,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Walben S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Walben S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -794,8 +800,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Jhonson S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Jhonson S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -1109,8 +1117,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Jhonson S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Jhonson S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -1671,8 +1681,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Ketut S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Ketut S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -1829,8 +1841,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Walben S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Walben S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -1991,8 +2005,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Ketut S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Ketut S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -2813,8 +2829,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Walben S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Walben S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
@@ -3450,8 +3468,10 @@ use Helpers\Constants\StepsStates;
                             <div class="step_icon"><img width="40" src="<?php echo template_url("img/steps/icons/peer-review.png")?>"></div>
                             <div class="step_name">5. <?php echo __(EventSteps::PEER_REVIEW."_tn"); ?></div>
                             <div class="step_checker">
-                                <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
-                                <div>Jhonson S.</div>
+                                <div>
+                                    <img width="50" src="<?php echo template_url("img/avatars/n1.png")?>">
+                                    <div>Jhonson S.</div>
+                                </div>
                                 <span class="glyphicon glyphicon-ok checked"></span>
                             </div>
                         </div>
