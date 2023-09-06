@@ -2,8 +2,10 @@
 
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
-        <div class="main_content_title">
+        <div class="action_type_container">
             <div class="demo_title"><?php echo __("demo") . " (".__("vsail_revision").")" ?></div>
+        </div>
+        <div class="main_content_title">
             <div><?php echo __("step_num", ["step_number" => 1]) . ": " . __("consume")?></div>
         </div>
     </div>

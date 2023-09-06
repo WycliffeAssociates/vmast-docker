@@ -198,6 +198,6 @@ if(!isset($error)):
 
     <script src="<?php echo template_url("js/socket.io.min.js")?>"></script>
     <script src="<?php echo template_url("js/chat-plugin.js?v=6")?>"></script>
-    <script src="<?php echo template_url("js/socket.js?v=15")?>"></script>
+    <script src="<?php echo template_url("js/socket.js?v=16")?>"></script>
 
 <?php endif; ?>

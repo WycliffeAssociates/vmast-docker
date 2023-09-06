@@ -182,7 +182,7 @@ $chk = isset($data["event"][0]->isCheckerPage) && $data["event"][0]->isCheckerPa
 
 <script src="<?php echo template_url("js/socket.io.min.js")?>"></script>
 <script src="<?php echo template_url("js/chat-plugin.js?v=6")?>"></script>
-<script src="<?php echo template_url("js/socket.js?v=15")?>"></script>
+<script src="<?php echo template_url("js/socket.js?v=16")?>"></script>
 <script src="<?php echo template_url("js/adapter-latest.js?v=3")?>"></script>
 <script src="<?php echo template_url("js/video-chat.js?v=3")?>"></script>
 

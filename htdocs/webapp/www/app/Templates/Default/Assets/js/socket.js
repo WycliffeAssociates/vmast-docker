@@ -110,7 +110,9 @@ function OnSystemMessage(data)
                 socket.io.reconnect();
                 
 				if(step != "") {
-                    msg = Language.checkerJoined;
+                    msg = Language.checkerJoined.formatUnicorn({
+                        "name": data.userName
+                    });
                     $(".alert.alert-danger, .alert.alert-success").remove();
                     renderPopup(msg);
                 }
@@ -137,7 +139,10 @@ function OnSystemMessage(data)
             if(typeof isInfoPage != "undefined") return;
 
             $(".alert.alert-danger, .alert.alert-success").remove();
-            renderPopup(Language.checkerApproved);
+            const message = Language.checkerApproved.formatUnicorn({
+                "name": data.name
+            });
+            renderPopup(message);
             break;
 
         case "comment":

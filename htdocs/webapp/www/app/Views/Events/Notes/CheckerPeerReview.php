@@ -20,11 +20,13 @@ require(app_path() . "Views/Components/CommentEditor.php");
 
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
-        <div class="main_content_title">
-            <div><?php echo __("step_num", ["step_number" => 5]). ": " . __("peer-review_tn")?></div>
+        <div class="action_type_container">
             <div class="action_type type_checking <?php echo isset($data["isPeerPage"]) ? "isPeer" : "" ?>">
                 <?php echo __("type_checking2"); ?>
             </div>
+        </div>
+        <div class="main_content_title">
+            <div><?php echo __("step_num", ["step_number" => 5]). ": " . __("peer-review_tn")?></div>
         </div>
     </div>
 

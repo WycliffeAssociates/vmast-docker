@@ -3532,4 +3532,35 @@ class AdminController extends Controller {
             }
         }
     }
+
+    public function migrateVerseByVerseCheck() {
+        if (Session::get("isSuperAdmin")) {
+            $updated = false;
+
+            $events = $this->eventRepo->all();
+            $specUser = $this->memberRepo->getByUsername("spec");
+            $events->each(function($event) use (&$updated, $specUser) {
+                $event->translators->each(function($translator) use (&$updated, $specUser, $event) {
+                    $memberID = $translator->memberID;
+                    $crc = (array)json_decode($translator->pivot->crCheck, true);
+                    foreach ($crc as $chapter => $data) {
+                        $crc[$chapter]["memberID2"] = 0;
+                        $crc[$chapter]["done2"] = 0;
+
+                        if ($data["done"] > 0) {
+                            $crc[$chapter]["memberID2"] = $specUser->memberID;
+                            $crc[$chapter]["done2"] = 1;
+                        }
+                    }
+                    $postData = ["crCheck" => json_encode($crc)];
+                    $event->translators()->updateExistingPivot($memberID, $postData);
+                    $updated = true;
+                });
+            });
+
+            if ($updated) {
+                pr("Migrated successfully!");
+            }
+        }
+    }
 }

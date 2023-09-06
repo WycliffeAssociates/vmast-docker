@@ -4,8 +4,10 @@ use Helpers\Constants\EventSteps;
 ?>
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
-        <div class="main_content_title">
+        <div class="action_type_container">
             <div class="demo_title"><?php echo __("demo") . " (".__("obs").")" ?></div>
+        </div>
+        <div class="main_content_title">
             <div><?php echo __("step_num", ["step_number" => 1]) . ": " . __(EventSteps::CONSUME)?></div>
         </div>
     </div>

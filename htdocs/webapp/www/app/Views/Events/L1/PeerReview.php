@@ -14,9 +14,11 @@ require(app_path() . "Views/Components/HelpTools.php");
 
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
+        <div class="action_type_container">
+            <div class="action_type type_translation"><?php echo __("type_translation"); ?></div>
+        </div>
         <div class="main_content_title">
             <div><?php echo __("step_num", ["step_number" => 6]) . ": " . __("peer-review")?></div>
-            <div class="action_type type_translation"><?php echo __("type_translation"); ?></div>
         </div>
     </div>
 
@@ -136,7 +138,18 @@ require(app_path() . "Views/Components/HelpTools.php");
             <div class="participant_info">
                 <div class="participant_name">
                     <span><?php echo __("your_checker") ?>:</span>
-                    <span class="checker_name_span"><?php echo $data["event"][0]->checkerFName !== null ? $data["event"][0]->checkerFName . " " . mb_substr($data["event"][0]->checkerLName, 0, 1)."." : __("not_available") ?></span>
+                    <span class="checker_name_span">
+                        <?php
+                        if (!empty($data["event"][0]->checkers)) {
+                            $checkers = array_map(function ($item) {
+                                return $item["name"];
+                            }, $data["event"][0]->checkers);
+                            echo join(", ", $checkers);
+                        } else {
+                            echo __("not_available");
+                        }
+                        ?>
+                    </span>
                 </div>
                 <div class="additional_info">
                     <a href="/events/information/<?php echo $data["event"][0]->eventID ?>"><?php echo __("event_info") ?></a>

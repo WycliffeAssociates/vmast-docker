@@ -927,7 +927,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
@@ -937,7 +937,9 @@ class EventsController extends Controller {
                                     $kwCheck[$data["event"][0]->currentChapter]["done"] = 2;
                                     $crCheck[$data["event"][0]->currentChapter] = [
                                         "memberID" => 0,
-                                        "done" => 0
+                                        "memberID2" => 0,
+                                        "done" => 0,
+                                        "done2" => 0
                                     ];
                                     $postdata = [
                                         "kwCheck" => json_encode($kwCheck),
@@ -1008,7 +1010,8 @@ class EventsController extends Controller {
                             if (isset($_POST["confirm_step"])) {
                                 $crCheck = (array)json_decode($data["event"][0]->crCheck, true);
                                 $otherCheck = (array)json_decode($data["event"][0]->otherCheck, true);
-                                if ($crCheck[$data["event"][0]->currentChapter]["done"] == 1) {
+                                if ($crCheck[$data["event"][0]->currentChapter]["done"] == 1 &&
+                                    (isset($crCheck[$data["event"][0]->currentChapter]["done2"]) && $crCheck[$data["event"][0]->currentChapter]["done2"] == 1)) {
                                     $crCheck[$data["event"][0]->currentChapter]["done"] = 2;
                                     $otherCheck[$data["event"][0]->currentChapter] = [
                                         "memberID" => 0,
@@ -4085,7 +4088,7 @@ class EventsController extends Controller {
         $response = ["success" => false, "errors" => ""];
 
         $data["event"] = $this->eventModel->getMemberEventsForChecker(
-            Session::get("memberID"),
+            $this->member->memberID,
             $eventID,
             $memberID,
             $chapter
@@ -4123,7 +4126,7 @@ class EventsController extends Controller {
                         $error[] = $sourceText["error"];
                     }
 
-                    if (isset($_POST) && !empty($_POST)) {
+                    if (!empty($_POST)) {
                         $_POST = Gump::xss_clean($_POST);
 
                         if (isset($_POST["confirm_step"])) {
@@ -4137,7 +4140,18 @@ class EventsController extends Controller {
                                 $postdata["kwCheck"] = json_encode($kwCheck);
                             } else {
                                 $crCheck = (array)json_decode($data["event"][0]->crCheck, true);
-                                $crCheck[$data["event"][0]->currentChapter]["done"] = 1;
+                                $thisMemberID = $this->member->memberID;
+
+                                if (isset($crCheck[$data["event"][0]->currentChapter]["memberID"]) &&
+                                    $crCheck[$data["event"][0]->currentChapter]["memberID"] == $thisMemberID) {
+                                    $crCheck[$data["event"][0]->currentChapter]["done"] = 1;
+                                }
+
+                                if (isset($crCheck[$data["event"][0]->currentChapter]["memberID2"]) &&
+                                    $crCheck[$data["event"][0]->currentChapter]["memberID2"] == $thisMemberID) {
+                                    $crCheck[$data["event"][0]->currentChapter]["done2"] = 1;
+                                }
+
                                 $postdata["crCheck"] = json_encode($crCheck);
                             }
 
@@ -10747,7 +10761,7 @@ class EventsController extends Controller {
      * @param $step
      * @return mixed
      */
-    public function applyChecker($eventID, $memberID, $chapter, $step)
+    public function applyChecker($eventID, $memberID, $chapter, $step, $vChecker)
     {
         $canApply = false;
         $notif = null;
@@ -10785,7 +10799,11 @@ class EventsController extends Controller {
                 case EventSteps::CONTENT_REVIEW:
                     $crCheck = (array)json_decode($notif->crCheck, true);
                     if (isset($crCheck[$chapter])) {
-                        $crCheck[$chapter] = ["memberID" => Session::get("memberID"), "done" => 0];
+                        if ($vChecker == 1 && $crCheck[$chapter]["memberID"] == 0) {
+                            $crCheck[$chapter]["memberID"] = Session::get("memberID");
+                        } elseif ($vChecker == 2 && $crCheck[$chapter]["memberID2"] == 0) {
+                            $crCheck[$chapter]["memberID2"] = Session::get("memberID");
+                        }
                     }
                     $postData["crCheck"] = json_encode($crCheck);
             }

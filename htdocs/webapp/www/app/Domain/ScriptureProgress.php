@@ -89,6 +89,7 @@ class ScriptureProgress
             $data["chapters"][$key]["kwc"]["checkerID"] = "na";
             $data["chapters"][$key]["crc"]["state"] = StepsStates::NOT_STARTED;
             $data["chapters"][$key]["crc"]["checkerID"] = "na";
+            $data["chapters"][$key]["crc"]["checkerID2"] = "na";
             $data["chapters"][$key]["finalReview"]["state"] = StepsStates::NOT_STARTED;
 
             // When no chunks created or translation not started
@@ -240,16 +241,30 @@ class ScriptureProgress
             if (array_key_exists($key, $crCheck)) {
                 $members[$crCheck[$key]["memberID"]] = "";
                 $data["chapters"][$key]["crc"]["state"] = StepsStates::WAITING;
+                $data["chapters"][$key]["crc"]["state2"] = StepsStates::IN_PROGRESS;
                 $data["chapters"][$key]["crc"]["checkerID"] = 0;
+                $data["chapters"][$key]["crc"]["checkerID2"] = 0;
+
+                if ($crCheck[$key]["memberID"] > 0 &&
+                    (isset($crCheck[$key]["memberID2"]) && $crCheck[$key]["memberID2"] > 0)) {
+                    $data["chapters"][$key]["crc"]["state"] = StepsStates::IN_PROGRESS;
+                }
 
                 if ($crCheck[$key]["memberID"] > 0) {
-                    $data["chapters"][$key]["crc"]["state"] = StepsStates::IN_PROGRESS;
                     $data["chapters"][$key]["crc"]["checkerID"] = $crCheck[$key]["memberID"];
 
                     if ($crCheck[$key]["done"] == 2) {
                         $data["chapters"][$key]["crc"]["state"] = StepsStates::FINISHED;
                     } elseif ($crCheck[$key]["done"] == 1) {
                         $data["chapters"][$key]["crc"]["state"] = StepsStates::CHECKED;
+                    }
+                }
+                if (isset($crCheck[$key]["memberID2"]) && $crCheck[$key]["memberID2"] > 0) {
+                    $members[$crCheck[$key]["memberID2"]] = "";
+                    $data["chapters"][$key]["crc"]["checkerID2"] = $crCheck[$key]["memberID2"];
+
+                    if ($crCheck[$key]["done2"] == 1) {
+                        $data["chapters"][$key]["crc"]["state2"] = StepsStates::CHECKED;
                     }
                 }
             }

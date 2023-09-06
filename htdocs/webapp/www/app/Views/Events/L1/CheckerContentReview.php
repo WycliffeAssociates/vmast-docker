@@ -21,9 +21,11 @@ require(app_path() . "Views/Components/HelpTools.php");
 
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
+        <div class="action_type_container">
+            <div class="action_type type_checking"><?php echo $data["event"][0]->vChecker == 1 ? __("type_checking_source") : __("type_checking_target"); ?></div>
+        </div>
         <div class="main_content_title">
             <div><?php echo __("step_num", ["step_number" => 8]). ": " . __("content-review")?></div>
-            <div class="action_type type_checking"><?php echo __("type_checking"); ?></div>
         </div>
     </div>
 
@@ -34,17 +36,11 @@ require(app_path() . "Views/Components/HelpTools.php");
                     .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
                     ."<span class='book_name'>".$data["event"][0]->bookName." ".$data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
 
-            <div class="row">
-                <div class="col-sm-12 side_by_side_toggle">
-                    <label><input type="checkbox" id="side_by_side_toggle" value="0" /> <?php echo __("side_by_side_toggle") ?></label>
-                </div>
-            </div>
-
-            <div class="col-sm-12 side_by_side_checker">
+            <div class="col-sm-12">
                 <?php foreach($data["chunks"] as $key => $chunk) : ?>
                     <div class="row chunk_block">
                         <div class="flex_container">
-                            <div class="chunk_verses flex_left" dir="<?php echo $data["event"][0]->sLangDir ?>">
+                            <div class="chunk_verses flex_left <?php echo $data["event"][0]->vChecker == 2 ? "hide" : "" ?>" dir="<?php echo $data["event"][0]->sLangDir ?>">
                                 <?php $firstVerse = 0; ?>
                                 <?php foreach ($chunk as $verse): ?>
                                     <?php
@@ -66,7 +62,7 @@ require(app_path() . "Views/Components/HelpTools.php");
                                     <strong dir="<?php echo $data["event"][0]->sLangDir ?>" class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong><div class="<?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>" dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["text"][$verse]; ?></div>
                                 <?php endforeach; ?>
                             </div>
-                            <div class="flex_middle editor_area" style="padding: 0;" dir="<?php echo $data["event"][0]->tLangDir ?>">
+                            <div class="flex_middle editor_area <?php echo $data["event"][0]->vChecker == 1 ? "hide" : "" ?>" style="padding: 0;" dir="<?php echo $data["event"][0]->tLangDir ?>">
                                 <?php $text = $data["translation"][$key][EventMembers::TRANSLATOR]["blind"]; ?>
                                 <div class="vnote">
                                     <div><?php echo preg_replace("/(\\\\f(?:.*?)\\\\f\\*)/", "<span class='footnote'>$1</span>", $text); ?></div>

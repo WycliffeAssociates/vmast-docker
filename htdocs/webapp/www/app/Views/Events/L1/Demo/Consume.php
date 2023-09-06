@@ -1,8 +1,10 @@
 <?php require(app_path() . "Views/Components/HelpTools.php"); ?>
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
-        <div class="main_content_title">
+        <div class="action_type_container">
             <div class="demo_title"><?php echo __("demo") . " (".__("8steps_vmast").")" ?></div>
+        </div>
+        <div class="main_content_title">
             <div><?php echo __("step_num", ["step_number" => 1]) . ": " . __("consume")?></div>
         </div>
     </div>

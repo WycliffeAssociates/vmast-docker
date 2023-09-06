@@ -7,9 +7,11 @@ $addUri = $data["inputMode"] != InputMode::NORMAL ? "-" . $data["inputMode"] : "
 
 <div id="translator_contents" class="row panel-body">
     <div class="row main_content_header">
-        <div class="main_content_title">
+        <div class="action_type_container">
             <div class="demo_title"><?php echo __("demo")
                     . " (".($data["inputMode"] != InputMode::NORMAL ? __($data["inputMode"]) : __("8steps_vmast")).")" ?></div>
+        </div>
+        <div class="main_content_title">
             <div><?php echo __("pray")?></div>
         </div>
     </div>
