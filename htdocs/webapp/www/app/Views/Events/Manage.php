@@ -56,12 +56,12 @@ if(!isset($error)):
                     <li class="chapter_<?php echo $chapter ?>" style="position:relative;">
                         <div class="manage_chapter">
                             <?php echo $chapter > 0 ? __("chapter_number", ["chapter" => $chapter]) : __("chapter_number", ["chapter" => __("intro")]); ?>
-                            <?php if(isset($data["odb"]) && isset($data["odb"]["chapters"][$chapter])): ?>
+                            <?php if(isset($data["odb"]["chapters"][$chapter])): ?>
                             <span class='glyphicon glyphicon-info-sign'
                                   data-toggle='tooltip'
                                   title="<?php echo $data["odb"]["chapters"][$chapter][1] ?>"
                                   style="font-size: 16px;"></span>
-                            <?php elseif(isset($data["rad"]) && isset($data["rad"]["chapters"][$chapter])): ?>
+                            <?php elseif(isset($data["rad"]["chapters"][$chapter])): ?>
                             <span class='glyphicon glyphicon-info-sign'
                                   data-toggle='tooltip'
                                   title="<?php echo $data["rad"]["chapters"][$chapter][1] . ": " . $data["rad"]["chapters"][$chapter][2] ?>"

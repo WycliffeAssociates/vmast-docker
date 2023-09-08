@@ -12,10 +12,11 @@ require(app_path() . "Views/Components/HelpTools.php");
         <div class="main_content">
             <form action="" method="post" id="main_form">
                 <div class="main_content_text row" style="padding-left: 15px">
+                    <?php $chunkTitle = $data["chunk"][0] > 0 ? ":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1] : ""; ?>
                     <h4 dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["event"][0]->tLang." - "
                             .__($data["event"][0]->bookProject)." - "
                             .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
-                            ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1]."</span>"?>
+                            ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].$chunkTitle."</span>"?>
                     </h4>
 
                     <div class="col-sm-12 no_padding">
@@ -24,7 +25,7 @@ require(app_path() . "Views/Components/HelpTools.php");
                                 <?php echo $data["words"] ?>
                             </div>
                             <div class="col-sm-6 editor_area" dir="<?php echo $data["event"][0]->tLangDir ?>">
-                                <?php $text = isset($data["symbols"]) ? $data["symbols"] : ""; ?>
+                                <?php $text = $data["symbols"] ?? ""; ?>
                                 <textarea name="symbols" class="col-sm-6 verse_ta textarea sun_content"><?php echo $text ?></textarea>
                             </div>
                         </div>

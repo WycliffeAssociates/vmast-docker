@@ -12,10 +12,11 @@ require(app_path() . "Views/Components/HelpTools.php");
         <form action="" method="post" id="main_form">
             <div class="main_content_text">
                 <div class="row">
+                    <?php $chunkTitle = $data["chunk"][0] > 0 ? ":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1] : ""; ?>
                     <h4 dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["event"][0]->tLang." - "
                             .__($data["event"][0]->bookProject)." - "
                             .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
-                            ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1]."</span>"?></h4>
+                            ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].$chunkTitle."</span>"?></h4>
                 </div>
 
                 <div class="row">

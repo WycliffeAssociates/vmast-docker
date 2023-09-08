@@ -321,6 +321,9 @@ class ResourcesRepository implements IResourcesRepository {
                         }
                     }
                 }
+                if ($mediaData->getAudioUrl() == null) {
+                    $mediaData = null;
+                }
             }
         }
         return $mediaData;
@@ -606,11 +609,11 @@ class ResourcesRepository implements IResourcesRepository {
             if ($usfm && isset($usfm["chapters"])) {
                 $book["id"] = $usfm["id"] ?? "";
                 $book["ide"] = $usfm["ide"] ?? "";
-                $book["h"] = $usfm["h"] ?? "";
-                $book["toc1"] = $usfm["toc1"] ?? "";
-                $book["toc2"] = $usfm["toc2"] ?? "";
-                $book["toc3"] = $usfm["toc3"] ?? "";
-                $book["mt"] = $usfm["toc3"] ?? "";
+                $book["h"] = $usfm["h"] ?? $bookSlug;
+                $book["toc1"] = $usfm["toc1"] ?? $bookSlug;
+                $book["toc2"] = $usfm["toc2"] ?? $bookSlug;
+                $book["toc3"] = $usfm["toc3"] ?? $bookSlug;
+                $book["mt"] = $usfm["mt"] ?? $bookSlug;
                 $book["chapters"] = $usfm["chapters"];
 
                 foreach ($usfm["chapters"] as $chap => $chunks) {

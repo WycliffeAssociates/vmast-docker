@@ -37,7 +37,12 @@ require(app_path() . "Views/Components/HelpTools.php");
                         ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
 
                 <?php foreach($data["text"] as $verse => $text): ?>
-                    <p dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?></p>
+                    <p dir="<?php echo $data["event"][0]->sLangDir ?>">
+                        <?php if ($verse > 0): ?>
+                            <strong><sup><?php echo $verse ?></sup></strong>
+                        <?php endif; ?>
+                        <?php echo $text; ?>
+                    </p>
                 <?php endforeach; ?>
             </div>
 

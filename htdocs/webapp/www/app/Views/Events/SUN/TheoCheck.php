@@ -47,10 +47,12 @@ require(app_path() . "Views/Components/HelpTools.php");
                                         }
                                         ?>
                                         <div>
-                                            <strong dir="<?php echo $data["event"][0]->sLangDir ?>"
-                                                    class="<?php echo $data["event"][0]->sLangDir ?>">
-                                                <sup><?php echo $verse; ?></sup>
-                                            </strong>
+                                            <?php if ($verse > 0): ?>
+                                                <strong dir="<?php echo $data["event"][0]->sLangDir ?>"
+                                                        class="<?php echo $data["event"][0]->sLangDir ?>">
+                                                    <sup><?php echo $verse; ?></sup>
+                                                </strong>
+                                            <?php endif; ?>
                                             <div class="<?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>"
                                                  dir="<?php echo $data["event"][0]->sLangDir ?>">
                                                 <?php echo $data["text"][$verse]; ?>

@@ -67,13 +67,17 @@ require(app_path() . "Views/Components/HelpTools.php");
                                             <div class="flex_sub_container">
                                                 <div class="flex_one scripture_compare_alt" dir="<?php echo $data["event"][0]->sLangDir ?>">
                                                     <p class="verse_text" data-verse="<?php echo $verse; ?>">
-                                                        <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                                        <?php if ($verse > 0): ?>
+                                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                                        <?php endif; ?>
                                                         <span><?php echo $data["text"][$verse]; ?></span>
                                                     </p>
                                                 </div>
                                                 <div class="flex_one vnote l3 font_<?php echo $data["event"][0]->targetLang ?>">
                                                     <div class="verse_block flex_chunk" data-verse="<?php echo $verse; ?>">
-                                                        <span class="verse_number_l3"><?php echo $verse?></span>
+                                                        <?php if ($verse > 0): ?>
+                                                            <span class="verse_number_l3"><?php echo $verse?></span>
+                                                        <?php endif; ?>
                                                         <textarea name="chunks[<?php echo $chunkNo ?>][<?php echo $verse ?>]"
                                                                   style="min-width: 400px; flex-grow: 1;"
                                                                   class="peer_verse_ta textarea"

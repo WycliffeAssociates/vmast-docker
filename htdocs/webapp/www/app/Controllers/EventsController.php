@@ -15,6 +15,7 @@ use App\Models\SailDictionaryModel;
 use App\Repositories\Event\IEventRepository;
 use App\Repositories\Member\IMemberRepository;
 use App\Repositories\Resources\IResourcesRepository;
+use App\Repositories\Translation\ITranslationRepository;
 use Helpers\Arrays;
 use Helpers\Constants\InputMode;
 use Helpers\Constants\NotificationType;
@@ -53,18 +54,21 @@ class EventsController extends Controller {
     private $memberRepo;
     private $eventRepo;
     private $resourcesRepo;
+    private $translationRepo;
     private $member;
 
     public function __construct(
         IMemberRepository $memberRepo,
         IEventRepository $eventRepo,
-        IResourcesRepository $resourcesRepo
+        IResourcesRepository $resourcesRepo,
+        ITranslationRepository $translationRepo
     ) {
         parent::__construct();
 
         $this->memberRepo = $memberRepo;
         $this->eventRepo = $eventRepo;
         $this->resourcesRepo = $resourcesRepo;
+        $this->translationRepo = $translationRepo;
 
         if (Config::get("app.isMaintenance")
             && !in_array($_SERVER['REMOTE_ADDR'], Config::get("app.ips"))) {
@@ -272,7 +276,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
                                 $nextStep = in_array($data["event"][0]->inputMode, [InputMode::SCRIPTURE_INPUT, InputMode::SPEECH_TO_TEXT])
                                     ? EventSteps::MULTI_DRAFT : EventSteps::CONSUME;
@@ -324,10 +328,10 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
                             if (isset($_POST["confirm_step"])) {
-                                if (isset($translation) && sizeof($translation) == $sourceText["totalVerses"]) {
+                                if (isset($translation) && sizeof($translation) >= $sourceText["totalVerses"]) {
                                     // Check for empty verses
                                     $empty = array_filter($translation, function ($elm) {
                                         $key = key($elm[EventMembers::TRANSLATOR]["verses"]);
@@ -338,6 +342,37 @@ class EventsController extends Controller {
                                         $chunks = array_map(function($elm) {
                                             return [key($elm[EventMembers::TRANSLATOR]["verses"])];
                                         }, $translation);
+
+                                        // Add book title translation
+                                        if (array_key_exists(0, $chunks) && $chunks[0][0] > 0 && $data["event"][0]->currentChapter == 1) {
+                                            $event = $this->eventRepo->get($eventID);
+                                            $translations = $event->translations()->where("chapter", $data["event"][0]->currentChapter)->get();
+                                            $bookTitleTr = null;
+
+                                            foreach ($translations as $trs) {
+                                                $trs->chunk = $trs->chunk + 1;
+                                                $trs->save();
+                                                
+                                                if ($bookTitleTr == null) {
+                                                    $translationVerses = [
+                                                        EventMembers::TRANSLATOR => ["blind" => "", "verses" => [$sourceText["text"][0]]],
+                                                        EventMembers::L2_CHECKER => ["verses" => []],
+                                                        EventMembers::L3_CHECKER => ["verses" => []]
+                                                    ];
+                                                    $encoded = json_encode($translationVerses);
+                                                    $bookTitleTr = $trs->replicate()->fill([
+                                                        "chunk" => 0,
+                                                        "firstvs" => 0,
+                                                        "translatedVerses" => $encoded
+                                                    ]);
+                                                    $bookTitleTr->save();
+                                                }
+                                            }
+
+                                            if ($data["event"][0]->currentChapter == 1) {
+                                                array_unshift($chunks, [0]);
+                                            }
+                                        }
 
                                         $this->eventModel->updateChapter(
                                             ["chunks" => json_encode($chunks)],
@@ -386,7 +421,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
                                 $postdata = ["step" => EventSteps::VERBALIZE];
 
@@ -434,7 +469,7 @@ class EventsController extends Controller {
                             }
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
                                 if ($checkDone) {
                                     $postdata = ["step" => EventSteps::CHUNKING];
@@ -470,13 +505,18 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
                                 $_POST = Gump::xss_clean($_POST);
 
                                 $chunks = $_POST["chunks_array"] ?? "";
                                 $chunks = (array)json_decode($chunks);
                                 if ($this->apiModel->testChunks($chunks, $sourceText["totalVerses"])) {
+                                    // Include book title as first chunk for chapter 1
+                                    if ($data["event"][0]->currentChapter == 1) {
+                                        array_unshift($chunks, [0]);
+                                    }
+
                                     if ($this->eventModel->updateChapter(["chunks" => json_encode($chunks)], ["eventID" => $data["event"][0]->eventID, "chapter" => $data["event"][0]->currentChapter])) {
                                         $this->eventModel->updateTranslator(["step" => EventSteps::READ_CHUNK], ["trID" => $data["event"][0]->trID]);
                                         Url::redirect('events/translator/' . $data["event"][0]->eventID);
@@ -513,7 +553,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
 
                                 $this->eventModel->updateTranslator(["step" => EventSteps::BLIND_DRAFT], ["trID" => $data["event"][0]->trID]);
@@ -557,7 +597,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
                             $draft = $_POST["draft"] ?? "";
 
@@ -663,7 +703,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
                             $submitStep = isset($_POST["submitStep"]) && $_POST["submitStep"];
                             $postdata = [];
@@ -819,7 +859,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
@@ -1004,7 +1044,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
@@ -1080,7 +1120,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
@@ -2188,7 +2228,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
 
                                 $postdata = [
@@ -2227,7 +2267,7 @@ class EventsController extends Controller {
                             Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
                                 $postdata = [
                                     "step" => EventSteps::CHUNKING
@@ -2262,13 +2302,19 @@ class EventsController extends Controller {
                             Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
                                 $_POST = Gump::xss_clean($_POST);
 
-                                $chunks = isset($_POST["chunks_array"]) ? $_POST["chunks_array"] : "";
+                                $chunks = $_POST["chunks_array"] ?? "";
                                 $chunks = (array)json_decode($chunks);
+
                                 if ($this->apiModel->testChunks($chunks, $sourceText["totalVerses"])) {
+                                    // Include book title as first chunk for chapter 1
+                                    if ($data["event"][0]->currentChapter == 1) {
+                                        array_unshift($chunks, [0]);
+                                    }
+
                                     if ($this->eventModel->updateChapter(["chunks" => json_encode($chunks)], ["eventID" => $data["event"][0]->eventID, "chapter" => $data["event"][0]->currentChapter])) {
                                         $this->eventModel->updateTranslator(["step" => EventSteps::REARRANGE], ["trID" => $data["event"][0]->trID]);
                                         Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
@@ -10171,23 +10217,15 @@ class EventsController extends Controller {
             $trID,
             $event->currentChapter);
 
-        $translationVerses = array(
-            EventMembers::TRANSLATOR => array(
-                "blind" => "",
-                "verses" => ""
-            ),
-            EventMembers::L2_CHECKER => array(
-                "verses" => array()
-            ),
-            EventMembers::L3_CHECKER => array(
-                "verses" => array()
-            ),
-        );
+        $translationVerses = [
+            EventMembers::TRANSLATOR => ["blind" => "", "verses" => ""],
+            EventMembers::L2_CHECKER => ["verses" => []],
+            EventMembers::L3_CHECKER => ["verses" => []],
+        ];
 
-        $finalVerses = isset($post["verses"]) && is_array($post["verses"]) && !empty($post["verses"])
-            ? $post["verses"] : [];
+        $finalVerses =  !empty($post["verses"]) && is_array($post["verses"]) ? $post["verses"] : [];
 
-        if(isset($post["draft"]) && !empty($post["draft"])) {
+        if(!empty($post["draft"])) {
             $verses = preg_split("/\|(\d+)\|/", $post["draft"]);
             $finalVerses = [];
 
@@ -10214,7 +10252,7 @@ class EventsController extends Controller {
             foreach ($finalVerses as $verse => $text) {
                 $text = strip_tags(html_entity_decode($text));
 
-                if (empty(trim($text)) || !is_integer($verse) || $verse < 1) {
+                if (empty(trim($text)) || !is_integer($verse)) {
                     if (in_array($event->step, [
                         EventSteps::SELF_CHECK,
                         EventSteps::PEER_REVIEW,
@@ -11262,13 +11300,21 @@ class EventsController extends Controller {
             $data["event"][0]->sourceLangID,
             $data["event"][0]->sourceBible,
             $data["event"][0]->bookCode,
-            $data["event"][0]->sort,
-            $currentChapter
+            $data["event"][0]->sort
         );
 
-        if (!empty($usfm)) {
-            $data["text"] = $usfm["text"];
-            $data["totalVerses"] = $usfm["totalVerses"];
+        $chapterUsfm = [];
+        if (isset($usfm[$currentChapter])) {
+            $chapterUsfm = $usfm[$currentChapter];
+        }
+
+        if (isset($usfm["h"]) && $currentChapter == 1) {
+            array_unshift($chapterUsfm["text"], $usfm["h"]);
+        }
+
+        if (!empty($chapterUsfm)) {
+            $data["text"] = $chapterUsfm["text"];
+            $data["totalVerses"] = $chapterUsfm["totalVerses"];
             $data["currentChapter"] = $currentChapter;
             $data["currentChunk"] = $currentChunk;
 

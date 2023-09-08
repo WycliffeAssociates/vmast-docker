@@ -803,6 +803,8 @@ class DemoController extends Controller {
             "l3"
         );
 
+        $data["comments"] = DemoData::getReviewComments();
+
         $this->renderNotifications->setNotifications($notifications);
         $data["notifications"] = $this->renderNotifications->renderDemo();
         $data["isDemo"] = true;

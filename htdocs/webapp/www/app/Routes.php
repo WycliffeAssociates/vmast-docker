@@ -198,13 +198,13 @@ Route::group(["prefix" => "events", "namespace" => "App\Controllers"], function(
         ->where([
             "eventID" => "[0-9]+"
         ]);
-    Router::any("checker/{eventID}/{memberID}/{chapter}/{step}/{vChecker}/apply", "EventsController@applyChecker")
+    Router::any("checker/{eventID}/{memberID}/{chapter}/{step}/v{vChecker}/apply", "EventsController@applyChecker")
         ->where([
             "eventID" => "[0-9]+",
             "memberID" => "[0-9]+",
             "chapter" => "[0-9]+",
             "step" => "[a-z\-]+",
-            "vChecker" => "[0-9]+"
+            "vChecker" => "^(1|2)"
         ]);
     Router::any("checker-{bookProject}/{eventID}/{memberID}/other/{chapter}/apply", "EventsController@applyCheckerOther")
         ->where([
@@ -466,6 +466,7 @@ Route::group(["prefix" => "admin", "namespace" => "App\Controllers\Admin"], func
     Router::any("migrate/project_names", "AdminController@migrateProjectNames");
     Router::any("migrate/input_mode", "AdminController@migrateInputMode");
     Router::any("migrate/vbv", "AdminController@migrateVerseByVerseCheck");
+    Router::any("migrate/book_titles", "AdminController@migrateBookTitles");
 });
 
 /** End default Routes */

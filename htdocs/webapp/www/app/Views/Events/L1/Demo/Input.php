@@ -134,7 +134,7 @@ $addUri = $data["inputMode"] != InputMode::NORMAL ? "-" . $data["inputMode"] : "
     </div>
 </div>
 
-<script src="<?php echo template_url("js/markers.js?4") ?>"></script>
+<script src="<?php echo template_url("js/markers.js?5") ?>"></script>
 <link rel="stylesheet" href="<?php echo template_url("css/markers.css?3") ?>">
 
 <script>

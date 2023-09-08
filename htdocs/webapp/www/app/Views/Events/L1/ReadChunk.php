@@ -10,13 +10,14 @@ require(app_path() . "Views/Components/HelpTools.php");
     <div class="">
         <div class="main_content">
             <div class="main_content_text" dir="<?php echo $data["event"][0]->sLangDir ?>">
-                <h4><?php echo $data["event"][0]->sLang." - "
+                <?php $chunkTitle = $data["chunk"][0] > 0 ? ":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1] : ""; ?>
+                <h4><?php echo $data["event"][0]->tLang." - "
                         .__($data["event"][0]->bookProject)." - "
                         .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
-                        ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":".$data["chunk"][0]."-".$data["chunk"][sizeof($data["chunk"])-1]."</span>"?></h4>
+                        ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].$chunkTitle."</span>"?></h4>
 
                 <?php foreach($data["text"] as $verse => $text): ?>
-                    <p><?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?></p>
+                    <p class="<?php echo $verse == 0 ? "book_title" : "" ?>"><?php echo ($verse > 0 ? "<strong><sup>".$verse."</sup></strong> " : "").$text; ?></p>
                 <?php endforeach; ?>
             </div>
 

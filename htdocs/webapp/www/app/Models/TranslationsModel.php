@@ -342,68 +342,46 @@ class TranslationsModel extends Model
     }
 
     public function generateManifest($data) {
-        if(in_array($data->bookProject, ["tn","tq","tw","obs","bc","bca"]))
-        {
+        if(in_array($data->bookProject, ["tn","tq","tw","obs","bc","bca"])) {
             $format = "text/markdown";
-        }
-        elseif (in_array($data->sourceBible, ["odb","rad"]))
-        {
+        } elseif (in_array($data->sourceBible, ["odb","rad"])) {
             $format = "text/json";
-        }
-        else
-        {
+        } else {
             $format = "text/usfm";
         }
 
-        if(in_array($data->bookProject, ["tn","tq","tw","bc","bca"]))
-        {
+        if(in_array($data->bookProject, ["tn","tq","tw","bc","bca"])) {
             $type = $data->bookProject == "tw" ? "dict" : "help";
-        }
-        elseif ($data->bookProject == "obs") {
+        } elseif ($data->bookProject == "obs") {
             $type = "book";
-        }
-        else
-        {
+        } else {
             $type = "bundle";
         }
 
-        if(in_array($data->bookProject, ["tn","tq","tw","obs","bc","bca"]))
-        {
+        if(in_array($data->bookProject, ["tn","tq","tw","obs","bc","bca"])) {
             $subject = __($data->bookProject);
-        }
-        elseif ($data->sourceBible == "odb")
-        {
+        } elseif ($data->sourceBible == "odb") {
             $subject = "Our Daily Bread";
-        }
-        elseif ($data->bookProject == "rad")
-        {
+        } elseif ($data->bookProject == "rad") {
             $subject = "Radio";
-        }
-        else
-        {
+        } else {
             $subject = "Bible";
         }
 
-        if(in_array($data->bookProject, ["tn","tq","tw","bc","bca"]))
-        {
+        if(in_array($data->bookProject, ["tn","tq","tw","bc","bca"])) {
             $relation = [
                 $data->targetLang."/ulb",
                 $data->targetLang."/udb"
             ];
 
-            if($data->bookProject == "tw")
-            {
+            if($data->bookProject == "tw") {
                 $relation[] = $data->targetLang."/obs";
                 $relation[] = $data->targetLang."/tn";
                 $relation[] = $data->targetLang."/tq";
             }
-        }
-        elseif ($data->bookProject == "rad" || $data->sourceBible == "odb")
-        {
+        } elseif ($data->bookProject == "rad" || $data->sourceBible == "odb") {
             $relation = [];
-        }
-        else
-        {
+        } else {
             $relation = [
                 $data->targetLang."/tw",
                 $data->targetLang."/tq",

@@ -43,6 +43,10 @@ class Event extends Model
         return $this->hasMany(Comment::class, "eventID", "eventID");
     }
 
+    public function keywords() {
+        return $this->hasMany(Keyword::class, "eventID", "eventID");
+    }
+
     public function checkersL2() {
         return $this->belongsToMany(Member::class, "checkers_l2", "eventID", "memberID")
             ->withPivot("step", "currentChapter", "peerCheck", "kwCheck", "crCheck");
