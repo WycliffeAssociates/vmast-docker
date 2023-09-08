@@ -334,6 +334,7 @@ return array (
     "revision_events" => "Revision",
     "review_events" => "Review",
     "book" => "Book",
+    "book_title" => "Book Title",
     "target_lang" => "Target Language",
     "project" => "Project",
     "source" => "Source",

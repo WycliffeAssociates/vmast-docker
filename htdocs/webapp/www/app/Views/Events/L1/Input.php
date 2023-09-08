@@ -36,7 +36,9 @@ if(isset($data["error"])) return;
                     <div class="no_padding flex_container chunk_block">
                         <div class="flex_left">
                             <?php foreach($data["text"] as $verse => $text): ?>
+                                <?php if ($verse > 0): ?>
                                 <p style="margin: 0 0 10px;" class="verse_p" data-verse="<?php echo $verse ?>"><?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?></p>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
 
@@ -44,8 +46,11 @@ if(isset($data["error"])) return;
                         $text = "";
                         foreach ($data["translation"] as $verse) {
                             $vNumber = key($verse[EventMembers::TRANSLATOR]["verses"]);
-                            $vText = $verse[EventMembers::TRANSLATOR]["verses"][$vNumber];
-                            $text .= "<div class='bubble'>$vNumber</div>$vText";
+
+                            if ($vNumber > 0) {
+                                $vText = $verse[EventMembers::TRANSLATOR]["verses"][$vNumber];
+                                $text .= "<div class='bubble'>$vNumber</div>$vText";
+                            }
                         }
                         ?>
                         <div class="flex_middle input_draft">
@@ -125,7 +130,7 @@ if(isset($data["error"])) return;
     </div>
 </div>
 
-<script src="<?php echo template_url("js/markers.js?4") ?>"></script>
+<script src="<?php echo template_url("js/markers.js?5") ?>"></script>
 <link rel="stylesheet" href="<?php echo template_url("css/markers.css?3") ?>">
 
 <script>

@@ -74,7 +74,7 @@ foreach ($data["chapters"] as $key => $chapter):?>
                             <?php if(isset($chapter["chunks"])): ?>
                                 <?php foreach ($chapter["chunks"] as $index => $chunk):?>
                                     <div class="section_translator_chunk">
-                                        <?php echo $chunk[0]." - ".$chunk[sizeof($chunk)-1]; ?>
+                                        <?php echo $chunk[0] > 0 ? $chunk[0]." - ".$chunk[sizeof($chunk)-1] : __("book_title"); ?>
                                         <?php if(array_key_exists($index, (array)$chapter["chunksData"])): ?>
                                             &nbsp;&nbsp;<span class="finished_msg glyphicon glyphicon-ok"></span>
                                         <?php endif; ?>

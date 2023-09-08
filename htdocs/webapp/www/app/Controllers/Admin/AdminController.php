@@ -9,6 +9,7 @@ use App\Models\ApiModel;
 use App\Models\EventsModel;
 use App\Models\MembersModel;
 use App\Models\NewsModel;
+use App\Models\ORM\Translation;
 use App\Models\ORM\Word;
 use App\Models\SailDictionaryModel;
 use App\Models\TranslationsModel;
@@ -1787,10 +1788,17 @@ class AdminController extends Controller {
                     // Create new translator
                     $chkData = [];
                     $otherData = [];
+                    $crcData = [];
                     for($i=1; $i<=$event->bookInfo->chaptersNum; $i++) {
                         $chkData[$i] = ["memberID" => $member->memberID, "done" => 2];
+                        $crcData[$i] = $chkData[$i];
                         if ($project->bookProject != "sun") {
                             $otherData[$i] = ["memberID" => $member->memberID, "done" => 1];
+                        }
+                        // Add second verse by verse checker
+                        if (in_array($project->bookProject, ["ulb","udb"])) {
+                            $crcData[$i]["memberID2"] = $member->memberID;
+                            $crcData[$i]["done2"] = 1;
                         }
                     }
 
@@ -1800,7 +1808,7 @@ class AdminController extends Controller {
                         "verbCheck" => json_encode($chkData),
                         "peerCheck" => json_encode($chkData),
                         "kwCheck" => json_encode($chkData),
-                        "crCheck" => json_encode($chkData),
+                        "crCheck" => json_encode($crcData),
                         "otherCheck" => json_encode($otherData),
                     );
                     $event->translators()->attach($member, $trData);
@@ -1811,8 +1819,7 @@ class AdminController extends Controller {
                     if($level == 2) {
                         // Create new checker
                         $checkData = [];
-                        for($i=1; $i<=$event->bookInfo->chaptersNum; $i++)
-                        {
+                        for($i=1; $i<=$event->bookInfo->chaptersNum; $i++) {
                             $done = $project->bookProject != "sun" ? 2 : 1;
                             $checkData[$i] = ["memberID" => $member->memberID, "done" => $done];
                         }
@@ -1829,22 +1836,16 @@ class AdminController extends Controller {
                         $l2chID = $checkerL2->l2chID;
                     }
 
-                    foreach ($usfmData["chapters"] as $key => $chapter) {
+                    foreach ($usfmData["chapters"] as $chapNum => $chapter) {
                         $chunks = [];
-                        foreach ($chapter as $chunkkey => $chunk) {
-                            $chunks[] = array_keys($chunk);
 
+                        // Insert book title translation
+                        $chunkIncr = 0;
+                        if (isset($usfmData["h"]) && $chapNum == 1) {
                             $translationVerses = [
-                                EventMembers::TRANSLATOR => [
-                                    "blind" => "",
-                                    "verses" => $chunk
-                                ],
-                                EventMembers::L2_CHECKER => [
-                                    "verses" => $level == 2 ? $chunk : []
-                                ],
-                                EventMembers::L3_CHECKER => [
-                                    "verses" => []
-                                ],
+                                EventMembers::TRANSLATOR => ["blind" => $usfmData["h"], "verses" => [$usfmData["h"]]],
+                                EventMembers::L2_CHECKER => ["verses" => $level == 2 ? [$usfmData["h"]] : []],
+                                EventMembers::L3_CHECKER => ["verses" => []],
                             ];
 
                             // Create new translations
@@ -1857,8 +1858,37 @@ class AdminController extends Controller {
                                 "bookProject" => $project->bookProject,
                                 "sort" => $event->bookInfo->sort,
                                 "bookCode" => $event->bookCode,
-                                "chapter" => $key,
-                                "chunk" => $chunkkey,
+                                "chapter" => $chapNum,
+                                "chunk" => 0,
+                                "firstvs" => 0,
+                                "translatedVerses" => json_encode($translationVerses),
+                                "translateDone" => true
+                            ]);
+                            $chunkIncr = 1;
+                            $chunks[] = [0];
+                        }
+
+                        foreach ($chapter as $chunkkey => $chunk) {
+                            $chunks[] = array_keys($chunk);
+
+                            $translationVerses = [
+                                EventMembers::TRANSLATOR => ["blind" => "", "verses" => $chunk],
+                                EventMembers::L2_CHECKER => ["verses" => $level == 2 ? $chunk : []],
+                                EventMembers::L3_CHECKER => ["verses" => []],
+                            ];
+
+                            // Create new translations
+                            $this->_translationModel->createTranslation([
+                                "projectID" => $event->projectID,
+                                "eventID" => $eventID,
+                                "trID" => $trID,
+                                "l2chID" => $l2chID,
+                                "targetLang" => $project->targetLang,
+                                "bookProject" => $project->bookProject,
+                                "sort" => $event->bookInfo->sort,
+                                "bookCode" => $event->bookCode,
+                                "chapter" => $chapNum,
+                                "chunk" => $chunkkey + $chunkIncr,
                                 "firstvs" => key($chunk),
                                 "translatedVerses" => json_encode($translationVerses),
                                 "translateDone" => true
@@ -1870,7 +1900,7 @@ class AdminController extends Controller {
                             "trID" => $trID,
                             "l2memberID" => $level == 2 ? $member->memberID : 0,
                             "l2chID" => $l2chID,
-                            "chapter" => $key,
+                            "chapter" => $chapNum,
                             "chunks" => json_encode($chunks),
                             "done" => true,
                             "checked" => $level == 2 || $project->bookProject == "sun",
@@ -3540,27 +3570,106 @@ class AdminController extends Controller {
             $events = $this->eventRepo->all();
             $specUser = $this->memberRepo->getByUsername("spec");
             $events->each(function($event) use (&$updated, $specUser) {
-                $event->translators->each(function($translator) use (&$updated, $specUser, $event) {
-                    $memberID = $translator->memberID;
-                    $crc = (array)json_decode($translator->pivot->crCheck, true);
-                    foreach ($crc as $chapter => $data) {
-                        $crc[$chapter]["memberID2"] = 0;
-                        $crc[$chapter]["done2"] = 0;
+                $mode = $event->project->bookProject;
 
-                        if ($data["done"] > 0) {
-                            $crc[$chapter]["memberID2"] = $specUser->memberID;
-                            $crc[$chapter]["done2"] = 1;
+                if (in_array($mode, ["ulb","udb"])) {
+                    $event->translators->each(function($translator) use (&$updated, $specUser, $event) {
+                        $memberID = $translator->memberID;
+                        $crc = (array)json_decode($translator->pivot->crCheck, true);
+                        foreach ($crc as $chapter => $data) {
+                            $crc[$chapter]["memberID2"] = 0;
+                            $crc[$chapter]["done2"] = 0;
+
+                            if ($data["done"] > 0) {
+                                $crc[$chapter]["memberID2"] = $specUser->memberID;
+                                $crc[$chapter]["done2"] = 1;
+                            }
                         }
-                    }
-                    $postData = ["crCheck" => json_encode($crc)];
-                    $event->translators()->updateExistingPivot($memberID, $postData);
-                    $updated = true;
-                });
+                        $postData = ["crCheck" => json_encode($crc)];
+                        $event->translators()->updateExistingPivot($memberID, $postData);
+                        $updated = true;
+                    });
+                }
             });
 
             if ($updated) {
                 pr("Migrated successfully!");
             }
+        }
+    }
+
+    public function migrateBookTitles() {
+        if (Session::get("isSuperAdmin")) {
+            $events = $this->eventRepo->all();
+
+            $events->each(function($event) {
+                $chapterNumber = 1;
+                $chunkNumber = 0;
+                $mode = $event->project->bookProject;
+                $source = $event->project->sourceBible;
+                $bookTitle = $event->bookInfo->name;
+
+                if (in_array($mode, ["ulb","udb"]) || ($mode == "sun" && $source != "odb")) {
+                    $chapters = $event->chapters()->where("chapter", $chapterNumber)->get();
+                    foreach ($chapters as $chapter) {
+                        $chunks = (array)json_decode($chapter->chunks, true);
+
+                        if (array_key_exists($chunkNumber, $chunks) && $chunks[$chunkNumber][0] > 0) {
+                            array_unshift($chunks, [$chunkNumber]);
+
+                            // Update chapter chunks
+                            $chapter->chunks = json_encode($chunks);
+                            $chapter->save();
+
+                            // Update current chunk for translator
+                            $chapter->translator->currentChunk = $chapter->translator->currentChunk + 1;
+                            $chapter->translator->save();
+
+                            // Create book title translation and update current translation chunk positions
+                            $translations = $event->translations()->where("chapter", $chapterNumber)->get();
+                            $bookTitleTranslation = null;
+                            foreach ($translations as $translation) {
+                                $translation->chunk = $translation->chunk + 1;
+                                $translation->save();
+
+                                if ($bookTitleTranslation == null) {
+                                    $tr = $mode == "sun" ? ["symbols" => $bookTitle, "bt" => $bookTitle] : ["blind" => $bookTitle];
+                                    $tr["verses"] = [$bookTitle];
+
+                                    $translationVerses = [
+                                        EventMembers::TRANSLATOR => $tr,
+                                        EventMembers::L2_CHECKER => ["verses" => []],
+                                        EventMembers::L3_CHECKER => ["verses" => []]
+                                    ];
+                                    $encoded = json_encode($translationVerses);
+                                    $bookTitleTranslation = $translation->replicate()->fill([
+                                        "chunk" => 0,
+                                        "firstvs" => 0,
+                                        "translatedVerses" => $encoded
+                                    ]);
+                                    $bookTitleTranslation->save();
+                                }
+                            }
+
+                            // Update comment chunk positions
+                            $comments = $event->comments()->where("chapter", 1)->get();
+                            foreach ($comments as $comment) {
+                                $comment->chunk = $comment->chunk + 1;
+                                $comment->save();
+                            }
+
+                            // Update keyword chunk positions
+                            $keywords = $event->keywords()->where("chapter", 1)->get();
+                            foreach ($keywords as $keyword) {
+                                $keyword->chunk = $keyword->chunk + 1;
+                                $keyword->save();
+                            }
+                        }
+                    }
+                }
+            });
+
+            pr("Migrated successfully!");
         }
     }
 }

@@ -172,7 +172,7 @@ class ManageController extends Controller {
 
             $members = $event->translators;
 
-            if (isset($_POST) && !empty($_POST)) {
+            if (!empty($_POST)) {
                 if (!empty(array_filter($tmpChapters))) {
                     $updated = $this->eventModel->updateEvent(
                         array(
@@ -1368,9 +1368,7 @@ class ManageController extends Controller {
 
                             $event->update(["state" => $prevState]);
 
-                            $translations = $event->translations->filter(function($item) use ($chapter) {
-                                return $item->chapter == $chapter;
-                            });
+                            $translations = $event->translations()->where("chapter", $chapter)->get();
 
                             // Check if chapter has translations
                             $hasTranslations = $this->checkHasTranslations($translations, $manageMode);

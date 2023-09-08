@@ -39,9 +39,12 @@ require(app_path() . "Views/Components/HelpTools.php");
                                     }
                                     ?>
                                     <strong class="<?php echo $data["event"][0]->sLangDir ?>">
-                                        <sup><?php echo $verse; ?></sup>
+                                        <sup>
+                                        <?php if ($verse > 0): ?>
+                                            <?php echo $verse; ?>
+                                        <?php endif; ?>
+                                        </sup>
                                     </strong>
-                                    <?php //echo $data["translation"][$key][EventMembers::TRANSLATOR]["symbols"]; ?>
                                     <textarea name="symbols[]" class="peer_verse_ta narrow textarea"><?php echo $text ?></textarea>
                                 </div>
                                 <div class="flex_middle editor_area" dir="<?php echo $data["event"][0]->tLangDir ?>">

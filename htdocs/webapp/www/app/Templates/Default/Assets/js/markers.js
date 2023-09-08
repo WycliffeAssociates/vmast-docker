@@ -158,7 +158,7 @@
 
                 bindDraggable();
                 updateMarkers();
-                updateEditor()
+                updateEditor();
             }
 
             function dropMarker(event) {

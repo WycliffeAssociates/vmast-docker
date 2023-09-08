@@ -50,25 +50,9 @@ require(app_path() . "Views/Components/HelpTools.php");
                         </div>
                         <div class="flex_right">
                             <?php
-                            $comment = new stdClass();
-                            $comment->memberID = 1;
-                            $comment->level = 2;
-                            $comment->text = "A note from revision checker";
-                            $comment->firstName = "James";
-                            $comment->lastName = "S";
-                            $comment->cID = 0;
-
-                            $comment2 = new stdClass();
-                            $comment2->memberID = 0;
-                            $comment2->level = 3;
-                            $comment2->text = "A note from Review checker";
-                            $comment2->firstName = "Anna";
-                            $comment2->lastName = "S";
-                            $comment2->cID = 0;
-
-                            $hasComments = true;
-                            $commentsNumber = 2;
-                            $comments = [$comment, $comment2];
+                            $comments = $data["comments"][0];
+                            $hasComments = !empty($comments);
+                            $commentsNumber = sizeof($comments);
                             $myMemberID = 0;
                             $enableFootNotes = false;
                             require(app_path() . "Views/Components/Comments.php");

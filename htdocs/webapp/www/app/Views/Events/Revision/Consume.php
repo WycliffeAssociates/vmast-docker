@@ -30,14 +30,24 @@ require(app_path() . "Views/Components/HelpTools.php");
                 <div id="target_scripture_content" class="my_content shown">
                     <?php foreach ($data["translation"] as $translation): ?>
                         <?php foreach ($translation[EventMembers::TRANSLATOR]["verses"] as $verse => $text): ?>
-                            <p class="target_content font_<?php echo $data["event"][0]->targetLang ?>"><?php echo "<strong><sup>".$verse."</sup></strong> ".preg_replace("/(\\\\f(?:.*?)\\\\f\\*)/", "<span class='footnote'>$1</span>", $text); ?></p>
+                            <p class="target_content font_<?php echo $data["event"][0]->targetLang ?>">
+                                <?php if ($verse > 0): ?>
+                                    <strong class="<?php echo $data["event"][0]->tLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                <?php endif; ?>
+                                <?php echo preg_replace("/(\\\\f(?:.*?)\\\\f\\*)/", "<span class='footnote'>$1</span>", $text) ?>
+                            </p>
                         <?php endforeach; ?>
                     <?php endforeach; ?>
                 </div>
 
                 <div id="source_scripture_content" class="my_content">
                     <?php foreach($data["text"] as $verse => $text): ?>
-                        <p><?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?></p>
+                        <p>
+                            <?php if ($verse > 0): ?>
+                                <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                            <?php endif; ?>
+                            <?php echo $text; ?>
+                        </p>
                     <?php endforeach; ?>
                 </div>
             </div>

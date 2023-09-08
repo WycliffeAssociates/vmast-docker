@@ -54,7 +54,9 @@ require(app_path() . "Views/Components/HelpTools.php");
                                         }
                                         ?>
                                         <p>
-                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                            <?php if ($verse > 0): ?>
+                                                <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                            <?php endif; ?>
                                             <span><?php echo $data["text"][$verse]; ?></span>
                                         </p>
                                     <?php endforeach; ?>
@@ -70,7 +72,9 @@ require(app_path() . "Views/Components/HelpTools.php");
                                     <?php foreach($verses as $verse => $text): ?>
                                         <div class="verse_block">
                                             <p>
-                                                <strong><sup><?php echo $verse?></sup></strong>
+                                                <?php if ($verse > 0): ?>
+                                                    <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                                <?php endif; ?>
                                                 <span class="targetVerse" data-orig-verse="<?php echo $verse ?>"><?php echo preg_replace("/(\\\\f(?:.*?)\\\\f\\*)/", "<span class='footnote'>$1</span>", $text); ?></span>
                                             </p>
                                         </div>

@@ -46,7 +46,10 @@ require(app_path() . "Views/Components/CommentEditor.php");
                                                 $verse = $combinedVerse;
                                             }
                                             ?>
-                                            <strong dir="<?php echo $data["event"][0]->sLangDir ?>" class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong><div class="<?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>" dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["text"][$verse]; ?></div>
+                                            <?php if ($verse > 0): ?>
+                                                <strong dir="<?php echo $data["event"][0]->sLangDir ?>" class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                            <?php endif; ?>
+                                            <div class="<?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>" dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["text"][$verse]; ?></div>
                                         <?php endforeach; ?>
                                     </div>
                                     <div class="flex_middle input_draft" dir="<?php echo $data["event"][0]->tLangDir ?>">
@@ -62,17 +65,21 @@ require(app_path() . "Views/Components/CommentEditor.php");
                                             $translation = $data["translation"][$key];
                                             if (!empty($translation[EventMembers::TRANSLATOR]["verses"])) {
                                                 foreach ($translation[EventMembers::TRANSLATOR]["verses"] as $v => $verse) {
-                                                    $text .= "<div class='bubble'>$v</div>$verse";
+                                                    $text .= $chunk[0] > 0 ? "<div class='bubble'>$v</div>$verse" : $verse;
                                                 }
                                             } else {
                                                 $text = $translation[EventMembers::TRANSLATOR]["symbols"];
                                             }
                                         }
                                         ?>
+                                        <?php if ($chunk[0] > 0): ?>
                                         <div class="input_editor textarea sun_content"
                                              data-initialmarker="<?php echo $chunk[0] ?>"
                                              data-lastmarker="<?php echo $chunk[sizeof($chunk)-1] ?>"
                                              data-totalmarkers="<?php echo sizeof($chunk) ?>"><?php echo $text ?></div>
+                                        <?php else: ?>
+                                            <textarea class="textarea sun_content" name="chunks[]"><?php echo $text ?></textarea>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="flex_right">
                                         <?php
@@ -159,7 +166,7 @@ require(app_path() . "Views/Components/CommentEditor.php");
     </div>
 </div>
 
-<script src="<?php echo template_url("js/markers.js?4") ?>"></script>
+<script src="<?php echo template_url("js/markers.js?5") ?>"></script>
 <link rel="stylesheet" href="<?php echo template_url("css/markers.css?3") ?>">
 
 <script>

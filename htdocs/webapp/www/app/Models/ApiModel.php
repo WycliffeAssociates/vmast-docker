@@ -48,39 +48,32 @@ class ApiModel extends Model
         return $response;
     }
 
-    public function getPredefinedChunks($book, $lang = "en", $project = "ulb")
-    {
-        try
-        {
+    public function getPredefinedChunks($book, $lang = "en", $project = "ulb") {
+        try {
             $json = $this->downloadPredefinedChunks($book, $lang, $project);
             $chunks = json_decode($json, true);
 
-            if($chunks == null)
-            {
-                $json = $this->downloadPredefinedChunks($book, "en", "ulb");
+            if($chunks == null) {
+                $json = $this->downloadPredefinedChunks($book);
                 $chunks = json_decode($json, true);
             }
 
             $book = [];
 
-            foreach ($chunks as $chunk)
-            {
+            foreach ($chunks as $chunk) {
                 $id = $chunk["id"];
                 $chapter = (int)preg_replace("/-[0-9]+$/", "", $id);
 
-                if(!array_key_exists($chapter, $book))
-                {
+                if(!array_key_exists($chapter, $book)) {
                     $book[$chapter] = [];
                 }
 
-                $range = range($chunk["firstvs"],$chunk["lastvs"]);
+                $range = range($chunk["firstvs"], $chunk["lastvs"]);
                 $book[$chapter][] = array_fill_keys(array_values($range), '');
             }
 
             return $book;
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return [];
         }
     }
@@ -128,6 +121,21 @@ class ApiModel extends Model
                             }
 
                             File::append($filepath, "\n\s5\n" . $text);
+                        }
+                    }
+                } elseif (preg_match("/front$/", $dir)) {
+                    $files = File::allFiles($dir);
+
+                    foreach ($files as $file) {
+                        if (preg_match("/title.txt$/", $file)) {
+                            $text = File::get($file);
+
+                            $headerUsfm = "\\h ".$text."\n";
+                            $headerUsfm .= "\\toc1 ".$text."\n";
+                            $headerUsfm .= "\\toc2 ".$text."\n";
+                            $headerUsfm .= "\\mt ".$text."\n";
+
+                            File::prepend($filepath, $headerUsfm."\n");
                         }
                     }
                 }

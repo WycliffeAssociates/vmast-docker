@@ -61,7 +61,10 @@ require(app_path() . "Views/Components/HelpTools.php");
                                             $verse = $combinedVerse;
                                         }
                                         ?>
-                                    <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong><?php echo $data["text"][$verse]; ?>
+                                        <?php if ($verse > 0): ?>
+                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
+                                        <?php endif; ?>
+                                        <?php echo $data["text"][$verse]; ?>
                                     <?php endforeach; ?>
                                 </div>
                                 <div class="flex_middle editor_area" dir="<?php echo $data["event"][0]->tLangDir ?>">

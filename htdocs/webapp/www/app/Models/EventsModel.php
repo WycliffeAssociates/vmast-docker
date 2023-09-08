@@ -901,7 +901,7 @@ class EventsModel extends Model
             "t_lang.langName AS tLang, s_lang.langName AS sLang, " .
             "book_info.name AS name, book_info.sort, " .
             "projects.sourceLangID, projects.bookProject, " .
-            "projects.tnLangID, projects.tqLangID, projects.twLangID, " .
+            "projects.tnLangID, projects.tqLangID, projects.twLangID, projects.bcLangID, " .
             "projects.sourceBible, projects.gwLang, " .
             "projects.targetLang, projects.resLangID, " .
             "t_lang.direction as tLangDir, s_lang.direction as sLangDir, " .
@@ -1018,7 +1018,7 @@ class EventsModel extends Model
             "t_lang.langName AS tLang, s_lang.langName AS sLang, " .
             "book_info.name AS name, book_info.sort, " .
             "projects.sourceLangID, projects.bookProject, " .
-            "projects.tnLangID, projects.tqLangID, projects.twLangID, " .
+            "projects.tnLangID, projects.tqLangID, projects.twLangID, projects.bcLangID, " .
             "projects.sourceBible, projects.gwLang, " .
             "projects.targetLang, projects.resLangID, " .
             "t_lang.direction as tLangDir, s_lang.direction as sLangDir, " .
@@ -1140,7 +1140,7 @@ class EventsModel extends Model
             "t_lang.langName AS tLang, s_lang.langName AS sLang, " .
             "book_info.name AS name, book_info.sort, " .
             "projects.sourceLangID, projects.bookProject, " .
-            "projects.tnLangID, projects.tqLangID, projects.twLangID, " .
+            "projects.tnLangID, projects.tqLangID, projects.twLangID, projects.bcLangID, " .
             "projects.sourceBible, projects.gwLang, " .
             "projects.targetLang, projects.resLangID, " .
             "t_lang.direction as tLangDir, s_lang.direction as sLangDir, " .
@@ -1269,7 +1269,7 @@ class EventsModel extends Model
             "t_lang.langName AS tLang, s_lang.langName AS sLang, " .
             "book_info.name AS name, book_info.sort, " .
             "projects.sourceLangID, projects.bookProject, " .
-            "projects.tnLangID, projects.tqLangID, projects.twLangID, " .
+            "projects.tnLangID, projects.tqLangID, projects.twLangID, projects.bcLangID, " .
             "projects.sourceBible, projects.gwLang, projects.glID, " .
             "projects.targetLang, projects.resLangID, " .
             "t_lang.direction as tLangDir, s_lang.direction as sLangDir, " .

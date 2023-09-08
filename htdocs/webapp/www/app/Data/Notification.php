@@ -121,7 +121,9 @@ class Notification {
             if ($this->manageMode) {
                 $url .= $this->notification->currentChapter."/";
             }
-            $url .= ($this->notification->vChecker ?? 1)."/";
+            if (!$this->isRevisionMode && !$this->isReviewMode && !$this->isSunMode && $this->isScriptureMode) {
+                $url .= "v".($this->notification->vChecker ?? 1)."/";
+            }
             switch ($this->type) {
                 case NotificationType::READY:
                     $url .= "notified";

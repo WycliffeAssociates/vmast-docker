@@ -37,7 +37,6 @@ require(app_path() . "Views/Components/FootnotesEditor.php");
                                        data-off="OFF" />
                             </label>
                         </div>
-
                         <?php foreach($data["chunks"] as $key => $chunk) : ?>
                             <div class="row chunk_block">
                                 <div class="flex_container">
@@ -65,7 +64,9 @@ require(app_path() . "Views/Components/FootnotesEditor.php");
                                                 <div class="flex_one chunk_verses font_<?php echo $data["event"][0]->sourceLangID ?>" dir="<?php echo $data["event"][0]->sLangDir ?>">
                                                     <p class="verse_text <?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>"
                                                        data-verse="<?php echo $verse ?>">
-                                                        <strong><sup><?php echo $verse; ?></sup></strong>
+                                                        <?php if ($verse > 0): ?>
+                                                            <strong><sup><?php echo $verse; ?></sup></strong>
+                                                        <?php endif; ?>
                                                         <span><?php echo $data["text"][$verse]; ?></span>
                                                     </p>
                                                 </div>
