@@ -36,6 +36,10 @@ require(app_path() . "Views/Components/HelpTools.php");
                             ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
 
                     <div class="col-sm-12">
+                        <?php
+                        $bookTitleRendered = $data["currentChapter"] > 1;
+                        $chapterTitleRendered = false;
+                        ?>
                         <?php foreach($data["chunks"] as $key => $chunk) : ?>
                             <div class="row chunk_block">
                                 <div class="flex_container">
@@ -43,14 +47,20 @@ require(app_path() . "Views/Components/HelpTools.php");
                                         <?php $firstVerse = 0; ?>
                                         <?php foreach ($chunk as $verse): ?>
                                             <?php
-                                            // process combined verses
-                                            if (!isset($data["text"][$verse]))
-                                            {
-                                                if($firstVerse == 0)
-                                                {
+                                            if (!isset($data["text"][$verse])) {
+                                                if($firstVerse == 0) {
                                                     $firstVerse = $verse;
+                                                    if (!$bookTitleRendered) {
+                                                        echo "<p class='book_title_alt'>".$data["bookTitle"]."</p>";
+                                                        $bookTitleRendered = true;
+                                                    } elseif (!$chapterTitleRendered) {
+                                                        echo "<p class='chapter_title_alt'>".$data["chapterTitle"]."</p>";
+                                                        $chapterTitleRendered = true;
+                                                    }
                                                     continue;
                                                 }
+
+                                                // process combined verses
                                                 $combinedVerse = $firstVerse . "-" . $verse;
 
                                                 if(!isset($data["text"][$combinedVerse]))
@@ -58,9 +68,7 @@ require(app_path() . "Views/Components/HelpTools.php");
                                                 $verse = $combinedVerse;
                                             }
                                             ?>
-                                            <?php if ($verse > 0): ?>
-                                                <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
-                                            <?php endif; ?>
+                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
                                             <div class="<?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>" dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["text"][$verse]; ?></div>
                                         <?php endforeach; ?>
                                     </div>

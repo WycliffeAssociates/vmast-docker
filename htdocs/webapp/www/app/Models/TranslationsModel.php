@@ -77,7 +77,7 @@ class TranslationsModel extends Model
         $builder = $this->db->table("translations")
             ->select("translations.targetLang", "languages.langName", "languages.angName",
                 "translations.bookProject", "projects.sourceBible", "translations.bookCode", "book_info.name AS bookName", "book_info.sort",
-                "translations.chapter", "translations.chunk", "translations.translatedVerses", "events.state",
+                "translations.chapter", "translations.chunk", "translations.firstvs", "translations.translatedVerses", "events.state",
                 "translations.eventID", "languages.direction", "projects.sourceLangID", "projects.sourceBible",
                 "projects.projectID", "projects.resLangID", "chapters.chunks", "words.word")
             ->leftJoin("languages", "translations.targetLang","=", "languages.langID")
@@ -149,6 +149,7 @@ class TranslationsModel extends Model
     {
         $builder = $this->db->table("translations")
             ->where("trID", $trID)
+            ->orderBy("chunk")
             ->orderBy("firstvs");
 
         if($chapter !== null) {

@@ -16,8 +16,16 @@ require(app_path() . "Views/Components/HelpTools.php");
                         .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
                         ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].$chunkTitle."</span>"?></h4>
 
+                <?php if ($data["isBookTitle"]): ?>
+                    <p class="book_title_alt"><?php echo $data["bookTitle"]; ?></p>
+                <?php endif; ?>
+
+                <?php if ($data["isChapterTitle"]): ?>
+                    <p class="chapter_title_alt"><?php echo $data["chapterTitle"]; ?></p>
+                <?php endif; ?>
+
                 <?php foreach($data["text"] as $verse => $text): ?>
-                    <p class="<?php echo $verse == 0 ? "book_title" : "" ?>"><?php echo ($verse > 0 ? "<strong><sup>".$verse."</sup></strong> " : "").$text; ?></p>
+                    <p><?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?></p>
                 <?php endforeach; ?>
             </div>
 

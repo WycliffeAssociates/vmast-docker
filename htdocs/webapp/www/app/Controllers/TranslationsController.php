@@ -145,10 +145,25 @@ class TranslationsController extends Controller
                 $this->sortTwBook($mappedBook);
             }
 
+            $bookTitleRendered = false;
+
             foreach ($mappedBook as $chap) {
                 $chapterNumber = $chap[0]->chapter;
                 $chapters = $this->_eventModel->getChapters($eventID, null, $chapterNumber);
                 $chapter = $chapters[0];
+                $chapterTitle = __("chapter", [$chapterNumber]);
+
+                if (!in_array($bookProject, ["tn","tq","tw","obs","bc","bca"])) {
+                    if (!$bookTitleRendered && $chapterNumber == 1) {
+                        $verses = json_decode($chap[0]->translatedVerses);
+                        $data["data"]->bookTitle = $this->getVerseContent($verses);
+                        $bookTitleRendered = true;
+                    }
+
+                    $titleChunk = $chapterNumber == 1 ? $chap[1] : $chap[0];
+                    $verses = json_decode($titleChunk->translatedVerses);
+                    $chapterTitle = $this->getVerseContent($verses);
+                }
 
                 if($sourceBible == "odb") {
                     $odbBook[$chapterNumber] = [];
@@ -162,7 +177,7 @@ class TranslationsController extends Controller
                     }
 
                     $data['book'] .= !in_array($bookProject, ["tw","bca"]) ? ($chapterNumber > 0
-                        ? '<h2 class="chapter_title">'.__("chapter", [$chapterNumber]).$level.'</h2>'
+                        ? '<h2 class="chapter_title">'.$chapterTitle.$level.'</h2>'
                         : '<h2 class="chapter_title">'.__("front").$level.'</h2>') : "";
                 }
 
@@ -222,16 +237,11 @@ class TranslationsController extends Controller
                                     break;
                             }
                         } else {
-                            if(!empty($verses->{EventMembers::L3_CHECKER}->verses))
-                            {
+                            if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
                                 $text = $parsedown->text($verses->{EventMembers::L3_CHECKER}->verses);
-                            }
-                            elseif (!empty($verses->{EventMembers::CHECKER}->verses))
-                            {
+                            } elseif (!empty($verses->{EventMembers::CHECKER}->verses)) {
                                 $text = $parsedown->text($verses->{EventMembers::CHECKER}->verses);
-                            }
-                            else
-                            {
+                            } else {
                                 $text = $parsedown->text($verses->{EventMembers::TRANSLATOR}->verses);
                             }
 
@@ -239,10 +249,8 @@ class TranslationsController extends Controller
                         }
                     } else {
                         if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
-                            // Chunk number 0 is the translated book title
-                            if ($chunks[$chunk->chunk][0] == 0) {
-                                $data["data"]->bookTitle = $verses->{EventMembers::L3_CHECKER}->verses[0];
-                            } else {
+                            // Skip book and chapter titles
+                            if ($chunks[$chunk->chunk][0] > 0) {
                                 foreach ($verses->{EventMembers::L3_CHECKER}->verses as $verse => $text) {
                                     // Footnotes
                                     $replacement = " <span data-toggle=\"tooltip\" data-placement=\"auto auto\" title=\"$2\" class=\"booknote mdi mdi-bookmark\"></span> ";
@@ -254,10 +262,8 @@ class TranslationsController extends Controller
                                 }
                             }
                         } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
-                            // Chunk number 0 is the translated book title
-                            if ($chunks[$chunk->chunk][0] == 0) {
-                                $data["data"]->bookTitle = $verses->{EventMembers::L2_CHECKER}->verses[0];
-                            } else {
+                            // Skip book and chapter titles
+                            if ($chunks[$chunk->chunk][0] > 0) {
                                 foreach ($verses->{EventMembers::L2_CHECKER}->verses as $verse => $text) {
                                     // Footnotes
                                     $replacement = " <span data-toggle=\"tooltip\" data-placement=\"auto auto\" title=\"$2\" class=\"booknote mdi mdi-bookmark\"></span> ";
@@ -285,18 +291,16 @@ class TranslationsController extends Controller
                                     $radioBook[$chapterNumber][RadioSections::enum(RadioSections::SPEAKERS)][] = $tmp;
                                 }
                             } else {
-                                // Chunk number 0 is the translated book title
-                                if ($chunks[$chunk->chunk][0] == 0) {
-                                    $data["data"]->bookTitle = $verses->{EventMembers::TRANSLATOR}->verses[0];
-                                } else {
-                                    foreach ($verses->{EventMembers::TRANSLATOR}->verses as $verse => $text) {
-                                        if($sourceBible == "odb") {
-                                            if($verse >= OdbSections::CONTENT) {
-                                                $odbBook[$chapterNumber][OdbSections::enum($verse)][] = $text;
-                                            } else {
-                                                $odbBook[$chapterNumber][OdbSections::enum($verse)] = $text;
-                                            }
+                                foreach ($verses->{EventMembers::TRANSLATOR}->verses as $verse => $text) {
+                                    if($sourceBible == "odb") {
+                                        if($verse >= OdbSections::CONTENT) {
+                                            $odbBook[$chapterNumber][OdbSections::enum($verse)][] = $text;
                                         } else {
+                                            $odbBook[$chapterNumber][OdbSections::enum($verse)] = $text;
+                                        }
+                                    } else {
+                                        // Skip book and chapter titles
+                                        if ($chunks[$chunk->chunk][0] > 0) {
                                             // Footnotes
                                             $replacement = " <span data-toggle=\"tooltip\" data-placement=\"auto auto\" title=\"$2\" class=\"booknote mdi mdi-bookmark\"></span> ";
                                             $text = preg_replace("/\\\\f[+\s]+(.*)\\\\ft[+\s]+(.*)\\\\f\\*/Uui", $replacement, $text);
@@ -371,6 +375,17 @@ class TranslationsController extends Controller
         return View::make('Translations/Book')
             ->shares("title", __("translations"))
             ->shares("data", $data);
+    }
+
+    private function getVerseContent($verses) {
+        if (!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
+            $title = $verses->{EventMembers::L3_CHECKER}->verses[0];
+        } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
+            $title = $verses->{EventMembers::L2_CHECKER}->verses[0];
+        } else {
+            $title = $verses->{EventMembers::TRANSLATOR}->verses[0];
+        }
+        return $title;
     }
 
     public function downloadUsfm($lang, $bookProject, $sourceBible, $bookCode) {
@@ -584,30 +599,28 @@ class TranslationsController extends Controller
         $usfm_books = [];
         $lastChapter = 0;
         $lastCode = null;
-        $chapterStarted = false;
 
         foreach ($books as $chunk) {
             $code = sprintf('%02d', $chunk->sort)."-".strtoupper($chunk->bookCode);
-            $bookTitle = __($chunk->bookCode);
 
             if($code != $lastCode) {
                 $lastChapter = 0;
-                $chapterStarted = false;
             }
 
             $verses = json_decode($chunk->translatedVerses);
 
-            if(!isset($usfm_books[$code])) {
-                $chunks = (array)json_decode($chunk->chunks, true);
+            if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
+                $chunkVerses = $verses->{EventMembers::L3_CHECKER}->verses;
+            } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
+                $chunkVerses = $verses->{EventMembers::L2_CHECKER}->verses;
+            } else {
+                $chunkVerses = $verses->{EventMembers::TRANSLATOR}->verses;
+            }
 
-                if ($chunks[$chunk->chunk][0] == 0) {
-                    if (!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
-                        $bookTitle = $verses->{EventMembers::L3_CHECKER}->verses[0];
-                    } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
-                        $bookTitle = $verses->{EventMembers::L2_CHECKER}->verses[0];
-                    } elseif (!empty($verses->{EventMembers::TRANSLATOR}->verses)) {
-                        $bookTitle = $verses->{EventMembers::TRANSLATOR}->verses[0];
-                    }
+            if(!isset($usfm_books[$code])) {
+                $bookTitle = __($chunk->bookCode);
+                if ($chunk->chapter == 1 && $chunk->firstvs == 0) {
+                    $bookTitle = $chunkVerses[0];
                 }
 
                 $usfm_books[$code] = "\\id ".strtoupper($chunk->bookCode)." ".__($chunk->bookProject)."\n";
@@ -617,48 +630,46 @@ class TranslationsController extends Controller
                 $usfm_books[$code] .= "\\toc2 ".$bookTitle."\n";
                 $usfm_books[$code] .= "\\toc3 ".ucfirst($chunk->bookCode)."\n";
                 $usfm_books[$code] .= "\\mt ".mb_strtoupper($bookTitle)."\n\n\n\n";
-            }
 
-            if($chunk->chapter != $lastChapter) {
+                // When translations starts not from chapter 1, book title doesn't exist
+                // That's why setting chapter title from the first chunk
+                if ($chunk->chapter > 1) {
+                    $chapterTitle = __("chapter", $chunk->chapter);
+                    if ($chunk->firstvs == 0) {
+                        $chapterTitle = $chunkVerses[0];
+                    }
+
+                    $usfm_books[$code] .= "\\s5 \n";
+                    $usfm_books[$code] .= "\\c ".$chunk->chapter." \n";
+                    $usfm_books[$code] .= "\\cl ".$chapterTitle." \n";
+
+                    $lastChapter = $chunk->chapter;
+                }
+            } elseif ($chunk->chapter != $lastChapter) {
+                $chapterTitle = __("chapter", $chunk->chapter);
+                if ($chunk->firstvs == 0) {
+                    $chapterTitle = $chunkVerses[0];
+                }
+
                 $usfm_books[$code] .= "\\s5 \n";
                 $usfm_books[$code] .= "\\c ".$chunk->chapter." \n";
-                $usfm_books[$code] .= "\\cl ".__("chapter", $chunk->chapter)." \n";
-                $usfm_books[$code] .= "\\p \n";
+                $usfm_books[$code] .= "\\cl ".$chapterTitle." \n";
 
                 $lastChapter = $chunk->chapter;
-                $chapterStarted = true;
-            }
-
-            // Start of chunk
-            if(!$chapterStarted) {
+            } else {
+                // Start of chunk
                 $usfm_books[$code] .= "\\s5\n";
                 $usfm_books[$code] .= "\\p\n";
-            }
 
-            $chapterStarted = false;
-
-            if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
-                foreach ($verses->{EventMembers::L3_CHECKER}->verses as $verse => $text) {
+                foreach ($chunkVerses as $verse => $text) {
                     if ($verse > 0) {
                         $usfm_books[$code] .= "\\v ".$verse." ".Tools::special_unescape($text)."\n";
                     }
                 }
-            } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
-                foreach ($verses->{EventMembers::L2_CHECKER}->verses as $verse => $text) {
-                    if ($verse > 0) {
-                        $usfm_books[$code] .= "\\v ".$verse." ".Tools::special_unescape($text)."\n";
-                    }
-                }
-            } else {
-                foreach ($verses->{EventMembers::TRANSLATOR}->verses as $verse => $text) {
-                    if ($verse > 0) {
-                        $usfm_books[$code] .= "\\v " . $verse . " " . Tools::special_unescape($text) . "\n";
-                    }
-                }
-            }
 
-            // End of chunk
-            $usfm_books[$code] .= "\n\n";
+                // End of chunk
+                $usfm_books[$code] .= "\n\n";
+            }
 
             $lastCode = $code;
 
@@ -737,6 +748,7 @@ class TranslationsController extends Controller
         $bookChunks = $this->_apiModel->getPredefinedChunks($book[0]->bookCode, $book[0]->sourceLangID, $book[0]->sourceBible);
 
         $bookTitle = null;
+        $lastChapter = -1;
 
         foreach ($book as $chunk) {
             $verses = json_decode($chunk->translatedVerses, true);
@@ -749,45 +761,68 @@ class TranslationsController extends Controller
                 $chunkVerses = $verses[EventMembers::TRANSLATOR]["verses"];
             }
 
+            foreach ($chunkVerses as $vNum => $vText) {
+                if(array_key_exists($chunk->chapter, $bookChunks)) {
+                    foreach ($bookChunks[$chunk->chapter] as $index => $chk) {
+                        if(array_key_exists($vNum, $chk)) {
+                            $cText = "";
+                            if ($chunk->chapter != $lastChapter) {
+                                $cText = "\\c ".$chunk->chapter." ";
+                                $lastChapter = $chunk->chapter;
+                            }
+                            $vText = Tools::special_unescape($vText);
+                            $bookChunks[$chunk->chapter][$index][$vNum] = $cText."\\v $vNum ".$vText;
+                        }
+                    }
+                }
+            }
+
             if ($bookTitle == null) {
                 $bookTitle = $chunk->bookName;
-                $chunks = (array)json_decode($chunk->chunks, true);
-                if ($chunks[$chunk->chunk][0] == 0) {
+                if ($chunk->chapter == 1 && $chunk->firstvs == 0) {
                     $bookTitle = $chunkVerses[0];
                 }
 
                 $filePath = $root. "/front/title.txt";
                 $projectFiles[] = ProjectFile::withContent($filePath, $bookTitle);
-            }
 
-            foreach ($chunkVerses as $vNum => $vText) {
-                if(array_key_exists($chunk->chapter, $bookChunks)) {
-                    foreach ($bookChunks[$chunk->chapter] as $index => $chk) {
-                        if(array_key_exists($vNum, $chk)) {
-                            $vText = Tools::special_unescape($vText);
-                            $bookChunks[$chunk->chapter][$index][$vNum] = "\\v $vNum ".$vText;
-                        }
+                // When translations starts not from chapter 1, book title doesn't exist
+                // That's why setting chapter title from the first chunk
+                if ($chunk->chapter > 1) {
+                    $chapterTitle = __("chapter", $chunk->chapter);
+                    if ($chunk->firstvs == 0) {
+                        $chapterTitle = $chunkVerses[0];
                     }
+
+                    $chapPath = sprintf("%02d", $chunk->chapter);
+                    $filePath = $root. "/" . $chapPath . "/title.txt";
+                    $projectFiles[] = ProjectFile::withContent($filePath, $chapterTitle);
                 }
+            } elseif ($chunk->chapter != $lastChapter) {
+                $chapterTitle = __("chapter", $chunk->chapter);
+                if ($chunk->firstvs == 0) {
+                    $chapterTitle = $chunkVerses[0];
+                }
+                $chapPath = sprintf("%02d", $chunk->chapter);
+                $filePath = $root. "/" . $chapPath . "/title.txt";
+                $projectFiles[] = ProjectFile::withContent($filePath, $chapterTitle);
             }
         }
 
         foreach ($bookChunks as $cNum => $chap) {
-            $format = "%02d";
-            $chapPath = sprintf($format, $cNum);
-            $filePath = $root. "/" . $chapPath . "/title.txt";
-            $projectFiles[] = ProjectFile::withContent($filePath, __("chapter", $cNum));
+            $chapPath = sprintf("%02d", $cNum);
 
             foreach ($chap as $chk) {
                 reset($chk);
-                $chunkPath = sprintf($format, key($chk));
+                $chunkPath = sprintf("%02d", key($chk));
                 $filePath = $root. "/" . $chapPath . "/" . $chunkPath . ".txt";
 
-                $t = join(" ", $chk);
+                $t = trim(join(" ", $chk));
 
-                $projectFiles[] = ProjectFile::withContent($filePath, $t);
-
-                $manifest->addFinishedChunk($chapPath."-".$chunkPath);
+                if (!empty($t)) {
+                    $projectFiles[] = ProjectFile::withContent($filePath, $t);
+                    $manifest->addFinishedChunk($chapPath."-".$chunkPath);
+                }
             }
         }
 

@@ -37,43 +37,62 @@ require(app_path() . "Views/Components/FootnotesEditor.php");
                                        data-off="OFF" />
                             </label>
                         </div>
+
+                        <?php
+                        $bookTitleRendered = $data["currentChapter"] > 1;
+                        $chapterTitleRendered = false;
+                        ?>
                         <?php foreach($data["chunks"] as $key => $chunk) : ?>
                             <div class="row chunk_block">
                                 <div class="flex_container">
                                     <div class="flex_left flex_column">
                                         <?php
-                                        $firstVerse = 0;
+                                        $combinedRendered = false;
                                         $verses = $data["translation"][$key][EventMembers::TRANSLATOR]["verses"];
 
-                                        foreach ($chunk as $verse): ?>
+                                        foreach ($chunk as $v => $verse): ?>
                                             <?php
-                                            // process combined verses
-                                            if (!isset($data["text"][$verse])) {
-                                                if($firstVerse == 0) {
-                                                    $firstVerse = $verse;
-                                                    continue;
-                                                }
-                                                $combinedVerse = $firstVerse . "-" . $verse;
+                                            $text = "";
+                                            $verseLabel = "";
 
-                                                if(!isset($data["text"][$combinedVerse]))
-                                                    continue;
-                                                $verse = $combinedVerse;
+                                            if (!isset($data["text"][$verse])) {
+                                                if (!$bookTitleRendered) {
+                                                    $text = $data["bookTitle"];
+                                                    $bookTitleRendered = true;
+                                                } elseif (!$chapterTitleRendered) {
+                                                    $text = $data["chapterTitle"];
+                                                    $chapterTitleRendered = true;
+                                                } else {
+                                                    // process combined verses
+                                                    if (!$combinedRendered) {
+                                                        for ($i=$v; $i<sizeof($chunk); $i++) {
+                                                            $index = $verse ."-".$chunk[$i];
+                                                            if (isset($data["text"][$index])) {
+                                                                $text = $data["text"][$index];
+                                                                $verseLabel = $index;
+                                                                break;
+                                                            }
+                                                        }
+                                                        $combinedRendered = true;
+                                                    }
+                                                }
+                                            } else {
+                                                $text = $data["text"][$verse];
+                                                $combinedRendered = true;
+                                                $verseLabel = $verse;
                                             }
                                             ?>
                                             <div class="flex_sub_container">
                                                 <div class="flex_one chunk_verses font_<?php echo $data["event"][0]->sourceLangID ?>" dir="<?php echo $data["event"][0]->sLangDir ?>">
                                                     <p class="verse_text <?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>"
                                                        data-verse="<?php echo $verse ?>">
-                                                        <?php if ($verse > 0): ?>
-                                                            <strong><sup><?php echo $verse; ?></sup></strong>
-                                                        <?php endif; ?>
-                                                        <span><?php echo $data["text"][$verse]; ?></span>
+                                                        <strong><sup><?php echo $verseLabel; ?></sup></strong><span><?php echo $text; ?></span>
                                                     </p>
                                                 </div>
                                                 <div class="flex_one editor_area font_<?php echo $data["event"][0]->targetLang ?>" dir="<?php echo $data["event"][0]->tLangDir ?>">
                                                     <div class="vnote">
                                                         <div class="verse_block flex_chunk" data-verse="<?php echo $verse ?>">
-                                                            <textarea name="verses[<?php echo $verse ?>]"
+                                                            <textarea name="verses[<?php echo $key.":".$verse ?>]"
                                                                       class="input_mode_ta textarea"><?php echo $verses[$verse]; ?></textarea>
                                                         </div>
                                                     </div>

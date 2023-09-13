@@ -1848,7 +1848,7 @@ class AdminController extends Controller {
                                 EventMembers::L3_CHECKER => ["verses" => []],
                             ];
 
-                            // Create new translations
+                            // Create new translation
                             $this->_translationModel->createTranslation([
                                 "projectID" => $event->projectID,
                                 "eventID" => $eventID,
@@ -1864,9 +1864,35 @@ class AdminController extends Controller {
                                 "translatedVerses" => json_encode($translationVerses),
                                 "translateDone" => true
                             ]);
-                            $chunkIncr = 1;
+                            $chunkIncr++;
                             $chunks[] = [0];
                         }
+
+                        // Insert chapter title translation
+                        $translationVerses = [
+                            EventMembers::TRANSLATOR => ["blind" => __("chapter", $chapNum), "verses" => [__("chapter", $chapNum)]],
+                            EventMembers::L2_CHECKER => ["verses" => $level == 2 ? [__("chapter", $chapNum)] : []],
+                            EventMembers::L3_CHECKER => ["verses" => []],
+                        ];
+
+                        // Create new translation
+                        $this->_translationModel->createTranslation([
+                            "projectID" => $event->projectID,
+                            "eventID" => $eventID,
+                            "trID" => $trID,
+                            "l2chID" => $l2chID,
+                            "targetLang" => $project->targetLang,
+                            "bookProject" => $project->bookProject,
+                            "sort" => $event->bookInfo->sort,
+                            "bookCode" => $event->bookCode,
+                            "chapter" => $chapNum,
+                            "chunk" => $chunkIncr,
+                            "firstvs" => 0,
+                            "translatedVerses" => json_encode($translationVerses),
+                            "translateDone" => true
+                        ]);
+                        $chunkIncr++;
+                        $chunks[] = [0];
 
                         foreach ($chapter as $chunkkey => $chunk) {
                             $chunks[] = array_keys($chunk);
@@ -3598,71 +3624,38 @@ class AdminController extends Controller {
         }
     }
 
-    public function migrateBookTitles() {
+    public function migrateBookChapterTitles() {
         if (Session::get("isSuperAdmin")) {
             $events = $this->eventRepo->all();
 
             $events->each(function($event) {
-                $chapterNumber = 1;
-                $chunkNumber = 0;
                 $mode = $event->project->bookProject;
                 $source = $event->project->sourceBible;
-                $bookTitle = $event->bookInfo->name;
 
                 if (in_array($mode, ["ulb","udb"]) || ($mode == "sun" && $source != "odb")) {
-                    $chapters = $event->chapters()->where("chapter", $chapterNumber)->get();
-                    foreach ($chapters as $chapter) {
+                    foreach ($event->chapters as $chapter) {
                         $chunks = (array)json_decode($chapter->chunks, true);
+                        if (empty($chunks)) continue;
 
-                        if (array_key_exists($chunkNumber, $chunks) && $chunks[$chunkNumber][0] > 0) {
-                            array_unshift($chunks, [$chunkNumber]);
-
-                            // Update chapter chunks
-                            $chapter->chunks = json_encode($chunks);
-                            $chapter->save();
-
-                            // Update current chunk for translator
-                            $chapter->translator->currentChunk = $chapter->translator->currentChunk + 1;
-                            $chapter->translator->save();
-
-                            // Create book title translation and update current translation chunk positions
-                            $translations = $event->translations()->where("chapter", $chapterNumber)->get();
-                            $bookTitleTranslation = null;
-                            foreach ($translations as $translation) {
-                                $translation->chunk = $translation->chunk + 1;
-                                $translation->save();
-
-                                if ($bookTitleTranslation == null) {
-                                    $tr = $mode == "sun" ? ["symbols" => $bookTitle, "bt" => $bookTitle] : ["blind" => $bookTitle];
-                                    $tr["verses"] = [$bookTitle];
-
-                                    $translationVerses = [
-                                        EventMembers::TRANSLATOR => $tr,
-                                        EventMembers::L2_CHECKER => ["verses" => []],
-                                        EventMembers::L3_CHECKER => ["verses" => []]
-                                    ];
-                                    $encoded = json_encode($translationVerses);
-                                    $bookTitleTranslation = $translation->replicate()->fill([
-                                        "chunk" => 0,
-                                        "firstvs" => 0,
-                                        "translatedVerses" => $encoded
-                                    ]);
-                                    $bookTitleTranslation->save();
-                                }
+                        // Not migrated
+                        if (isset($chunks[0][0]) && $chunks[0][0] > 0) {
+                            $chapterChunkIndex = 0;
+                            if ($chapter->chapter == 1) {
+                                // Create book title
+                                $title = $event->bookInfo->name;
+                                $this->createTitleChunk($event, $chapter, $chunks, $title, 0);
+                                $chapterChunkIndex = 1;
                             }
 
-                            // Update comment chunk positions
-                            $comments = $event->comments()->where("chapter", 1)->get();
-                            foreach ($comments as $comment) {
-                                $comment->chunk = $comment->chunk + 1;
-                                $comment->save();
-                            }
-
-                            // Update keyword chunk positions
-                            $keywords = $event->keywords()->where("chapter", 1)->get();
-                            foreach ($keywords as $keyword) {
-                                $keyword->chunk = $keyword->chunk + 1;
-                                $keyword->save();
+                            // Create chapter title
+                            $title = __("chapter", $chapter->chapter);
+                            $this->createTitleChunk($event, $chapter, $chunks, $title, $chapterChunkIndex);
+                        } elseif (isset($chunks[1][0]) && $chunks[1][0] > 0) {
+                            // Partially migrated (only book title)
+                            if ($chapter->chapter == 1) {
+                                // Create chapter title
+                                $title = __("chapter", $chapter->chapter);
+                                $this->createTitleChunk($event, $chapter, $chunks, $title, 1);
                             }
                         }
                     }
@@ -3671,5 +3664,63 @@ class AdminController extends Controller {
 
             pr("Migrated successfully!");
         }
+    }
+
+    private function createTitleChunk($event, $chapter, &$chunks, $title, $chunkIndex) {
+        $mode = $event->project->bookProject;
+
+        // Create book title translation and update current translation chunk positions
+        $translations = $event->translations()->where("chapter", $chapter->chapter)->get();
+        if ($translations->count() > 0) {
+            $titleTranslation = null;
+            foreach ($translations as $translation) {
+                $verse = $chunks[$translation->chunk][0];
+                if ($verse > 0) {
+                    $translation->chunk = $translation->chunk + 1;
+                    $translation->save();
+                }
+
+                if ($titleTranslation == null) {
+                    $tr = $mode == "sun" ? ["symbols" => $title, "bt" => $title] : ["blind" => $title];
+                    $tr["verses"] = [$title];
+
+                    $translationVerses = [
+                        EventMembers::TRANSLATOR => $tr,
+                        EventMembers::L2_CHECKER => ["verses" => []],
+                        EventMembers::L3_CHECKER => ["verses" => []]
+                    ];
+                    $encoded = json_encode($translationVerses);
+                    $titleTranslation = $translation->replicate()->fill([
+                        "chunk" => $chunkIndex,
+                        "firstvs" => 0,
+                        "translatedVerses" => $encoded
+                    ]);
+                    $titleTranslation->save();
+                }
+            }
+
+            // Update current chunk for translator
+            $chapter->translator->currentChunk = $chapter->translator->currentChunk + 1;
+            $chapter->translator->save();
+
+            // Update comment chunk positions
+            $comments = $event->comments()->where("chapter", $chapter->chapter)->get();
+            foreach ($comments as $comment) {
+                $comment->chunk = $comment->chunk + 1;
+                $comment->save();
+            }
+
+            // Update keyword chunk positions
+            $keywords = $event->keywords()->where("chapter", $chapter->chapter)->get();
+            foreach ($keywords as $keyword) {
+                $keyword->chunk = $keyword->chunk + 1;
+                $keyword->save();
+            }
+        }
+
+        // Update chapter chunks
+        array_unshift($chunks, [0]);
+        $chapter->chunks = json_encode($chunks);
+        $chapter->save();
     }
 }

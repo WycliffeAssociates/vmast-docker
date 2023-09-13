@@ -2528,6 +2528,15 @@ span.mdi.mdi-lead-pencil {
     font-size: 16px;
 }
 
+.book_title_alt {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.chapter_title_alt {
+    font-size: 20px;
+}
+
 .input_mode {
     font-size: 16px;
     color: #777;
