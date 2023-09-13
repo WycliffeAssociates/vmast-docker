@@ -22,6 +22,14 @@ require(app_path() . "Views/Components/HelpTools.php");
                     <div class="col-sm-12 no_padding">
                         <div class="row chunk_block words_block">
                             <div class="chunk_verses col-sm-6" dir="<?php echo $data["event"][0]->sLangDir ?>">
+                                <?php if ($data["isBookTitle"]): ?>
+                                    <p class="book_title_alt"><?php echo $data["bookTitle"]; ?></p>
+                                <?php endif; ?>
+
+                                <?php if ($data["isChapterTitle"]): ?>
+                                    <p class="chapter_title_alt"><?php echo $data["chapterTitle"]; ?></p>
+                                <?php endif; ?>
+
                                 <?php foreach($data["text"] as $verse => $text): ?>
                                     <p>
                                         <?php if ($verse > 0): ?>

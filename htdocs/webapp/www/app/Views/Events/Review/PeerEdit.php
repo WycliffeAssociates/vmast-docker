@@ -34,50 +34,67 @@ require(app_path() . "Views/Components/HelpTools.php");
                                 ? $data["currentChapter"].":1-".$data["totalVerses"]
                                 : __("front"))."</span>"?></h4>
 
+                        <?php
+                        $bookTitleRendered = $data["currentChapter"] > 1;
+                        $chapterTitleRendered = false;
+                        ?>
                         <div id="my_notes_content" class="my_content">
                         <?php foreach($data["chunks"] as $chunkNo => $chunk): ?>
                             <div class="note_chunk l3">
                                 <div class="flex_container">
                                     <div class="flex_left">
                                         <?php
-                                        $firstVerse = 0;
-
                                         if(!empty($data["translation"][$chunkNo][EventMembers::L3_CHECKER]["verses"]))
                                             $verses = $data["translation"][$chunkNo][EventMembers::L3_CHECKER]["verses"];
                                         else
                                             $verses = $data["translation"][$chunkNo][EventMembers::L2_CHECKER]["verses"];
 
-                                        foreach ($chunk as $verse): ?>
+                                        $combinedRendered = false;
+                                        foreach ($chunk as $v => $verse): ?>
                                             <?php
-                                            // process combined verses
-                                            if (!isset($data["text"][$verse]))
-                                            {
-                                                if($firstVerse == 0)
-                                                {
-                                                    $firstVerse = $verse;
-                                                    continue;
-                                                }
-                                                $combinedVerse = $firstVerse . "-" . $verse;
+                                            $text = "";
+                                            $sourceVerse = "";
+                                            $targetVerse = "";
 
-                                                if(!isset($data["text"][$combinedVerse]))
-                                                    continue;
-                                                $verse = $combinedVerse;
+                                            if (!isset($data["text"][$verse])) {
+                                                if (!$bookTitleRendered) {
+                                                    $text = $data["bookTitle"];
+                                                    $bookTitleRendered = true;
+                                                } elseif (!$chapterTitleRendered) {
+                                                    $text = $data["chapterTitle"];
+                                                    $chapterTitleRendered = true;
+                                                } else {
+                                                    // process combined verses
+                                                    if (!$combinedRendered) {
+                                                        for ($i=$v; $i<sizeof($chunk); $i++) {
+                                                            $index = $verse ."-".$chunk[$i];
+                                                            if (isset($data["text"][$index])) {
+                                                                $text = $data["text"][$index];
+                                                                $sourceVerse = $index;
+                                                                break;
+                                                            }
+                                                        }
+                                                        $combinedRendered = true;
+                                                    }
+                                                    $targetVerse = $verse;
+                                                }
+                                            } else {
+                                                $text = $data["text"][$verse];
+                                                $combinedRendered = true;
+                                                $sourceVerse = $verse;
+                                                $targetVerse = $verse;
                                             }
                                             ?>
                                             <div class="flex_sub_container">
                                                 <div class="flex_one scripture_compare_alt" dir="<?php echo $data["event"][0]->sLangDir ?>">
                                                     <p class="verse_text" data-verse="<?php echo $verse; ?>">
-                                                        <?php if ($verse > 0): ?>
-                                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
-                                                        <?php endif; ?>
-                                                        <span><?php echo $data["text"][$verse]; ?></span>
+                                                        <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $sourceVerse; ?></sup></strong>
+                                                        <span><?php echo $text; ?></span>
                                                     </p>
                                                 </div>
                                                 <div class="flex_one vnote l3 font_<?php echo $data["event"][0]->targetLang ?>">
                                                     <div class="verse_block flex_chunk" data-verse="<?php echo $verse; ?>">
-                                                        <?php if ($verse > 0): ?>
-                                                            <span class="verse_number_l3"><?php echo $verse?></span>
-                                                        <?php endif; ?>
+                                                        <span class="verse_number_l3"><?php echo $targetVerse ?></span>
                                                         <textarea name="chunks[<?php echo $chunkNo ?>][<?php echo $verse ?>]"
                                                                   style="min-width: 400px; flex-grow: 1;"
                                                                   class="peer_verse_ta textarea"

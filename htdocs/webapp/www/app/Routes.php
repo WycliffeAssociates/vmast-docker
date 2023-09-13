@@ -466,7 +466,7 @@ Route::group(["prefix" => "admin", "namespace" => "App\Controllers\Admin"], func
     Router::any("migrate/project_names", "AdminController@migrateProjectNames");
     Router::any("migrate/input_mode", "AdminController@migrateInputMode");
     Router::any("migrate/vbv", "AdminController@migrateVerseByVerseCheck");
-    Router::any("migrate/book_titles", "AdminController@migrateBookTitles");
+    Router::any("migrate/book_chapter_titles", "AdminController@migrateBookChapterTitles");
 });
 
 /** End default Routes */

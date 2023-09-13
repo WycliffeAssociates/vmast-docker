@@ -343,35 +343,41 @@ class EventsController extends Controller {
                                             return [key($elm[EventMembers::TRANSLATOR]["verses"])];
                                         }, $translation);
 
-                                        // Add book title translation
-                                        if (array_key_exists(0, $chunks) && $chunks[0][0] > 0 && $data["event"][0]->currentChapter == 1) {
-                                            $event = $this->eventRepo->get($eventID);
-                                            $translations = $event->translations()->where("chapter", $data["event"][0]->currentChapter)->get();
-                                            $bookTitleTr = null;
+                                        $event = $this->eventRepo->get($eventID);
+                                        $translations = $event->translations()->where("chapter", $data["event"][0]->currentChapter)->get();
 
-                                            foreach ($translations as $trs) {
-                                                $trs->chunk = $trs->chunk + 1;
-                                                $trs->save();
-                                                
-                                                if ($bookTitleTr == null) {
-                                                    $translationVerses = [
-                                                        EventMembers::TRANSLATOR => ["blind" => "", "verses" => [$sourceText["text"][0]]],
-                                                        EventMembers::L2_CHECKER => ["verses" => []],
-                                                        EventMembers::L3_CHECKER => ["verses" => []]
-                                                    ];
-                                                    $encoded = json_encode($translationVerses);
-                                                    $bookTitleTr = $trs->replicate()->fill([
-                                                        "chunk" => 0,
-                                                        "firstvs" => 0,
-                                                        "translatedVerses" => $encoded
-                                                    ]);
-                                                    $bookTitleTr->save();
-                                                }
-                                            }
-
+                                        $chunkIncr = 0;
+                                        if (array_key_exists(0, $chunks) && $chunks[0][0] > 0) {
+                                            $translationVerses = [
+                                                EventMembers::TRANSLATOR => ["blind" => "", "verses" => []],
+                                                EventMembers::L2_CHECKER => ["verses" => []],
+                                                EventMembers::L3_CHECKER => ["verses" => []]
+                                            ];
+                                            // Add book title
                                             if ($data["event"][0]->currentChapter == 1) {
+                                                $translationVerses[EventMembers::TRANSLATOR]["verses"] = [$sourceText["bookTitle"]];
+                                                $encoded = json_encode($translationVerses);
+                                                $bookTitleTr = $translations->first()->replicate()->fill([
+                                                    "chunk" => $chunkIncr,
+                                                    "firstvs" => 0,
+                                                    "translatedVerses" => $encoded
+                                                ]);
+                                                $bookTitleTr->save();
                                                 array_unshift($chunks, [0]);
+                                                $chunkIncr++;
                                             }
+
+                                            // Add chapter title
+                                            $translationVerses[EventMembers::TRANSLATOR]["verses"] = [$sourceText["chapterTitle"]];
+                                            $encoded = json_encode($translationVerses);
+                                            $chapterTitleTr = $translations->first()->replicate()->fill([
+                                                "chunk" => $chunkIncr,
+                                                "firstvs" => 0,
+                                                "translatedVerses" => $encoded
+                                            ]);
+                                            $chapterTitleTr->save();
+                                            array_unshift($chunks, [0]);
+                                            $chunkIncr++;
                                         }
 
                                         $this->eventModel->updateChapter(
@@ -512,10 +518,12 @@ class EventsController extends Controller {
                                 $chunks = $_POST["chunks_array"] ?? "";
                                 $chunks = (array)json_decode($chunks);
                                 if ($this->apiModel->testChunks($chunks, $sourceText["totalVerses"])) {
-                                    // Include book title as first chunk for chapter 1
+                                    // Include book title for chapter 1
                                     if ($data["event"][0]->currentChapter == 1) {
                                         array_unshift($chunks, [0]);
                                     }
+                                    // Include chapter title
+                                    array_unshift($chunks, [0]);
 
                                     if ($this->eventModel->updateChapter(["chunks" => json_encode($chunks)], ["eventID" => $data["event"][0]->eventID, "chapter" => $data["event"][0]->currentChapter])) {
                                         $this->eventModel->updateTranslator(["step" => EventSteps::READ_CHUNK], ["trID" => $data["event"][0]->trID]);
@@ -2310,10 +2318,12 @@ class EventsController extends Controller {
                                 $chunks = (array)json_decode($chunks);
 
                                 if ($this->apiModel->testChunks($chunks, $sourceText["totalVerses"])) {
-                                    // Include book title as first chunk for chapter 1
+                                    // Include book title for chapter 1
                                     if ($data["event"][0]->currentChapter == 1) {
                                         array_unshift($chunks, [0]);
                                     }
+                                    // Include chapter title
+                                    array_unshift($chunks, [0]);
 
                                     if ($this->eventModel->updateChapter(["chunks" => json_encode($chunks)], ["eventID" => $data["event"][0]->eventID, "chapter" => $data["event"][0]->currentChapter])) {
                                         $this->eventModel->updateTranslator(["step" => EventSteps::REARRANGE], ["trID" => $data["event"][0]->trID]);
@@ -9930,7 +9940,7 @@ class EventsController extends Controller {
     private function saveChunks($post, $event, $memberType) {
         $response = ["success" => false];
 
-        if (isset($post["chunks"]) && is_array($post["chunks"]) && !empty($post["chunks"])) {
+        if (!empty($post["chunks"]) && is_array($post["chunks"])) {
             if ($event->step == EventSteps::PEER_REVIEW
                 || $event->step == EventSteps::KEYWORD_CHECK
                 || $event->step == EventSteps::CONTENT_REVIEW) {
@@ -10223,20 +10233,32 @@ class EventsController extends Controller {
             EventMembers::L3_CHECKER => ["verses" => []],
         ];
 
+        $isDraft = !empty($post["draft"]);
         $finalVerses =  !empty($post["verses"]) && is_array($post["verses"]) ? $post["verses"] : [];
 
-        if(!empty($post["draft"])) {
+        if($isDraft) {
             $verses = preg_split("/\|(\d+)\|/", $post["draft"]);
             $finalVerses = [];
+            $vNumber = 1;
+            $cNumber = 1;
+
+            // Will not be saved in draft
+            if ($event->currentChapter == 1) {
+                //$finalVerses["0:0"] = "book";
+                //$finalVerses["1:0"] = "chapter";
+                $cNumber = 2;
+            } else {
+                //$finalVerses["0:0"] = "chapter";
+            }
 
             if (sizeof($verses) == 1) {
-                $finalVerses[1] = $verses[0];
+                $finalVerses[$cNumber.":".$vNumber] = $verses[0];
             } else {
-                $vNumber = 1;
                 unset($verses[0]);
                 foreach ($verses as $verse) {
-                    $finalVerses[$vNumber] = $verse;
+                    $finalVerses[$cNumber.":".$vNumber] = $verse;
                     $vNumber++;
+                    $cNumber++;
                 }
             }
             $finalVerses = array_map(function($item) {
@@ -10248,11 +10270,14 @@ class EventsController extends Controller {
         if (!empty($finalVerses)) {
             // Store verses and their related ids
             $ids = [];
+            $titleVerses = [];
 
-            foreach ($finalVerses as $verse => $text) {
+            foreach ($finalVerses as $key => $text) {
                 $text = strip_tags(html_entity_decode($text));
 
-                if (empty(trim($text)) || !is_integer($verse)) {
+                list($chunkID, $verse) = explode(":", $key);
+
+                if (empty(trim($text)) || !is_numeric($verse)) {
                     if (in_array($event->step, [
                         EventSteps::SELF_CHECK,
                         EventSteps::PEER_REVIEW,
@@ -10268,7 +10293,12 @@ class EventsController extends Controller {
 
                 $updated = false;
                 foreach ($translationData as $chunk) {
-                    if ($chunk->firstvs == $verse) {
+                    // Track title verses
+                    if ($chunk->firstvs == 0) {
+                        $titleVerses[$chunk->chunk.":".$chunk->firstvs] = $chunk->firstvs;
+                    }
+
+                    if ($chunk->chunk == $chunkID && $chunk->firstvs == $verse) {
                         // Update verse
                         $translationVerses[EventMembers::TRANSLATOR]["verses"] = [];
                         $translationVerses[EventMembers::TRANSLATOR]["verses"][$verse] = $text;
@@ -10278,10 +10308,9 @@ class EventsController extends Controller {
                         if ($json_error === JSON_ERROR_NONE) {
                             $this->translationModel->updateTranslation(
                                 ["translatedVerses" => $encoded],
-                                array(
-                                    "trID" => $trID,
-                                    "tID" => $chunk->tID));
-                            $ids[$verse] = $chunk->tID;
+                                ["tID" => $chunk->tID]
+                            );
+                            $ids[$key] = $chunk->tID;
                             $updated = true;
                         } else {
                             $response["errorType"] = "json";
@@ -10311,20 +10340,29 @@ class EventsController extends Controller {
                             "sort" => $event->sort,
                             "bookCode" => $event->bookCode,
                             "chapter" => $event->currentChapter,
-                            "chunk" => $verse - 1,
+                            "chunk" => $chunkID,
                             "firstvs" => $verse,
                             "translatedVerses" => $encoded,
                             "dateCreate" => date('Y-m-d H:i:s')
                         );
                         $id = $this->translationModel->createTranslation($trData);
                         if ($id)
-                            $ids[$verse] = $id;
+                            $ids[$key] = $id;
                     } else {
                         $response["errorType"] = "json";
                         $response["error"] = "Json error: " . $json_error;
                         echo json_encode($response);
                         exit;
                     }
+                }
+            }
+
+            if (!array_key_exists("0:0", $finalVerses) && array_key_exists("0:0", $titleVerses)) {
+                $finalVerses["0:0"] = 0;
+            }
+            if ($event->currentChapter == 1) {
+                if (!array_key_exists("1:0", $finalVerses) && array_key_exists("1:0", $titleVerses)) {
+                    $finalVerses["1:0"] = 0;
                 }
             }
 
@@ -11265,6 +11303,9 @@ class EventsController extends Controller {
      */
     private function getScriptureSourceText($data, $getChunk = false)
     {
+        $data["isBookTitle"] = false;
+        $data["isChapterTitle"] = false;
+
         $currentChapter = $data["event"][0]->currentChapter;
         $currentChunk = $data["event"][0]->state == EventStates::TRANSLATING
             ? $data["event"][0]->currentChunk : 0;
@@ -11308,8 +11349,19 @@ class EventsController extends Controller {
             $chapterUsfm = $usfm[$currentChapter];
         }
 
+        // Chapter title
+        $data["chapterTitle"] = __("chapter", $currentChapter);
+        if (($currentChapter == 1 && $currentChunk == 1) || ($currentChapter > 1 && $currentChunk == 0)) {
+            $data["isChapterTitle"] = true;
+        }
+
+        // Book title
+        $data["bookTitle"] = __($data["event"][0]->bookCode);
         if (isset($usfm["h"]) && $currentChapter == 1) {
-            array_unshift($chapterUsfm["text"], $usfm["h"]);
+            $data["bookTitle"] = $usfm["h"];
+        }
+        if ($currentChapter == 1 && $currentChunk == 0) {
+            $data["isBookTitle"] = true;
         }
 
         if (!empty($chapterUsfm)) {

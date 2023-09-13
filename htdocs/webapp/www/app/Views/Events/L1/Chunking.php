@@ -16,11 +16,10 @@ require(app_path() . "Views/Components/HelpTools.php");
                         ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
 
                 <?php foreach($data["text"] as $verse => $text): ?>
-                <?php if ($verse == 0) continue; ?>
                     <p class="verse_p">
                         <label class="verse_number_label">
                             <input type="checkbox" name="verse" class="verse_number" value="<?php echo $verse; ?>">
-                            <?php echo ($verse > 0 ? "<strong><sup>".$verse."</sup></strong> " : "").$text; ?>
+                            <?php echo "<strong><sup>".$verse."</sup></strong> ".$text; ?>
                         </label>
                     </p>
                 <?php endforeach; ?>

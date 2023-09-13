@@ -30,6 +30,10 @@ require(app_path() . "Views/Components/HelpTools.php");
                         ."<span class='book_name'>".$data["event"][0]->name." ".
                         $data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
 
+                    <?php
+                    $bookTitleRendered = $data["currentChapter"] > 1;
+                    $chapterTitleRendered = false;
+                    ?>
                     <div id="my_notes_content" class="my_content">
                     <?php foreach($data["chunks"] as $chunkNo => $chunk): ?>
                         <div class="note_chunk l3">
@@ -38,14 +42,20 @@ require(app_path() . "Views/Components/HelpTools.php");
                                     <?php $firstVerse = 0; ?>
                                     <?php foreach ($chunk as $verse): ?>
                                         <?php
-                                        // process combined verses
-                                        if (!isset($data["text"][$verse]))
-                                        {
-                                            if($firstVerse == 0)
-                                            {
+                                        if (!isset($data["text"][$verse])) {
+                                            if($firstVerse == 0) {
                                                 $firstVerse = $verse;
+                                                if (!$bookTitleRendered) {
+                                                    echo "<p class='book_title_alt'>".$data["bookTitle"]."</p>";
+                                                    $bookTitleRendered = true;
+                                                } elseif (!$chapterTitleRendered) {
+                                                    echo "<p class='chapter_title_alt'>".$data["chapterTitle"]."</p>";
+                                                    $chapterTitleRendered = true;
+                                                }
                                                 continue;
                                             }
+
+                                            // process combined verses
                                             $combinedVerse = $firstVerse . "-" . $verse;
 
                                             if(!isset($data["text"][$combinedVerse]))

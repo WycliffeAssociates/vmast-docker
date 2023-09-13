@@ -41,13 +41,16 @@ require(app_path() . "Views/Components/HelpTools.php");
                 </div>
 
                 <div id="source_scripture_content" class="my_content">
+                    <?php if (isset($data["bookTitle"])): ?>
+                        <p class="book_title_alt" dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["bookTitle"]; ?></p>
+                    <?php endif; ?>
+
+                    <?php if (isset($data["chapterTitle"])): ?>
+                        <p class="chapter_title_alt" dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["chapterTitle"]; ?></p>
+                    <?php endif; ?>
+
                     <?php foreach($data["text"] as $verse => $text): ?>
-                        <p>
-                            <?php if ($verse > 0): ?>
-                                <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
-                            <?php endif; ?>
-                            <?php echo $text; ?>
-                        </p>
+                        <p><strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong><?php echo $text; ?></p>
                     <?php endforeach; ?>
                 </div>
             </div>

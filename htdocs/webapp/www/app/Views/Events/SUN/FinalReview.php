@@ -23,6 +23,10 @@ require(app_path() . "Views/Components/CommentEditor.php");
                             .($data["event"][0]->sort <= 39 ? __("old_test") : __("new_test"))." - "
                             ."<span class='book_name'>".$data["event"][0]->name." ".$data["currentChapter"].":1-".$data["totalVerses"]."</span>"?></h4>
 
+                    <?php
+                    $bookTitleRendered = $data["currentChapter"] > 1;
+                    $chapterTitleRendered = false;
+                    ?>
                     <div class="col-sm-12">
                         <?php foreach($data["chunks"] as $key => $chunk) : ?>
                             <div class="chunk_block">
@@ -31,14 +35,20 @@ require(app_path() . "Views/Components/CommentEditor.php");
                                         <?php $firstVerse = 0; ?>
                                         <?php foreach ($chunk as $verse): ?>
                                             <?php
-                                            // process combined verses
-                                            if (!isset($data["text"][$verse]))
-                                            {
-                                                if($firstVerse == 0)
-                                                {
+                                            if (!isset($data["text"][$verse])) {
+                                                if($firstVerse == 0) {
                                                     $firstVerse = $verse;
+                                                    if (!$bookTitleRendered) {
+                                                        echo "<div class='book_title_alt'>".$data["bookTitle"]."</div>";
+                                                        $bookTitleRendered = true;
+                                                    } elseif (!$chapterTitleRendered) {
+                                                        echo "<div class='chapter_title_alt'>".$data["chapterTitle"]."</div>";
+                                                        $chapterTitleRendered = true;
+                                                    }
                                                     continue;
                                                 }
+
+                                                // process combined verses
                                                 $combinedVerse = $firstVerse . "-" . $verse;
 
                                                 if(!isset($data["text"][$combinedVerse]))
@@ -46,9 +56,7 @@ require(app_path() . "Views/Components/CommentEditor.php");
                                                 $verse = $combinedVerse;
                                             }
                                             ?>
-                                            <?php if ($verse > 0): ?>
-                                                <strong dir="<?php echo $data["event"][0]->sLangDir ?>" class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
-                                            <?php endif; ?>
+                                            <strong dir="<?php echo $data["event"][0]->sLangDir ?>" class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
                                             <div class="<?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>" dir="<?php echo $data["event"][0]->sLangDir ?>"><?php echo $data["text"][$verse]; ?></div>
                                         <?php endforeach; ?>
                                     </div>

@@ -43,6 +43,10 @@ require(app_path() . "Views/Components/HelpTools.php");
                             </label>
                         </div>
 
+                        <?php
+                        $bookTitleRendered = $data["currentChapter"] > 1;
+                        $chapterTitleRendered = false;
+                        ?>
                         <?php foreach($data["chunks"] as $key => $chunk) : ?>
                             <div class="row chunk_block">
                                 <div class="flex_container">
@@ -57,32 +61,52 @@ require(app_path() . "Views/Components/HelpTools.php");
                                         else
                                             $v2verses = $data["translation"][$key][EventMembers::TRANSLATOR]["verses"];
 
-                                        foreach ($chunk as $verse): ?>
+                                        $combinedRendered = false;
+                                        foreach ($chunk as $v => $verse): ?>
                                             <?php
-                                            // process combined verses
-                                            if (!isset($data["text"][$verse]))
-                                            {
-                                                if($firstVerse == 0)
-                                                {
-                                                    $firstVerse = $verse;
-                                                    continue;
-                                                }
-                                                $combinedVerse = $firstVerse . "-" . $verse;
+                                            $text = "";
+                                            $sourceVerse = "";
+                                            $targetVerse = "";
 
-                                                if(!isset($data["text"][$combinedVerse]))
-                                                    continue;
-                                                $verse = $combinedVerse;
+                                            if (!isset($data["text"][$verse])) {
+                                                if (!$bookTitleRendered) {
+                                                    $text = $data["bookTitle"];
+                                                    $bookTitleRendered = true;
+                                                } elseif (!$chapterTitleRendered) {
+                                                    $text = $data["chapterTitle"];
+                                                    $chapterTitleRendered = true;
+                                                } else {
+                                                    // process combined verses
+                                                    if (!$combinedRendered) {
+                                                        for ($i=$v; $i<sizeof($chunk); $i++) {
+                                                            $index = $verse ."-".$chunk[$i];
+                                                            if (isset($data["text"][$index])) {
+                                                                $text = $data["text"][$index];
+                                                                $sourceVerse = $index;
+                                                                break;
+                                                            }
+                                                        }
+                                                        $combinedRendered = true;
+                                                    }
+                                                    $targetVerse = $verse;
+                                                }
+                                            } else {
+                                                $text = $data["text"][$verse];
+                                                $combinedRendered = true;
+                                                $sourceVerse = $verse;
+                                                $targetVerse = $verse;
                                             }
                                             ?>
                                             <div class="flex_sub_container">
                                                 <div class="flex_one chunk_verses font_<?php echo $data["event"][0]->sourceLangID ?>" dir="<?php echo $data["event"][0]->sLangDir ?>">
                                                     <p class="verse_text"
                                                        data-verse="<?php echo $verse ?>">
-                                                        <?php if ($verse > 0): ?>
-                                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $verse; ?></sup></strong>
-                                                        <?php endif; ?>
-                                                        <span class="verse_text_source <?php echo "kwverse_".$data["currentChapter"]."_".$key."_".$verse ?>"><?php echo $data["text"][$verse]; ?></span>
-                                                        <span class="verse_text_original"><?php echo $v1verses[$verse] ?></span>
+                                                        <span class="verse_text_source">
+                                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $sourceVerse; ?></sup></strong><?php echo $text; ?>
+                                                        </span>
+                                                        <span class="verse_text_original">
+                                                            <strong class="<?php echo $data["event"][0]->sLangDir ?>"><sup><?php echo $targetVerse; ?></sup></strong><?php echo $v1verses[$verse] ?>
+                                                        </span>
                                                     </p>
                                                 </div>
                                                 <div class="flex_one editor_area font_<?php echo $data["event"][0]->targetLang ?>" dir="<?php echo $data["event"][0]->tLangDir ?>">
