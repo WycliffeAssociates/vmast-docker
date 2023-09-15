@@ -3686,8 +3686,8 @@ class AdminController extends Controller {
 
                     $translationVerses = [
                         EventMembers::TRANSLATOR => $tr,
-                        EventMembers::L2_CHECKER => ["verses" => []],
-                        EventMembers::L3_CHECKER => ["verses" => []]
+                        EventMembers::L2_CHECKER => ["verses" => [$title]],
+                        EventMembers::L3_CHECKER => ["verses" => [$title]]
                     ];
                     $encoded = json_encode($translationVerses);
                     $titleTranslation = $translation->replicate()->fill([
