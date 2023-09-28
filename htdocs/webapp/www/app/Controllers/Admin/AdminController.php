@@ -248,60 +248,59 @@ class AdminController extends Controller {
                 }
 
                 if ($bookInfo->event) {
+                    $translated = EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED);
+                    $l2Checked = EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::L2_CHECKED);
+                    $complete = EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::COMPLETE);
 
-                    if($bookInfo->category == "bible" && $bookInfo->sort < 41) {
-                        // Old testament
-                        if(EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED)) {
+                    $isOt = $bookInfo->category == "bible" && $bookInfo->sort < 41;
+                    $isNt = $bookInfo->category == "bible" && $bookInfo->sort >= 41;
+
+                    if ($translated) {
+                        if($isOt) {
                             $otDone++;
+                        } elseif ($isNt) {
+                            $ntDone++;
+                        } elseif (in_array($bookInfo->category, ["tw","odb","rad","obs","bca"])) {
+                            $twDone++;
+                            $odbDone++;
+                            $radDone++;
+                            $obsDone++;
+                            $bcaDone++;
                         }
-                    } else if($bookInfo->category == "bible" && $bookInfo->sort >= 41) {
-                        // New testament
-                        if(EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED)) {
+                    }
+
+                    if ($l2Checked) {
+                        if($isOt) {
+                            $otDone++;
+                        } elseif ($isNt) {
                             $ntDone++;
                         }
-                    } else if($bookInfo->category == "tw") {
-                        // tWords categories (kt, names, other)
-                        if(EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED)) {
-                            $twDone++;
-                        }
-                    } else if($bookInfo->category == "odb") {
-                        // ODB books
-                        if(EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED)) {
-                            $odbDone++;
-                        }
-                    } else if($bookInfo->category == "rad") {
-                        // RADIO books
-                        if(EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED)) {
-                            $radDone++;
-                        }
-                    } else if($bookInfo->category == "obs") {
-                        // OBS books
-                        if(EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED)) {
-                            $obsDone++;
-                        }
-                    } else if($bookInfo->category == "bca") {
-                        // Bible Commentaries Articles books
-                        if(EventStates::enum($bookInfo->event->state) >= EventStates::enum(EventStates::TRANSLATED)) {
-                            $bcaDone++;
+                    }
+
+                    if ($complete) {
+                        if($isOt) {
+                            $otDone++;
+                        } elseif ($isNt) {
+                            $ntDone++;
                         }
                     }
                 }
             }
 
-            $data["OTprogress"] = 100*$otDone/39;
-            $data["NTprogress"] = 100*$ntDone/27;
-            $data["TWprogress"] = 100*$twDone/3;
-            $data["OBSprogress"] = 100*$obsDone;
-            $data["BCAprogress"] = 100*$bcaDone;
+            $data["OTprogress"] = 100 * ($otDone / 3) / 39;
+            $data["NTprogress"] = 100 * ($ntDone / 3) / 27;
+            $data["TWprogress"] = 100 * $twDone / 3;
+            $data["OBSprogress"] = 100 * $obsDone;
+            $data["BCAprogress"] = 100 * $bcaDone;
 
             if($project->sourceBible == "odb") {
                 $count = $this->bookInfoRepo->all()->where("category", "odb", false)->count();
                 if($count > 0)
-                    $data["ODBprogress"] = 100*$odbDone/$count;
+                    $data["ODBprogress"] = 100 * $odbDone / $count;
             } elseif ($project->bookProject == "rad") {
                 $count = $this->bookInfoRepo->all()->where("category", "rad", false)->count();
                 if($count > 0)
-                    $data["RADprogress"] = 100*$radDone/$count;
+                    $data["RADprogress"] = 100 * $radDone / $count;
             }
         }
 
