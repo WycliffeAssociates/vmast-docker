@@ -10,7 +10,7 @@ return array(
     "saveChangesConfirmTitle" => "Alterações feitas",
     "partnerJoinedVerbalize" => "Seu parceiro entrou no passo “Verbalizar”",
     "partnerJoinedPeerEdit" => "Seu parceiro juntou-se à etapa Edição paritária",
-    "checkerJoined" => "Um verificador ({name}) aceitou seu pedido",
+    "checkerJoined" => "O verificador ({name}) aceitou o seu pedido",
     "checkerApproved" => "O Verificador ({name}) aprovou este passo!",
     "assign" => "Delegar",
     "chapters" => "Capítulos",
@@ -134,4 +134,6 @@ return array(
     "ready_to_check" => "Pronto",
     "sent" => "Enviado",
     "importFromRepo" => "Importar de{repo_server}",
+    "authorizing" => "Autorizando... Por favor aguarde.",
+    "authorizeServer" => "Clique em OK para autorizar {repo_server}"
 );

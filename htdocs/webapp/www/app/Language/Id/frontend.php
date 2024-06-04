@@ -10,8 +10,8 @@ return array(
     "saveChangesConfirmTitle" => "Perubahan telah dibuat",
     "partnerJoinedVerbalize" => "Your partner has joined “Verbalize” step",
     "partnerJoinedPeerEdit" => "Your partner has joined “Peer-Edit” step",
-    "checkerJoined" => "Seorang pemeriksa talah menerima permohonan Anda ({name})",
-    "checkerApproved" => "Pemeriksa telah menyetujui langkah ini! ({name})",
+    "checkerJoined" => "Seorang pemeriksa ({name}) talah menerima permohonan Anda",
+    "checkerApproved" => "Pemeriksa ({name}) telah menyetujui langkah ini!",
     "assign" => "Tugaskan",
     "chapters" => "Pasal-pasal",
     "newUsersApplyed" => "Anggota-anggota telah didaftarkan",
@@ -134,4 +134,6 @@ return array(
     "ready_to_check" => "Ready",
     "sent" => "Sent",
     "importFromRepo" => "Import from {repo_server}",
+    "authorizing" => "Authorizing... Please wait.",
+    "authorizeServer" => "Click OK to authorize {repo_server}"
 );

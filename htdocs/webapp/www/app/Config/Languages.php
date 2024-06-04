@@ -52,5 +52,11 @@ Config::set('languages', [
         'name' => 'Español Latin America',
         'locale' => "es-419",
         'dir' => "ltr"
+    ],
+    'Da' => [
+        'info' => 'Danish',
+        'name' => 'dansk',
+        'locale' => "da",
+        'dir' => "ltr"
     ]
 ]);

@@ -15,7 +15,7 @@ return array(
     "assign" => "Назначить",
     "chapters" => "Главы",
     "newUsersApplyed" => "Пользователи присоединились к событию",
-    "deleteChapterConfirm" => "Remove this chapter from the user?",
+    "deleteChapterConfirm" => "Убрать эту главу у пользователя?",
     "deleteChapterConfirmTitle" => "Удалить главу",
     "startTranslation" => "Начать перевод",
     "startTranslationConfirm" => "Вы действительно хотите начать перевод?",
@@ -133,5 +133,7 @@ return array(
     "pushSuccess" => "Успешно отправлено на сервер!",
     "ready_to_check" => "Готов",
     "sent" => "Отправлено",
-    "importFromRepo" => "Import from {repo_server}",
+    "importFromRepo" => "Импортировать из {repo_server}",
+    "authorizing" => "Идёт авторизация... Пожалуйста, подождите.",
+    "authorizeServer" => "Нажмите OK, чтобы авторизовать {repo_server}"
 );

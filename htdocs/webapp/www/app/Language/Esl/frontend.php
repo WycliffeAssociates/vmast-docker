@@ -15,7 +15,7 @@ return array(
     "assign" => "Asignar",
     "chapters" => "Capítulos",
     "newUsersApplyed" => "Los miembros han sido asignados",
-    "deleteChapterConfirm" => "Remove this chapter from the user?",
+    "deleteChapterConfirm" => "¿Eliminar este capítulo del usuario?",
     "deleteChapterConfirmTitle" => "Remueva el capítulo",
     "startTranslation" => "Comience la traducción",
     "startTranslationConfirm" => "¿Está seguro que desea comenzar este evento?",
@@ -133,5 +133,7 @@ return array(
     "pushSuccess" => "¡Se ha enviado con éxito al servidor!",
     "ready_to_check" => "Listo",
     "sent" => "Enviado",
-    "importFromRepo" => "Import from {repo_server}",
+    "importFromRepo" => "Importar desde {repo_server}",
+    "authorizing" => "Autorizando... Por favor espere.",
+    "authorizeServer" => "Haga clic en OK para autorizar {repo_server}"
 );
