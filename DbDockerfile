@@ -1,5 +1,8 @@
 FROM mysql:5.7-debian
 
+# lsb_release -- print distribution specific information
+# Get debian info
+# 
 RUN apt-get update && apt-get install -y lsb-release wget curl nano && \
  	cd /tmp && wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb && \
 	dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb && \

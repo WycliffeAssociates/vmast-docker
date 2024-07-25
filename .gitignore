@@ -32,3 +32,8 @@ db/backup/*/
 
 .DS_Store
 .idea/
+
+# Used to help with reading and writing 1p env file
+create1p.js
+withRefs.js
+noteTemplate.json

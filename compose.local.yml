@@ -1,0 +1,101 @@
+services:
+  web:
+    develop:
+      watch:
+        - action: sync
+          path: ./php/htdocs/webapp/www
+          target: /usr/share/nginx/html
+          ignore:
+            - vendor/
+        - action: rebuild
+          path: ./php/htdocs/webapp/www/composer.json
+    volumes:
+      # - ./htdocs:/var/www/html
+      # - ./ssl:/etc/nginx/ssl
+      # - ./web/nginx:/etc/nginx/conf.d
+      - ./db/dump:/db_dump
+
+  php:
+    develop:
+      watch:
+        - action: sync
+          path: ./php/htdocs/webapp/www
+          target: /var/www/html/webapp/www
+          ignore:
+            - vendor/
+        - action: rebuild
+          path: ./php/htdocs/webapp/www/composer.json
+    # volumes:
+    # - ./php/htdocs:/var/www/html
+    # - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+
+  # db:
+  # volumes:
+  # - dbdata:/var/lib/mysql
+  # - Probably take out? Maybe leave as a bind?
+  # - ./db/conf:/etc/mysql/mysql.conf.d
+  # - ./db/backup:/backup
+  # restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 512M
+    ports:
+      - 8081:80
+
+  # node:
+  # build:
+  #   context: .
+  #   dockerfile: NodeDockerfile
+  # volumes:
+  #   - ./node:/node
+  #   - ./ssl:/etc/nginx/ssl
+  #   - ./scripts:/scripts
+  # env_file:
+  #   - .env
+  # environment:
+  #   APP_TYPE: ${APP_TYPE}
+  #   MAIN_HOST: ${MAIN_HOST}
+  #   SOCKET_PORT: ${SOCKET_PORT}
+  #   MAIL_HOST: ${MAIL_HOST}
+  #   MAIL_NAME: ${MAIL_NAME}
+  #   MAIL_FROM: ${MAIL_FROM}
+  #   MAIL_USER: ${MAIL_USER}
+  #   MAIL_PASS: ${MAIL_PASS}
+  #   SSL_CRT: ${SSL_CRT}
+  #   SSL_KEY: ${SSL_KEY}
+  #   SSL_CA: ${SSL_CA}
+  #   REDIS_HOST: ${REDIS_HOST}
+  #   REDIS_PORT: ${REDIS_PORT}
+  #   REDIS_DB: ${REDIS_DB}
+  #   RABBITMQ_HOST: ${RABBITMQ_HOST}
+  #   RABBITMQ_USER: ${RABBITMQ_USER}
+  #   RABBITMQ_PASS: ${RABBITMQ_PASS}
+  #   RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+  # ports:
+  #   - 8001:8001
+  # depends_on:
+  #   - rabbitmq
+  #   - redis
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    # ports:
+    #   - 15672:15672
+    # env_file:
+    #   - .env
+    # environment:
+    #   RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+    #   RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+
+  redis:
+    image: redis:latest
+
+volumes:
+  dbdata:

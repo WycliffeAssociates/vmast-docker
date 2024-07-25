@@ -1,9 +1,9 @@
-version: '3.1'
+version: "3.1"
 
 services:
   web:
     build:
-      context: .
+      dockerfile: ./Dockerfile
     platform: linux/amd64
     depends_on:
       - db
@@ -11,27 +11,33 @@ services:
     ports:
       - 80:80
       - 443:443
+    env_file:
+      - .env
     environment:
+      # nginx is serving htdocs, so these are needed there
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    volumes:
-      - ./htdocs:/var/www/html
-      - ./ssl:/etc/nginx/ssl
-      - ./web/nginx:/etc/nginx/conf.d
-      - ./db/dump:/db_dump
+    # todo: watch or bind mount
+    # volumes:
+    #   - ./htdocs:/var/www/html
+    #   - ./ssl:/etc/nginx/ssl
+    #   - ./web/nginx:/etc/nginx/conf.d
+    #   - ./db/dump:/db_dump
 
   php:
     build:
-      context: .
-      dockerfile: PhpDockerfile
+      context: ./php
+      dockerfile: ./Dockerfile
     platform: linux/amd64
+    env_file:
+      - .env
     environment:
       APP_URL: ${APP_URL}
       APP_EMAIL: ${APP_EMAIL}
-      APP_ENV: ${APP_ENV}
+      DEPLOY_ENV: ${DEPLOY_ENV}
       APP_PREFIX: ${APP_PREFIX}
       APP_TYPE: ${APP_TYPE}
       APP_MAINTENANCE: ${APP_MAINTENANCE}
@@ -62,15 +68,18 @@ services:
       WACS_CLIENT_SECRET: ${WACS_CLIENT_SECRET}
       DCS_CLIENT_ID: ${DCS_CLIENT_ID}
       DCS_CLIENT_SECRET: ${DCS_CLIENT_SECRET}
-    volumes:
-        - ./htdocs:/var/www/html
-        - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      # todo: watch or bind mount
+    # volumes:
+    #     - ./htdocs:/var/www/html
+    #     - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
 
   db:
     build:
-      context: .
-      dockerfile: DbDockerfile
+      context: ./db
+      dockerfile: ./Dockerfile
     platform: linux/amd64
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -78,30 +87,35 @@ services:
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
       - dbdata:/var/lib/mysql
-      - ./db/conf:/etc/mysql/mysql.conf.d
+      # - todo: maybe bind mount?
+      # - ./db/conf:/etc/mysql/mysql.conf.d
       - ./db/backup:/backup
     restart: always
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    links:
-      - db
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_ARBITRARY: 1
-      UPLOAD_LIMIT: 512M
-    ports:
-      - 8081:80
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   links:
+  #     - db
+  #   environment:
+  #     PMA_HOST: db
+  #     PMA_PORT: 3306
+  #     PMA_ARBITRARY: 1
+  #     UPLOAD_LIMIT: 512M
+  #   ports:
+  #     - 8081:80
 
   node:
     build:
-      context: .
-      dockerfile: NodeDockerfile
-    volumes:
-        - ./node:/node
-        - ./ssl:/etc/nginx/ssl
-        - ./scripts:/scripts
+      context: ./node
+      dockerfile: ./Dockerfile
+    # volumes:
+    # watch;
+    # - ./node:/node
+    # - remove these two beneath;
+    # - ./ssl:/etc/nginx/ssl
+    # - ./scripts:/scripts
+    env_file:
+      - .env
     environment:
       APP_TYPE: ${APP_TYPE}
       MAIN_HOST: ${MAIN_HOST}
@@ -128,15 +142,17 @@ services:
       - redis
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.13
     ports:
       - 15672:15672
+    env_file:
+      - .env
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
 
   redis:
-    image: redis:latest
-
+    # todo: valkey?
+    image: redis:7.2
 volumes:
   dbdata:

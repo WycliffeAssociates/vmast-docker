@@ -1,0 +1,66 @@
+# Set up Linux.  Copy in lock files. install thoes lock files. Copy in src code. 
+
+# web /nginx
+
+# FROM nginx:1.27.0 as SERVE
+FROM php:8.3-fpm-bookworm as BASE
+
+RUN apt-get update && apt-get install -y nano procps git mariadb-client-10.5 libzip-dev libicu-dev g++ sudo lsb-release wget curl
+
+# Set up php
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# https://hub.docker.com/_/php#:~:text=We%20provide%20the%20helper%20scripts%20docker%2Dphp%2Dext%2Dconfigure%2C%20docker%2Dphp%2Dext%2Dinstall%2C%20and%20docker%2Dphp%2Dext%2Denable%20to%20more%20easily%20install%20PHP%20extensions.
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install intl zip sockets
+
+
+# php
+# Original
+# FROM php:7.2-fpm-buster
+# todo: can we upgrade to php8 + 
+FROM php:8.3-fpm-bookworm
+
+RUN apt-get update && apt-get install -y libzip-dev libicu-dev g++ git sudo
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install intl zip sockets
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /var/www/html/webapp/www
+COPY ./php_start.sh /php_start.sh
+ENTRYPOINT ["/php_start.sh"]
+
+
+# mysql
+FROM mysql:5.7-debian
+# todo: can we go maria? 
+
+RUN apt-get update && apt-get install -y lsb-release wget curl && \
+ 	cd /tmp && wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb && \
+	dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb && \
+	apt-get update && apt-get install -y percona-xtrabackup-24 qpress
+
+WORKDIR /backup
+
+# NODE
+# FROM node:14-alpine
+FROM node:21-alpine3.19
+
+# RUN apk update && apk add nano procps
+# -alpine has yarn installed already
+RUN yarn global add pm2
+
+WORKDIR /node
+
+COPY ./node_start.sh /node_start.sh
+ENTRYPOINT ["/node_start.sh"]
+
+
+
+FROM nginx:1.27.0 as SERVE
+WORKDIR /var/www/html
+
+COPY ./start.sh /start.sh
+ENTRYPOINT ["/start.sh"]

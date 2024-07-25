@@ -85,7 +85,7 @@ if (is_readable($path)) require $path;
  *     development
  *     production
  */
-define('ENVIRONMENT', $_ENV["APP_ENV"]);
+define('ENVIRONMENT', $_ENV["DEPLOY_ENV"]);
 
 $app = new Application();
 
