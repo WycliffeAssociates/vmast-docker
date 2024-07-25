@@ -10,9 +10,6 @@ services:
         - action: rebuild
           path: ./php/htdocs/webapp/www/composer.json
     volumes:
-      # - ./htdocs:/var/www/html
-      # - ./ssl:/etc/nginx/ssl
-      # - ./web/nginx:/etc/nginx/conf.d
       - ./db/dump:/db_dump
 
   php:
@@ -86,16 +83,6 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    # ports:
-    #   - 15672:15672
-    # env_file:
-    #   - .env
-    # environment:
-    #   RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-    #   RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-
-  redis:
-    image: redis:latest
 
 volumes:
   dbdata:

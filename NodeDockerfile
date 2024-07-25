@@ -1,9 +1,0 @@
-FROM node:14-alpine
-
-RUN apk update && apk add nano procps
-RUN yarn global add pm2
-
-WORKDIR /node
-
-COPY ./node_start.sh /node_start.sh
-ENTRYPOINT ["/node_start.sh"]

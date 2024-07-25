@@ -153,6 +153,7 @@ services:
 
   redis:
     # todo: valkey?
-    image: redis:7.2
+    # image: redis:7.2
+    image: valkey/valkey:7.2.5
 volumes:
   dbdata:
