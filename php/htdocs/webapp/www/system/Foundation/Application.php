@@ -707,7 +707,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      *
      * @throws \Exception
      */
-    public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true): SymfonyResponse
     {
         try {
             $this->refreshRequest($request = Request::createFromBase($request));
@@ -751,7 +751,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * @param  \Symfony\Component\HttpFoundation\Response  $response
      * @return void
      */
-    public function terminate(SymfonyRequest $request, SymfonyResponse $response)
+    public function terminate(SymfonyRequest $request, SymfonyResponse $response): void
     {
         $this->callFinishCallbacks($request, $response);
 

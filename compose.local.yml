@@ -17,7 +17,7 @@ services:
       watch:
         - action: sync
           path: ./php/htdocs/webapp/www
-          target: /var/www/html/webapp/www
+          target: /usr/share/nginx/html
           ignore:
             - vendor/
         - action: rebuild
