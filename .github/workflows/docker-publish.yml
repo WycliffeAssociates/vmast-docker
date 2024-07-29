@@ -1,0 +1,37 @@
+name: Docker
+
+on: [workflow_dispatch]
+
+jobs:
+  #test building jar and images for PR without push
+
+  #build and push web and pipeline images
+  push:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build web image
+        shell: bash
+        run: docker build -t bibletranslationtools/vmast-web:$GITHUB_SHA -t bibletranslationtools/vmast-web:$GITHUB_REF_NAME -t bibletranslationtools/vmast-web:latest .
+
+      - name: Build vmast php image
+        shell: bash
+        run: docker build -t bibletranslationtools/vmast-php:$GITHUB_SHA -t bibletranslationtools/vmast-php:$GITHUB_REF_NAME -t bibletranslationtools/vmast-php:latest ./php
+
+      - name: Build vmast node image
+        shell: bash
+        run: docker build -t bibletranslationtools/vmast-node:$GITHUB_SHA -t bibletranslationtools/vmast-node:$GITHUB_REF_NAME -t bibletranslationtools/vmast-node:latest ./node
+
+      - name: Log into registry
+        shell: bash
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      - name: Push image
+        run: |
+          docker push -a bibletranslationtools/vmast-web
+          docker push -a bibletranslationtools/fetcher-php
+          docker push -a bibletranslationtools/fetcher-node

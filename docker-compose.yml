@@ -1,9 +1,8 @@
-version: "3.1"
-
 services:
   web:
-    build:
-      dockerfile: ./Dockerfile
+    image: bibletranslationtools/vmast-web:${VMAST_IMAGE_TAG}
+    # build:
+    #   dockerfile: ./Dockerfile
     platform: linux/amd64
     depends_on:
       - db
@@ -28,9 +27,10 @@ services:
     #   - ./db/dump:/db_dump
 
   php:
-    build:
-      context: ./php
-      dockerfile: ./Dockerfile
+    image: bibletranslationtools/vmast-php:${VMAST_IMAGE_TAG}
+    # build:
+    #   context: ./php
+    #   dockerfile: ./Dockerfile
     platform: linux/amd64
     env_file:
       - .env
@@ -74,9 +74,10 @@ services:
     #     - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
 
   db:
-    build:
-      context: ./db
-      dockerfile: ./Dockerfile
+    image: mariadb:10.5.25
+    # build:
+    # context: ./db
+    # dockerfile: ./Dockerfile
     platform: linux/amd64
     env_file:
       - .env
@@ -87,9 +88,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
       - dbdata:/var/lib/mysql
-      # - todo: maybe bind mount?
-      # - ./db/conf:/etc/mysql/mysql.conf.d
-      - ./db/backup:/backup
+      - ./db/dump:/docker-entrypoint-initdb.d
     restart: always
 
   # phpmyadmin:
@@ -105,9 +104,10 @@ services:
   #     - 8081:80
 
   node:
-    build:
-      context: ./node
-      dockerfile: ./Dockerfile
+    image: bibletranslationtools/vmast-node:${VMAST_IMAGE_TAG}
+    # build:
+    #   context: ./node
+    #   dockerfile: ./Dockerfile
     # volumes:
     # watch;
     # - ./node:/node
