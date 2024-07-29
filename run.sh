@@ -36,6 +36,7 @@ docker compose down;
 # Launch!
 ./opcli/op run --env-file="./.env.deploy" -- docker compose up -d; 
 
+rm -rf ./opcli
 
 
 
