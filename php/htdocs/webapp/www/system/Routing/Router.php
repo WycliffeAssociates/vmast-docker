@@ -11,18 +11,12 @@ namespace Routing;
 use Config\Config;
 use Container\Container;
 use Events\Dispatcher;
-use Helpers\Inflector;
 use Http\Request;
 use Http\Response;
-use Routing\ControllerDispatcher;
-use Routing\ControllerInspector;
-use Routing\RouteCollection;
-use Routing\RouteFiltererInterface;
-use Routing\Route;
 
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 use BadMethodCallException;
@@ -37,114 +31,114 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * The event dispatcher instance.
      *
-     * @var \Events\Dispatcher
+     * @var Dispatcher
      */
-    protected $events;
+    protected Dispatcher $events;
 
     /**
      * The IoC container instance.
      *
-     * @var \Container\Container
+     * @var Container
      */
-    protected $container;
+    protected Container $container;
 
     /**
      * The route collection instance.
      *
-     * @var \Routing\RouteCollection
+     * @var RouteCollection
      */
-    protected $routes;
+    protected RouteCollection $routes;
 
     /**
      * Matched Route, the current found Route, if any.
      *
      * @var Route|null $current
      */
-    protected $current = null;
+    protected ?Route $current = null;
 
     /**
      * The request currently being dispatched.
      *
-     * @var \Http\Request
+     * @var Request
      */
-    protected $currentRequest;
+    protected Request $currentRequest;
 
     /**
      * The controller dispatcher instance.
      *
-     * @var \Routing\ControllerDispatcher
+     * @var ControllerDispatcher
      */
-    protected $controllerDispatcher;
+    protected ?ControllerDispatcher $controllerDispatcher = null;
 
     /**
      * The asset file dispatcher instance.
      *
-     * @var \Routing\AssetFileDispatcher
+     * @var AssetFileDispatcher
      */
     protected $fileDispatcher;
 
     /**
      * The controller inspector instance.
      *
-     * @var \Routing\ControllerInspector
+     * @var ControllerInspector
      */
-    protected $inspector;
+    protected ControllerInspector $inspector;
 
     /**
      * Indicates if the router is running filters.
      *
      * @var bool
      */
-    protected $filtering = true;
+    protected bool $filtering = true;
 
     /**
      * The registered pattern based filters.
      *
      * @var array
      */
-    protected $patternFilters = array();
+    protected array $patternFilters = array();
 
     /**
      * The registered regular expression based filters.
      *
      * @var array
      */
-    protected $regexFilters = array();
+    protected array $regexFilters = array();
 
     /**
      * The registered route value binders.
      *
      * @var array
      */
-    protected $binders = array();
+    protected array $binders = array();
 
     /**
      * Array of Route Groups
      *
      * @var array $groupStack
      */
-    private $groupStack = array();
+    private array $groupStack = array();
 
     /**
      * An array of HTTP request Methods.
      *
      * @var array $methods
      */
-    public static $methods = array('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS');
+    public static array $methods = array('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS');
 
     /**
      * The default actions for a resourceful controller.
      *
      * @var array
      */
-    protected $resourceDefaults = array('index', 'create', 'store', 'show', 'edit', 'update', 'destroy');
+    protected array $resourceDefaults = array('index', 'create', 'store', 'show', 'edit', 'update', 'destroy');
 
     /**
      * Boolean indicating the use of Named Parameters on not.
      *
      * @var bool $namedParams
      */
-    protected $namedParams = true;
+    protected bool $namedParams = true;
 
 
     /**
@@ -163,7 +157,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
         //
         $this->bind('_missing', function($value) { return explode('/', $value); });
 
-        // Wheter or not are used the Named Parameters.
+        // Whether are used the Named Parameters.
         if ('unnamed' == Config::get('routing.parameters', 'named')) {
             $this->namedParams = false;
         }
@@ -172,11 +166,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new GET route with the router.
      *
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function get($route, $action)
+    public function get($route, array|Closure|string $action): Route
     {
         return $this->addRoute(array('GET', 'HEAD'), $route, $action);
     }
@@ -184,11 +178,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new POST route with the router.
      *
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function post($route, $action)
+    public function post($route, array|Closure|string $action): Route
     {
         return $this->addRoute('POST', $route, $action);
     }
@@ -196,11 +190,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new PUT route with the router.
      *
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function put($route, $action)
+    public function put($route, array|Closure|string $action): Route
     {
         return $this->addRoute('PUT', $route, $action);
     }
@@ -208,11 +202,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new PATCH route with the router.
      *
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function patch($route, $action)
+    public function patch($route, array|Closure|string $action): Route
     {
         return $this->addRoute('PATCH', $route, $action);
     }
@@ -220,11 +214,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new DELETE route with the router.
      *
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function delete($route, $action)
+    public function delete($route, array|Closure|string $action): Route
     {
         return $this->addRoute('DELETE', $route, $action);
     }
@@ -232,11 +226,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new OPTIONS route with the router.
      *
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function options($route, $action)
+    public function options($route, array|Closure|string $action): Route
     {
         return $this->addRoute('OPTIONS', $route, $action);
     }
@@ -244,11 +238,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new route responding to all verbs.
      *
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function any($route, $action)
+    public function any($route, array|Closure|string $action): Route
     {
         $methods = array('GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE');
 
@@ -258,12 +252,12 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a new route with the given verbs.
      *
-     * @param  array|string  $methods
-     * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param array|string $methods
+     * @param $route
+     * @param array|Closure|string $action
+     * @return Route
      */
-    public function match($methods, $route, $action)
+    public function match(array|string $methods, $route, array|Closure|string $action): Route
     {
         $methods = array_map('strtoupper', (array) $methods);
 
@@ -286,13 +280,13 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Route a Controller to a URI with wildcard routing.
      *
-     * @param  string  $uri
-     * @param  string  $controller
-     * @param  array   $names
+     * @param string $uri
+     * @param string $controller
+     * @param array $names
      * @return void
      * @throw  \BadMethodCallException
      */
-    public function controller($uri, $controller, $names = array())
+    public function controller(string $uri, string $controller, array $names = array())
     {
         if (! $this->namedParams) {
             throw new BadMethodCallException("Not available while using Unnamed Parameters.");
@@ -322,13 +316,13 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register an inspected controller route.
      *
-     * @param  array   $route
-     * @param  string  $controller
-     * @param  string  $method
-     * @param  array   $names
+     * @param array $route
+     * @param string $controller
+     * @param string $method
+     * @param array $names
      * @return void
      */
-    protected function registerInspected($route, $controller, $method, &$names)
+    protected function registerInspected(array $route, string $controller, string $method, array &$names)
     {
         $action = array('uses' => $controller .'@' .$method);
 
@@ -543,7 +537,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  string  $base
      * @param  string  $controller
      * @param  array   $options
-     * @return \Routing\Route
+     * @return Route
      */
     protected function addResourceIndex($name, $base, $controller, $options)
     {
@@ -561,7 +555,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  string  $base
      * @param  string  $controller
      * @param  array   $options
-     * @return \Routing\Route
+     * @return Route
      */
     protected function addResourceCreate($name, $base, $controller, $options)
     {
@@ -579,7 +573,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  string  $base
      * @param  string  $controller
      * @param  array   $options
-     * @return \Routing\Route
+     * @return Route
      */
     protected function addResourceStore($name, $base, $controller, $options)
     {
@@ -597,7 +591,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  string  $base
      * @param  string  $controller
      * @param  array   $options
-     * @return \Routing\Route
+     * @return Route
      */
     protected function addResourceShow($name, $base, $controller, $options)
     {
@@ -615,7 +609,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  string  $base
      * @param  string  $controller
      * @param  array   $options
-     * @return \Routing\Route
+     * @return Route
      */
     protected function addResourceEdit($name, $base, $controller, $options)
     {
@@ -649,7 +643,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  string  $base
      * @param  string  $controller
      * @param  array   $options
-     * @return \Routing\Route
+     * @return Route
      */
     protected function addPutResourceUpdate($name, $base, $controller, $options)
     {
@@ -682,7 +676,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  string  $base
      * @param  string  $controller
      * @param  array   $options
-     * @return \Routing\Route
+     * @return Route
      */
     protected function addResourceDestroy($name, $base, $controller, $options)
     {
@@ -697,7 +691,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * Create a route group with shared attributes.
      *
      * @param  array     $attributes
-     * @param  \Closure  $callback
+     * @param Closure $callback
      * @return void
      */
     public function group(array $attributes, Closure $callback)
@@ -809,8 +803,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      *
      * @param  array|string  $methods
      * @param  string  $uri
-     * @param  \Closure|array|string  $action
-     * @return \Routing\Route
+     * @param Closure|array|string  $action
+     * @return Route
      */
     protected function addRoute($methods, $route, $action = null)
     {
@@ -826,7 +820,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  array|string  $methods
      * @param  string  $uri
      * @param  mixed   $action
-     * @return \Routing\Route
+     * @return Route
      */
     protected function createRoute($methods, $uri, $action)
     {
@@ -852,7 +846,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * @param  array|string  $methods
      * @param  string  $uri
      * @param  mixed   $action
-     * @return \Routing\Route
+     * @return Route
      */
     protected function newRoute($methods, $uri, $action)
     {
@@ -875,7 +869,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Merge the group stack with the controller action.
      *
-     * @param  \Routing\Route  $route
+     * @param Route $route
      * @return void
      */
     protected function mergeController($route)
@@ -888,9 +882,9 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Create a response instance from the given value.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param SymfonyRequest $request
      * @param  mixed  $response
-     * @return \Http\Response
+     * @return Response
      */
     protected function prepareResponse($request, $response)
     {
@@ -939,7 +933,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * Get the Closure for a controller based action.
      *
      * @param  string  $controller
-     * @return \Closure
+     * @return Closure
      */
     protected function getClassClosure($controller)
     {
@@ -1006,7 +1000,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Dispatch the request to a route and return the response.
      *
-     * @param  \Http\Request  $request
+     * @param Request $request
      * @return mixed
      */
     public function dispatchToRoute(Request $request)
@@ -1039,7 +1033,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Dispatch the request to a asset file and return the response.
      *
-     * @param  \Http\Request  $request
+     * @param Request $request
      * @return mixed
      */
     public function dispatchToFile(Request $request)
@@ -1052,8 +1046,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Find the route matching a given request.
      *
-     * @param  \Http\Request  $request
-     * @return \Routing\Route
+     * @param Request $request
+     * @return Route
      */
     protected function findRoute(Request $request)
     {
@@ -1065,8 +1059,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Substitute the route bindings onto the route.
      *
-     * @param  \Routing\Route  $route
-     * @return \Routing\Route
+     * @param Route $route
+     * @return Route
      */
     protected function substituteBindings($route)
     {
@@ -1084,7 +1078,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      *
      * @param  string  $key
      * @param  string  $value
-     * @param  \Routing\Route  $route
+     * @param Route $route
      * @return mixed
      */
     protected function performBinding($key, $value, $route)
@@ -1197,12 +1191,11 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Register a Model binder for a wildcard.
      *
-     * @param  string  $key
-     * @param  string  $class
-     * @param  \Closure  $callback
+     * @param string $key
+     * @param string $class
+     * @param Closure|null $callback
      * @return void
      *
-     * @throws NotFoundHttpException
      */
     public function model($key, $class, Closure $callback = null)
     {
@@ -1244,7 +1237,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * Create a class based binding using the IoC container.
      *
      * @param  string    $binding
-     * @return \Closure
+     * @return Closure
      */
     public function createClassBinding($binding)
     {
@@ -1264,8 +1257,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      * Call the given filter with the request and response.
      *
      * @param  string  $filter
-     * @param  \Http\Request   $request
-     * @param  \Http\Response  $response
+     * @param Request $request
+     * @param Response $response
      * @return mixed
      */
     protected function callFilter($filter, $request, $response = null)
@@ -1278,8 +1271,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Call the given route's before filters.
      *
-     * @param  \Routing\Route  $route
-     * @param  \Http\Request  $request
+     * @param Route $route
+     * @param Request $request
      * @return mixed
      */
     public function callRouteBefore($route, $request)
@@ -1292,8 +1285,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Call the pattern based filters for the request.
      *
-     * @param  \Routing\Route  $route
-     * @param  \Http\Request  $request
+     * @param Route $route
+     * @param Request $request
      * @return mixed|null
      */
     protected function callPatternFilters($route, $request)
@@ -1308,7 +1301,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Find the patterned filters matching a request.
      *
-     * @param  \Http\Request  $request
+     * @param Request $request
      * @return array
      */
     public function findPatternFilters($request)
@@ -1375,8 +1368,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Call the given route's before (non-pattern) filters.
      *
-     * @param  \Routing\Route  $route
-     * @param  \Http\Request  $request
+     * @param Route $route
+     * @param Request $request
      * @return mixed
      */
     protected function callAttachedBefores($route, $request)
@@ -1391,9 +1384,9 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Call the given route's before filters.
      *
-     * @param  \Routing\Route  $route
-     * @param  \Http\Request  $request
-     * @param  \Http\Response  $response
+     * @param Route $route
+     * @param Request $request
+     * @param Response $response
      * @return mixed
      */
     public function callRouteAfter($route, $request, $response)
@@ -1408,8 +1401,8 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
      *
      * @param  string  $filter
      * @param  array  $parameters
-     * @param  \Routing\Route  $route
-     * @param  \Http\Request  $request
+     * @param Route $route
+     * @param Request $request
      * @return mixed
      */
     public function callRouteFilter($filter, $parameters, $route, $request, $response = null)
@@ -1505,7 +1498,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Get the currently dispatched route instance.
      *
-     * @return \Routing\Route
+     * @return Route
      */
     public function current()
     {
@@ -1606,7 +1599,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Get the request currently being dispatched.
      *
-     * @return \Http\Request
+     * @return Request
      */
     public function getCurrentRequest()
     {
@@ -1616,7 +1609,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Return the available Routes.
      *
-     * @return \Routing\RouteCollection
+     * @return RouteCollection
      */
     public function getRoutes()
     {
@@ -1626,7 +1619,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Get the controller dispatcher instance.
      *
-     * @return \Routing\ControllerDispatcher
+     * @return ControllerDispatcher
      */
     public function getControllerDispatcher()
     {
@@ -1640,7 +1633,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Set the controller dispatcher instance.
      *
-     * @param  \Routing\ControllerDispatcher  $dispatcher
+     * @param ControllerDispatcher $dispatcher
      * @return void
      */
     public function setControllerDispatcher(ControllerDispatcher $dispatcher)
@@ -1651,7 +1644,7 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Get the controller dispatcher instance.
      *
-     * @return \Routing\ControllerDispatcher
+     * @return ControllerDispatcher
      */
     public function getFileDispatcher()
     {
@@ -1663,9 +1656,9 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Get a Controller Inspector instance.
      *
-     * @return \Routing\ControllerInspector
+     * @return ControllerInspector
      */
-    public function getInspector()
+    public function getInspector(): ControllerInspector
     {
         return $this->inspector ?: $this->inspector = new ControllerInspector();
     }
@@ -1673,12 +1666,12 @@ class Router implements HttpKernelInterface, RouteFiltererInterface
     /**
      * Get the response for a given request.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  int   $type
-     * @param  bool  $catch
-     * @return \Http\Response
+     * @param SymfonyRequest $request
+     * @param int $type
+     * @param bool $catch
+     * @return SymfonyResponse
      */
-    public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(SymfonyRequest $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): SymfonyResponse
     {
         return $this->dispatch(Request::createFromBase($request));
     }

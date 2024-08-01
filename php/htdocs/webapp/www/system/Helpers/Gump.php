@@ -138,11 +138,11 @@ class Gump
         {
             if(is_array($v))
             {
-                $data[$k] = filter_var_array($v, FILTER_SANITIZE_STRING);
+                $data[$k] = filter_var_array($v, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             }
             else
             {
-                $data[$k] = filter_var($v, FILTER_SANITIZE_STRING);
+                $data[$k] = filter_var($v, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             }
         }
 
@@ -320,7 +320,7 @@ class Gump
                         }
                     }
 
-                    $value = filter_var($value, FILTER_SANITIZE_STRING);
+                    $value = filter_var($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
                 }
 
                 $return[$field] = $value;
@@ -723,7 +723,7 @@ class Gump
      */
     protected function filter_sanitize_string($value, $params = NULL)
     {
-        return filter_var($value, FILTER_SANITIZE_STRING);
+        return filter_var($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     }
 
     /**

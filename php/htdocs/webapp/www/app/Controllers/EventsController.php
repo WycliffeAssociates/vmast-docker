@@ -11312,7 +11312,7 @@ class EventsController extends Controller {
 
         $initChapter = $data["event"][0]->bookProject != "tn" ? 0 : -1;
         $currentChunkText = [];
-        $chunks = json_decode($data["event"][0]->chunks, true);
+        $chunks = json_decode($data["event"][0]->chunks ?? "", true);
         $data["chunks"] = $chunks;
 
         if ($currentChapter == $initChapter) {

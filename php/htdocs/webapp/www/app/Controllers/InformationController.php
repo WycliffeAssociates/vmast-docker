@@ -34,6 +34,7 @@ use App\Models\EventsModel;
 class InformationController extends Controller {
     private $eventModel;
     private $newsModel;
+    private $_saildictModel;
     private $notifications;
     private $renderedNotifications;
     private $news;

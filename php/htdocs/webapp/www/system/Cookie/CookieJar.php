@@ -112,7 +112,7 @@ class CookieJar
         if (head(func_get_args()) instanceof Cookie) {
             $cookie = head(func_get_args());
         } else {
-            $cookie = call_user_func_array(array($this, 'make'), func_get_args());
+            $cookie = call_user_func_array(array($this, 'make'), array_values(func_get_args()));
         }
 
         $this->queued[$cookie->getName()] = $cookie;

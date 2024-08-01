@@ -131,6 +131,6 @@ class EventRepository implements IEventRepository {
     }
 
     public function __call($method, $args) {
-        return call_user_func_array([$this->event, $method], $args);
+        return call_user_func_array([$this->event, $method], array_values($args));
     }
 }

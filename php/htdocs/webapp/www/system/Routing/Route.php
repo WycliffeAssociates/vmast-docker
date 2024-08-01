@@ -45,21 +45,21 @@ class Route
      *
      * @var array
      */
-    protected $action = array();
+    public $action = array();
 
     /**
      * The default values for the Route.
      *
      * @var array
      */
-    protected $defaults = array();
+    public $defaults = array();
 
     /**
      * The regular expression requirements.
      *
      * @var array
      */
-    protected $wheres = array();
+    public $wheres = array();
 
     /**
      * The matched Route parameters.
@@ -73,21 +73,21 @@ class Route
      *
      * @var array|null
      */
-    protected $parameterNames;
+    public $parameterNames;
 
     /**
      * The validators used by the routes.
      *
      * @var array
      */
-    protected static $validators;
+    public static $validators;
 
     /**
      * The compiled version of the Route.
      *
      * @var \Symfony\Component\Routing\CompiledRoute
      */
-    protected $compiled = null;
+    public $compiled = null;
 
     /**
      * The compiled pattern the Route responds to.
@@ -144,7 +144,7 @@ class Route
             return isset($param);
         });
 
-        return call_user_func_array($this->action['uses'], $parameters);
+        return call_user_func_array($this->action['uses'], array_values($parameters));
     }
 
     /**
@@ -201,7 +201,7 @@ class Route
      *
      * @return array
      */
-    protected function extractOptionalParameters()
+    public function extractOptionalParameters()
     {
         preg_match_all('/\{(\w+?)\?\}/', $this->uri, $matches);
 
@@ -214,7 +214,7 @@ class Route
      * @param  \Closure|array  $action
      * @return array
      */
-    protected function parseAction($action)
+    public function parseAction($action)
     {
         if (is_string($action) || is_callable($action)) {
             // A null, string or Closure is given as Action.
@@ -233,7 +233,7 @@ class Route
      * @param  array  $action
      * @return \Closure
      */
-    protected function findClosure(array $action)
+    public function findClosure(array $action)
     {
         return array_first($action, function($key, $value)
         {
@@ -287,7 +287,7 @@ class Route
      * @param  string  $filters
      * @return \Routing\Route
      */
-    protected function addFilters($type, $filters)
+    public function addFilters($type, $filters)
     {
         if (isset($this->action[$type])) {
             $this->action[$type] .= '|' .$filters;
@@ -334,7 +334,7 @@ class Route
      * @param  string  $filters
      * @return array
      */
-    protected function parseFilters($filters)
+    public static function parseFilters($filters)
     {
         return array_build(static::explodeFilters($filters), function($key, $value)
         {
@@ -348,7 +348,7 @@ class Route
      * @param  array|string  $filters
      * @return array
      */
-    protected static function explodeFilters($filters)
+    public static function explodeFilters($filters)
     {
         if (is_array($filters)) {
             return static::explodeArrayFilters($filters);
@@ -363,7 +363,7 @@ class Route
      * @param  array  $filters
      * @return array
      */
-    protected static function explodeArrayFilters(array $filters)
+    public static function explodeArrayFilters(array $filters)
     {
         $results = array();
 
@@ -395,7 +395,7 @@ class Route
      * @param  string  $filter
      * @return array
      */
-    protected static function parseParameterFilter($filter)
+    public static function parseParameterFilter($filter)
     {
         list($name, $parameters) = explode(':', $filter, 2);
 
@@ -503,7 +503,7 @@ class Route
      *
      * @return array
      */
-    protected function compileParameterNames()
+    public function compileParameterNames()
     {
         if (! isset($this->pattern)) {
             $this->compileRoute();
@@ -558,7 +558,7 @@ class Route
      * @param  \Http\Request  $request
      * @return array
      */
-    protected function bindPathParameters(Request $request)
+    public function bindPathParameters(Request $request)
     {
         preg_match($this->compiled->getRegex(), '/' .$request->decodedPath(), $matches);
 
@@ -572,7 +572,7 @@ class Route
      * @param  array  $parameters
      * @return array
      */
-    protected function bindHostParameters(Request $request, $parameters)
+    public function bindHostParameters(Request $request, $parameters)
     {
         preg_match($this->compiled->getHostRegex(), $request->getHost(), $matches);
 
@@ -585,7 +585,7 @@ class Route
      * @param  array  $matches
      * @return array
      */
-    protected function matchToKeys(array $matches)
+    public function matchToKeys(array $matches)
     {
         if (count($this->parameterNames()) == 0) return array();
 
@@ -603,7 +603,7 @@ class Route
      * @param  array  $parameters
      * @return array
      */
-    protected function replaceDefaults(array $parameters)
+    public function replaceDefaults(array $parameters)
     {
         foreach ($parameters as $key => &$value) {
             $value = isset($value) ? $value : array_get($this->defaults, $key);
@@ -658,7 +658,7 @@ class Route
      * @param  string  $expression
      * @return array
      */
-    protected function parseWhere($name, $expression)
+    public function parseWhere($name, $expression)
     {
         return is_array($name) ? $name : array($name => $expression);
     }
@@ -669,7 +669,7 @@ class Route
      * @param  array  $wheres
      * @return $this
      */
-    protected function whereArray(array $wheres)
+    public function whereArray(array $wheres)
     {
         foreach ($wheres as $name => $expression) {
             $this->where($name, $expression);

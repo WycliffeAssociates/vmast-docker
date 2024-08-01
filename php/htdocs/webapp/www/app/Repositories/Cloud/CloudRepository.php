@@ -47,7 +47,7 @@ class CloudRepository implements ICloudRepository {
         }
 
         return "$this->authUrl/login/oauth/authorize?client_id=$clientID"
-            ."&redirect_uri=${_ENV["APP_URL"]}members/oauth/$this->server"
+            ."&redirect_uri={$_ENV["APP_URL"]}members/oauth/$this->server"
             ."&response_type=code&state=$state";
     }
 
@@ -75,7 +75,7 @@ class CloudRepository implements ICloudRepository {
             "client_secret" => $clientSecret,
             "code" => $code,
             "grant_type" => "authorization_code",
-            "redirect_uri" => "${_ENV["APP_URL"]}members/oauth/$this->server",
+            "redirect_uri" => "{$_ENV["APP_URL"]}members/oauth/$this->server",
         ];
         $response = $this->authRequest("/login/oauth/access_token", $post);
         $json = json_decode($response);

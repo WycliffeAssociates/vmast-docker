@@ -37,6 +37,6 @@ class TranslationRepository implements ITranslationRepository {
     }
 
     public function __call($method, $args) {
-        return call_user_func_array([$this->translation, $method], $args);
+        return call_user_func_array([$this->translation, $method], array_values($args));
     }
 }

@@ -2,17 +2,14 @@
 
 namespace Exception;
 
-use Exception\PlainDisplayer;
-use Exception\WhoopsDisplayer;
-use Exception\ExceptionDisplayerInterface;
-use Exception\RedirectToException;
-
+use ReflectionClass;
+use ReflectionException;
+use Sentry\Exception\FatalErrorException;
 use Support\Contracts\ResponsePreparerInterface;
 use Support\Facades\Redirect;
 
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Symfony\Component\Debug\Exception\FatalErrorException as FatalError;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 use Closure;
 use Exception;
@@ -154,8 +151,8 @@ class Handler
     /**
      * Handle an exception for the application.
      *
-     * @param  \Exception  $exception
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Exception $exception
+     * @return Response
      */
     public function handleException($exception)
     {
@@ -169,7 +166,7 @@ class Handler
                 return Redirect::to($url, $exception->getStatusCode());
             }
         } else if (! $exception instanceof Exception) {
-            $exception = new FatalThrowableError($exception);
+            $exception = new FatalErrorException($exception);
         }
 
         $response = $this->callCustomHandlers($exception);
@@ -186,7 +183,7 @@ class Handler
     /**
      * Handle an uncaught exception.
      *
-     * @param  \Exception  $exception
+     * @param Exception $exception
      * @return void
      */
     public function handleUncaughtException($exception)
@@ -208,7 +205,7 @@ class Handler
 
             if (! $this->isFatal($type)) return;
 
-            $this->handleException(new FatalError($message, $type, 0, $file, $line))->send();
+            $this->handleException(new FatalErrorException($message, $type, 0, $file, $line))->send();
         }
     }
 
@@ -226,8 +223,8 @@ class Handler
     /**
      * Handle a console exception.
      *
-     * @param  \Exception  $exception
-     * @return void
+     * @param Exception $exception
+     * @return string
      */
     public function handleConsole($exception)
     {
@@ -237,7 +234,7 @@ class Handler
     /**
      * Handle the given exception.
      *
-     * @param  \Exception  $exception
+     * @param Exception $exception
      * @param  bool  $fromConsole
      * @return void
      */
@@ -258,7 +255,7 @@ class Handler
             try {
                 $response = $handler($exception, $code, $fromConsole);
             }
-            catch (\Exception $e)
+            catch (Exception $e)
             {
                 $response = $this->formatException($e);
             }
@@ -272,7 +269,7 @@ class Handler
     /**
      * Display the given exception to the user.
      *
-     * @param  \Exception  $exception
+     * @param Exception $exception
      * @return void
      */
     protected function displayException($exception)
@@ -286,7 +283,7 @@ class Handler
      * Determine if the given handler handles this exception.
      *
      * @param  \Closure    $handler
-     * @param  \Exception  $exception
+     * @param Exception $exception
      * @return bool
      */
     protected function handlesException(Closure $handler, $exception)
@@ -299,26 +296,29 @@ class Handler
     /**
      * Determine if the given handler type hints the exception.
      *
-     * @param  \ReflectionFunction  $reflection
-     * @param  \Exception  $exception
+     * @param ReflectionFunction $reflection
+     * @param Exception $exception
      * @return bool
+     * @throws ReflectionException
      */
     protected function hints(ReflectionFunction $reflection, $exception)
     {
         $parameters = $reflection->getParameters();
 
         $expected = $parameters[0];
+        $expectedType = $expected->getType();
+        $expectedClass = new ReflectionClass($expectedType->getName());
 
-        return ! $expected->getClass() || $expected->getClass()->isInstance($exception);
+        return $expectedClass->isInstance($exception);
     }
 
     /**
      * Format an exception thrown by a handler.
      *
-     * @param  \Exception  $e
+     * @param Exception $e
      * @return string
      */
-    protected function formatException(\Exception $e)
+    protected function formatException(Exception $e)
     {
         if ($this->debug) {
             $location = $e->getMessage() .' in '.$e->getFile() .':' .$e->getLine();

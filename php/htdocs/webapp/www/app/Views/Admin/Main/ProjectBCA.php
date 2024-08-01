@@ -228,8 +228,8 @@ if($project):
 <link href="<?php echo template_url("css/jquery-ui-timepicker-addon.css")?>" type="text/css" rel="stylesheet" />
 <script src="<?php echo template_url("js/jquery-ui-timepicker-addon.min.js")?>"></script>
 <?php if($language != "en"): ?>
-<script src="<?php echo template_url("js/i18n/jquery-ui-timepicker-".$language.".js")?>"></script>
-<script src="<?php echo template_url("js/i18n/datepicker-".$language.".js")?>"></script>
+<script src="<?php echo template_url("js/i18n/jquery-ui-timepicker-".mb_strtolower($language).".js")?>"></script>
+<script src="<?php echo template_url("js/i18n/datepicker-".mb_strtolower($language).".js")?>"></script>
 <?php endif; ?>
 
 <link href="<?php echo template_url("css/chosen.min.css?v=2")?>" type="text/css" rel="stylesheet" />

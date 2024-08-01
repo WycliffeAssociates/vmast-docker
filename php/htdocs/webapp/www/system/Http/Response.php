@@ -28,7 +28,7 @@ class Response extends SymfonyResponse
      * @param  mixed  $content
      * @return $this
      */
-    public function setContent($content)
+    public function setContent(mixed $content): static
     {
         $this->original = $content;
 

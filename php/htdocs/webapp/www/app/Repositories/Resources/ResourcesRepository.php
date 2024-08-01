@@ -371,11 +371,11 @@ class ResourcesRepository implements IResourcesRepository {
         $dcsSources = $this->getCatalogSources($dcsCatalog);
 
         $ids = array_map(function ($item) {
-            return "${item["langID"]}_${item["slug"]}";
+            return "{$item["langID"]}_{$item["slug"]}";
         }, $wacsSources);
 
         $newSources = array_filter($dcsSources, function($item) use($ids) {
-            $id = "${item["langID"]}_${item["slug"]}";
+            $id = "{$item["langID"]}_{$item["slug"]}";
             return !in_array($id, $ids);
         });
 

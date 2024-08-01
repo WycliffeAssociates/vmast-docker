@@ -4,21 +4,22 @@ namespace Http;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Symfony\Component\HttpFoundation\Response as SymphonyResponse;
 
 
 class FrameGuard implements HttpKernelInterface
 {
     /**
-     * The wrapped kernel implementation.
+     * The wrapped Kernel implementation.
      *
-     * @var \Symfony\Component\HttpKernel\HttpKernelInterface
+     * @var HttpKernelInterface
      */
-    protected $app;
+    protected HttpKernelInterface $app;
 
     /**
      * Create a new FrameGuard instance.
      *
-     * @param  \Symfony\Component\HttpKernel\HttpKernelInterface  $app
+     * @param HttpKernelInterface $app
      * @return void
      */
     public function __construct(HttpKernelInterface $app)
@@ -31,12 +32,13 @@ class FrameGuard implements HttpKernelInterface
      *
      * @implements HttpKernelInterface::handle
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  int   $type
-     * @param  bool  $catch
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param SymfonyRequest $request
+     * @param int $type
+     * @param bool $catch
+     * @return SymphonyResponse
+     * @throws \Exception
      */
-    public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(SymfonyRequest $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): SymphonyResponse
     {
         $response = $this->app->handle($request, $type, $catch);
 

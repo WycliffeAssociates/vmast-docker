@@ -48,7 +48,7 @@ trait MacroableTrait
     {
         if (static::hasMacro($method))
         {
-            return call_user_func_array(static::$macros[$method], $parameters);
+            return call_user_func_array(static::$macros[$method], array_values($parameters));
         }
 
         throw new \BadMethodCallException("Method {$method} does not exist.");

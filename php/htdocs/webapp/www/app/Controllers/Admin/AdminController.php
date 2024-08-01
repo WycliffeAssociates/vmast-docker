@@ -1019,7 +1019,7 @@ class AdminController extends Controller {
                 $sourceTrPair = explode("|", $sourceTranslation);
                 $gwLangsPair = explode("|", $subGwLangs);
 
-                $gatewayLanguage = $this->_member->adminGatewayLanguages->where("glID", $gwLangsPair[1])->first();
+                $gatewayLanguage = $this->_member->adminGatewayLanguages->where("glID", (int)$gwLangsPair[1])->first();
 
                 if(!$gatewayLanguage)
                 {
@@ -1346,7 +1346,7 @@ class AdminController extends Controller {
         $revisionMode = isset($_POST['revisionMode'])
             && in_array($_POST['revisionMode'], [RevisionMode::MAJOR, RevisionMode::MINOR]) ? $_POST['revisionMode']
             : RevisionMode::MAJOR;
-        $admins = isset($_POST['admins']) && !empty($_POST['admins']) ? array_unique($_POST['admins']) : [];
+        $admins = !empty($_POST['admins']) ? array_unique($_POST['admins']) : [];
         $act = isset($_POST['act']) && preg_match("/^(create|edit|delete)$/", $_POST['act']) ? $_POST['act'] : "create";
 
         if($bookCode == null)
@@ -1497,10 +1497,7 @@ class AdminController extends Controller {
                     }
 
                     if(!$event) {
-                        $postdata["dateFrom"] = date("Y-m-d H:i:s", strtotime("0000-00-00"));
-                        $postdata["dateTo"] = date("Y-m-d H:i:s", strtotime("0000-00-00"));
                         $postdata["inputMode"] = $inputMode;
-
                         $event = $this->eventRepo->create($postdata, $project);
                     } else {
                         // Create(change state) L2 event

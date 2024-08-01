@@ -344,6 +344,6 @@ class Model
     {
         $query = $this->newQuery();
 
-        return call_user_func_array(array($query, $method), $parameters);
+        return call_user_func_array(array($query, $method), array_values($parameters));
     }
 }

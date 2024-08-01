@@ -1,5 +1,6 @@
 <?php namespace Log;
 
+use BadMethodCallException;
 use Events\Dispatcher;
 use Support\Contracts\JsonableInterface;
 use Support\Contracts\ArrayableInterface;
@@ -76,7 +77,7 @@ class Writer
             $parameters[0] = json_encode($parameters[0]);
         }
 
-        return call_user_func_array(array($this->monolog, $method), $parameters);
+        return call_user_func_array(array($this->monolog, $method), array_values($parameters));
     }
 
     /**
@@ -255,7 +256,7 @@ class Writer
     {
         $level = head(func_get_args());
 
-        return call_user_func_array(array($this, $level), array_slice(func_get_args(), 1));
+        return call_user_func_array(array($this, $level), array_slice(array_values(func_get_args()), 1));
     }
 
     /**
@@ -265,7 +266,7 @@ class Writer
      * @param  mixed   $parameters
      * @return mixed
      *
-     * @throws \BadMethodCallException
+     * @throws BadMethodCallException
      */
     public function __call($method, $parameters)
     {
@@ -275,12 +276,10 @@ class Writer
 
             call_user_func_array(array($this, 'fireLogEvent'), array_merge(array($method), $parameters));
 
-            $method = 'add'.ucfirst($method);
-
             return $this->callMonolog($method, $parameters);
         }
 
-        throw new \BadMethodCallException("Method [$method] does not exist.");
+        throw new BadMethodCallException("Method [$method] does not exist.");
     }
 
     /**

@@ -65,6 +65,6 @@ class MemberRepository implements IMemberRepository
 
     public function __call($method, $args)
     {
-        return call_user_func_array([$this->member, $method], $args);
+        return call_user_func_array([$this->member, $method], array_values($args));
     }
 }

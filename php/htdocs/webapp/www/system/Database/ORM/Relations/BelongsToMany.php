@@ -824,7 +824,7 @@ class BelongsToMany extends Relation
         $query = $this->newPivotStatement();
 
         foreach ($this->pivotWheres as $whereArgs) {
-            call_user_func_array([$query, 'where'], $whereArgs);
+            call_user_func_array([$query, 'where'], array_values($whereArgs));
         }
 
         return $query->where($this->foreignKey, $this->parent->getKey());

@@ -9,3 +9,4 @@ www/errorlog.html
 nbproject
 .vscode/launch.json
 node_modules/
+composer.lock

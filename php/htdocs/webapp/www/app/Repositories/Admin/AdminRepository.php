@@ -42,6 +42,6 @@ class AdminRepository implements IAdminRepository
 
     public function __call($method, $args)
     {
-        return call_user_func_array([$this->superAdmin, $method], $args);
+        return call_user_func_array([$this->superAdmin, $method], array_values($args));
     }
 }

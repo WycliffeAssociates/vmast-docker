@@ -8,14 +8,15 @@
 
 namespace View;
 
+use BadMethodCallException;
+use Closure;
 use Support\Contracts\ArrayableInterface as Arrayable;
+use Support\Contracts\MessageProviderInterface;
 use Support\Contracts\RenderableInterface as Renderable;
 use Support\MessageBag;
 use View\Engines\EngineInterface;
-use View\Factory;
 
 use ArrayAccess;
-use Exception;
 
 
 /**
@@ -33,7 +34,7 @@ class View implements ArrayAccess, Renderable
     /**
      * The View Engine instance.
      *
-     * @var \View\Engines\EngineInterface
+     * @var EngineInterface
      */
     protected $engine;
 
@@ -73,10 +74,10 @@ class View implements ArrayAccess, Renderable
     /**
      * Get the string contents of the View.
      *
-     * @param  \Closure  $callback
+     * @param Closure|null $callback
      * @return string
      */
-    public function render(Closure $callback = null)
+    public function render(Closure $callback = null): string
     {
         $contents = $this->renderContents();
 
@@ -90,7 +91,7 @@ class View implements ArrayAccess, Renderable
      *
      * @return string
      */
-    public function renderContents()
+    public function renderContents(): string
     {
         return $this->engine->get($this->path, $this->gatherData());
     }
@@ -100,7 +101,7 @@ class View implements ArrayAccess, Renderable
      *
      * @return array
      */
-    public function gatherData()
+    public function gatherData(): array
     {
         $data = array_merge($this->factory->getShared(), $this->data);
 
@@ -131,7 +132,7 @@ class View implements ArrayAccess, Renderable
      * @param  string|null  $module
      * @return View
      */
-    public function nest($key, $view, array $data = array(), $module = null)
+    public function nest($key, $view, array $data = array(), $module = null): View|static
     {
         // The nested View instance inherit parent Data if none is given.
         if (empty($data)) $data = $this->data;
@@ -148,7 +149,7 @@ class View implements ArrayAccess, Renderable
      * @param  mixed   $value
      * @return View
      */
-    public function with($key, $value = null)
+    public function with($key, $value = null): static
     {
         if (is_array($key)) {
             $this->data = array_merge($this->data, $key);
@@ -162,10 +163,10 @@ class View implements ArrayAccess, Renderable
     /**
      * Add validation errors to the view.
      *
-     * @param  \Support\Contracts\MessageProviderInterface|array  $provider
-     * @return \View\View
+     * @param MessageProviderInterface|array  $provider
+     * @return View
      */
-    public function withErrors($provider)
+    public function withErrors($provider): static
     {
         if ($provider instanceof MessageProviderInterface) {
             $this->with('errors', $provider->getMessageBag());
@@ -246,7 +247,7 @@ class View implements ArrayAccess, Renderable
     /**
      * Implementation of the ArrayAccess offsetExists method.
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->data);
     }
@@ -254,15 +255,15 @@ class View implements ArrayAccess, Renderable
     /**
      * Implementation of the ArrayAccess offsetGet method.
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
-        return isset($this->data[$offset]) ? $this->data[$offset] : null;
+        return $this->data[$offset] ?? null;
     }
 
     /**
       * Implementation of the ArrayAccess offsetSet method.
       */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->data[$offset] = $value;
     }
@@ -270,7 +271,7 @@ class View implements ArrayAccess, Renderable
     /**
      * Implementation of the ArrayAccess offsetUnset method.
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->data[$offset]);
     }
@@ -280,7 +281,7 @@ class View implements ArrayAccess, Renderable
      */
     public function __get($key)
     {
-        return isset($this->data[$key]) ? $this->data[$key] : null;
+        return $this->data[$key] ?? null;
     }
 
     /**
@@ -304,9 +305,9 @@ class View implements ArrayAccess, Renderable
      *
      * @param  string  $method
      * @param  array   $params
-     * @return \View\View|static|void
+     * @return View|static|void
      *
-     * @throws \BadMethodCallException
+     * @throws BadMethodCallException
      */
     public function __call($method, $params)
     {
@@ -317,7 +318,7 @@ class View implements ArrayAccess, Renderable
             return $this->with($name, array_shift($params));
         }
 
-        throw new \BadMethodCallException("Method [$method] does not exist on " .get_class($this));
+        throw new BadMethodCallException("Method [$method] does not exist on " .get_class($this));
     }
 
 

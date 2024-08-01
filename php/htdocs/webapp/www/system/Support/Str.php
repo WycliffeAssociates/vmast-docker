@@ -101,7 +101,7 @@ class Str
         // pattern such as "library/*", making any string check convenient.
         $pattern = str_replace('\*', '.*', $pattern).'\z';
 
-        return (bool) preg_match('#^'.$pattern.'#', $value);
+        return (bool) preg_match('#^'.$pattern.'#', $value ?? '');
     }
 
     /**
@@ -409,7 +409,7 @@ class Str
     {
         if (isset(static::$macros[$method]))
         {
-            return call_user_func_array(static::$macros[$method], $parameters);
+            return call_user_func_array(static::$macros[$method], array_values($parameters));
         }
 
         throw new \BadMethodCallException("Method {$method} does not exist.");

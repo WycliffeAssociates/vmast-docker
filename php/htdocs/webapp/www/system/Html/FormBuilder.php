@@ -472,7 +472,7 @@ class FormBuilder
      */
     public function selectYear()
     {
-        return call_user_func_array(array($this, 'selectRange'), func_get_args());
+        return call_user_func_array(array($this, 'selectRange'), array_values(func_get_args()));
     }
 
     /**

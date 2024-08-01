@@ -95,6 +95,6 @@ class PreferenceRepository implements IPreferenceRepository
     }
 
     public function __call($method, $args) {
-        return call_user_func_array([$this->preference, $method], $args);
+        return call_user_func_array([$this->preference, $method], array_values($args));
     }
 }

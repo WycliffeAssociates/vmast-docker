@@ -4,7 +4,8 @@ namespace Foundation;
 
 use Closure;
 
-use Stack\Builder;
+use Exception;
+use Kernel\KernelBuilder;
 
 use Http\Request;
 use Http\Response;
@@ -20,7 +21,6 @@ use Config\FileEnvironmentVariablesLoader;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\Debug\Exception\FatalErrorException;
 
 use Support\Contracts\ResponsePreparerInterface;
 
@@ -111,7 +111,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Create a new Nova application instance.
      *
-     * @param  \Http\Request  $request
+     * @param  Request  $request
      * @return void
      */
     public function __construct(Request $request = null)
@@ -126,9 +126,9 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Create a new request instance from the request class.
      *
-     * @return \Http\Request
+     * @return Request
      */
-    protected function createNewRequest()
+    protected function createNewRequest(): Request
     {
         return forward_static_call(array(static::$requestClass, 'createFromGlobals'));
     }
@@ -136,10 +136,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Register the basic bindings into the container.
      *
-     * @param  \Http\Request  $request
+     * @param Request $request
      * @return void
      */
-    protected function registerBaseBindings($request)
+    protected function registerBaseBindings(Request $request): void
     {
         $this->instance('request', $request);
 
@@ -605,7 +605,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Run the application and send the response.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param  SymfonyRequest $request
      * @return void
      */
     public function run(SymfonyRequest $request = null)
@@ -622,13 +622,13 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Get the stacked HTTP kernel for the application.
      *
-     * @return  \Symfony\Component\HttpKernel\HttpKernelInterface
+     * @return  HttpKernelInterface
      */
     protected function getStackedClient()
     {
         $sessionReject = $this->bound('session.reject') ? $this['session.reject'] : null;
 
-        $client = (new Builder)
+        $client = (new KernelBuilder)
                     ->push('Cookie\Guard', $this['encrypter'])
                     ->push('Cookie\Queue', $this['cookie'])
                     ->push('Session\Middleware', $this['session'], $sessionReject);
@@ -641,17 +641,17 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Merge the developer defined middlewares onto the stack.
      *
-     * @param  \Stack\Builder
+     * @param  KernelBuilder
      * @return void
      */
-    protected function mergeCustomMiddlewares(Builder $stack)
+    protected function mergeCustomMiddlewares(KernelBuilder $stack)
     {
         foreach ($this->middlewares as $middleware) {
             list($class, $parameters) = array_values($middleware);
 
             array_unshift($parameters, $class);
 
-            call_user_func_array(array($stack, 'push'), $parameters);
+            call_user_func_array(array($stack, 'push'), array_values($parameters));
         }
     }
 
@@ -700,14 +700,14 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      *
      * @implements HttpKernelInterface::handle
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  int   $type
-     * @param  bool  $catch
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param  SymfonyRequest $request
+     * @param int $type
+     * @param bool $catch
+     * @return SymfonyResponse
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true): SymfonyResponse
+    public function handle(SymfonyRequest $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): SymfonyResponse
     {
         try {
             $this->refreshRequest($request = Request::createFromBase($request));
@@ -716,7 +716,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
 
             return $this->dispatch($request);
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             if (! $catch || $this->runningUnitTests()) throw $e;
 
             return $this['exception']->handleException($e);
@@ -726,10 +726,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Handle the given request and get the response.
      *
-     * @param  \Http\Request  $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param  Request  $request
+     * @return SymfonyResponse
      */
-    public function dispatch(Request $request)
+    public function dispatch(Request $request): SymfonyResponse
     {
         if ($this->isDownForMaintenance()) {
             $response = $this['events']->until('nova.app.down');
@@ -747,8 +747,8 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Call the "finish" and "shutdown" callbacks assigned to the application.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  \Symfony\Component\HttpFoundation\Response  $response
+     * @param  SymfonyRequest  $request
+     * @param  SymfonyResponse  $response
      * @return void
      */
     public function terminate(SymfonyRequest $request, SymfonyResponse $response): void
@@ -761,10 +761,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Refresh the bound request instance in the container.
      *
-     * @param  \Http\Request  $request
+     * @param  Request  $request
      * @return void
      */
-    protected function refreshRequest(Request $request)
+    protected function refreshRequest(Request $request): void
     {
         $this->instance('request', $request);
 
@@ -774,11 +774,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Call the "finish" callbacks assigned to the application.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  \Symfony\Component\HttpFoundation\Response  $response
+     * @param  SymfonyRequest  $request
+     * @param  SymfonyResponse  $response
      * @return void
      */
-    public function callFinishCallbacks(SymfonyRequest $request, SymfonyResponse $response)
+    public function callFinishCallbacks(SymfonyRequest $request, SymfonyResponse $response): void
     {
         foreach ($this->finishCallbacks as $callback) {
             call_user_func($callback, $request, $response);
@@ -801,10 +801,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Prepare the request by injecting any services.
      *
-     * @param  \Http\Request  $request
-     * @return \Http\Request
+     * @param  Request  $request
+     * @return Request
      */
-    public function prepareRequest(Request $request)
+    public function prepareRequest(Request $request): Request
     {
         if (! is_null($this['config']['session.driver']) && ! $request->hasSession()) {
             $request->setSession($this['session']->driver());
@@ -817,9 +817,9 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      * Prepare the given value as a Response object.
      *
      * @param  mixed  $value
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return SymfonyResponse
      */
-    public function prepareResponse($value)
+    public function prepareResponse($value): SymfonyResponse
     {
         if (! $value instanceof SymfonyResponse) $value = new Response($value);
 
@@ -994,10 +994,10 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Get or set the request class for the application.
      *
-     * @param  string  $class
+     * @param string|null $class
      * @return string
      */
-    public static function requestClass($class = null)
+    public static function requestClass(string $class = null): string
     {
         if (! is_null($class)) static::$requestClass = $class;
 
@@ -1009,7 +1009,7 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
      *
      * @return void
      */
-    public function setRequestForConsoleEnvironment()
+    public function setRequestForConsoleEnvironment(): void
     {
         $url = $this['config']->get('app.url', 'http://localhost');
 
@@ -1021,11 +1021,11 @@ class Application extends Container implements HttpKernelInterface, TerminableIn
     /**
      * Call a method on the default request class.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
-    public static function onRequest($method, $parameters = array())
+    public static function onRequest(string $method, array $parameters = array()): mixed
     {
         return forward_static_call_array(array(static::requestClass(), $method), $parameters);
     }

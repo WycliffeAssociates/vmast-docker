@@ -4,13 +4,12 @@ namespace Routing\Assets;
 
 use Config\Config;
 use Http\Response;
-use Routing\Assets\DispatcherInterface;
 use Support\Str;
 
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
+use Symfony\Component\Mime\MimeTypes;
 
 use Carbon\Carbon;
 
@@ -65,9 +64,9 @@ class DefaultDispatcher implements DispatcherInterface
     }
 
     /**
-     * Dispatch a Assets File Response.
+     * Dispatch an Assets File Response.
      *
-     * @return \Symfony\Component\HttpFoundation\Response|null
+     * @return SymfonyResponse|null
      */
     public function dispatch(SymfonyRequest $request)
     {
@@ -129,7 +128,7 @@ class DefaultDispatcher implements DispatcherInterface
      *
      * @param string $path
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return SymfonyResponse
      */
     public function serve($path, SymfonyRequest $request)
     {
@@ -140,7 +139,7 @@ class DefaultDispatcher implements DispatcherInterface
         }
 
         // Collect the current file information.
-        $guesser = MimeTypeGuesser::getInstance();
+        $guesser = MimeTypes::getDefault();
 
         // Even the Symfony's HTTP Foundation have troubles with the CSS and JS files?
         //
@@ -155,7 +154,7 @@ class DefaultDispatcher implements DispatcherInterface
 
                 break;
             default:
-                $contentType = $guesser->guess($path);
+                $contentType = $guesser->guessMimeType($path);
 
                 break;
         }

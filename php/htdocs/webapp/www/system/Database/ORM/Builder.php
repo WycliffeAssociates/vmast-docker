@@ -519,7 +519,7 @@ class Builder
 
             $this->query->addNestedWhereQuery($query->getQuery(), $boolean);
         } else {
-            call_user_func_array(array($this->query, 'where'), func_get_args());
+            call_user_func_array(array($this->query, 'where'), array_values(func_get_args()));
         }
 
         return $this;
@@ -785,7 +785,7 @@ class Builder
     {
         array_unshift($parameters, $this);
 
-        return call_user_func_array(array($this->model, $scope), $parameters) ?: $this;
+        return call_user_func_array(array($this->model, $scope), array_values($parameters)) ?: $this;
     }
 
     /**
@@ -890,12 +890,12 @@ class Builder
         if (isset($this->macros[$method])) {
             array_unshift($parameters, $this);
 
-            return call_user_func_array($this->macros[$method], $parameters);
+            return call_user_func_array($this->macros[$method], array_values($parameters));
         } else if (method_exists($this->model, $scope = 'scope'.ucfirst($method))) {
             return $this->callScope($scope, $parameters);
         }
 
-        $result = call_user_func_array(array($this->query, $method), $parameters);
+        $result = call_user_func_array(array($this->query, $method), array_values($parameters));
 
         return in_array($method, $this->passthru) ? $result : $this;
     }

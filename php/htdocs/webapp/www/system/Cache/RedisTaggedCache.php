@@ -71,7 +71,7 @@ class RedisTaggedCache extends TaggedCache
         $forever = array_unique($this->store->connection()->lrange($foreverKey, 0, -1));
 
         if (count($forever) > 0) {
-            call_user_func_array(array($this->store->connection(), 'del'), $forever);
+            call_user_func_array(array($this->store->connection(), 'del'), array_values($forever));
         }
     }
 

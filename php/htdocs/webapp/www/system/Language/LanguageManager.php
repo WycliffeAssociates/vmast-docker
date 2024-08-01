@@ -130,7 +130,7 @@ class LanguageManager
      */
     public function __call($method, $parameters)
     {
-        return call_user_func_array(array($this->instance(), $method), $parameters);
+        return call_user_func_array(array($this->instance(), $method), array_values($parameters));
     }
 
 }

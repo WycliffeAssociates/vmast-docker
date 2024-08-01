@@ -87,6 +87,6 @@ class LanguageRepository implements ILanguageRepository {
     }
 
     public function __call($method, $args) {
-        return call_user_func_array([$this->language, $method], $args);
+        return call_user_func_array([$this->language, $method], array_values($args));
     }
 }

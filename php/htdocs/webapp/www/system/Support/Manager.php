@@ -121,7 +121,7 @@ abstract class Manager
      */
     public function __call($method, $parameters)
     {
-        return call_user_func_array(array($this->driver(), $method), $parameters);
+        return call_user_func_array(array($this->driver(), $method), array_values($parameters));
     }
 
 }

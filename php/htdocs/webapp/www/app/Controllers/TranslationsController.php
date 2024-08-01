@@ -471,7 +471,7 @@ class TranslationsController extends Controller
                 $projectFiles = $this->getResourceProjectFiles($books);
                 switch ($resource) {
                     case "bc":
-                        $resourceName = "${bookCode}_bc";
+                        $resourceName = "{$bookCode}_bc";
                         break;
                     case "bca":
                         $resourceName = "bc";
@@ -480,7 +480,7 @@ class TranslationsController extends Controller
                         $resourceName = $resource;
                 }
 
-                $filename = "${lang}_$resourceName.zip";
+                $filename = "{$lang}_$resourceName.zip";
                 $this->_model->generateZip($filename, $projectFiles, true);
             }
         }
