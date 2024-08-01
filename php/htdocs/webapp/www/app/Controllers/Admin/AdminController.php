@@ -134,7 +134,7 @@ class AdminController extends Controller {
             }
         }
         $gatewayLanguages = $gatewayLanguages->sort(function($a, $b) {
-            return $a->gwLang >= $b->gwLang;
+            return $a->gwLang <=> $b->gwLang;
         });
         $gwLangs = $this->languageRepo->where("isGW", 1)->get();
 
@@ -166,11 +166,11 @@ class AdminController extends Controller {
 
         if ($isGlAdmin) {
             $projects = $gatewayLanguage->projects->sort(function($a, $b) {
-                return $a->targetLang >= $b->targetLang;
+                return $a->targetLang <=> $b->targetLang;
             });
         } else {
             $projects = $this->_member->adminProjects->where("glID", $glID)->sort(function($a, $b) {
-                return $a->targetLang >= $b->targetLang;
+                return $a->targetLang <=> $b->targetLang;
             });
         }
 
