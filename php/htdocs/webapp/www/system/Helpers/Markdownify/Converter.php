@@ -346,7 +346,7 @@ class Converter
                     if ($this->skipConversion) {
                         $this->isMarkdownable(); // update notConverted
                         $this->handleTagToText();
-                        continue;
+                        break;
                     }
 
                     // block elements
@@ -526,6 +526,8 @@ class Converter
             }
 
             if ($this->parser->isBlockElement) {
+                static $indent;
+
                 if ($this->parser->isStartTag) {
                     // looks like ins or del are block elements now
                     if (in_array($this->parent(), array('ins', 'del'))) {
@@ -535,7 +537,6 @@ class Converter
                     // don't indent inside <pre> tags
                     if ($this->parser->tagName == 'pre') {
                         $this->out($this->parser->node);
-                        static $indent;
                         $indent = $this->indent;
                         $this->indent = '';
                     } else {
@@ -557,7 +558,6 @@ class Converter
                     } else {
                         // reset indentation
                         $this->out($this->parser->node);
-                        static $indent;
                         $this->indent = $indent;
                     }
 
