@@ -123,7 +123,7 @@ class CloudRepository implements ICloudRepository {
 
             $gitRepo->add();
             $gitRepo->commit("Updated");
-            $gitRepo->push();
+            $gitRepo->push(branch: $repo->default_branch);
 
             $result->success = true;
             $result->repo = $repo;
