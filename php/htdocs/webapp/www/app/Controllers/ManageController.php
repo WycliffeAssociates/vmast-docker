@@ -1201,7 +1201,7 @@ class ManageController extends Controller {
         } else {
             $checker = $manageMode == "l2" ? EventMembers::L2_CHECKER : EventMembers::L3_CHECKER;
             $checkerTranslations = $translations->filter(function($item) use ($checker) {
-                $verses = $item->translatedVerses, 1 ? json_decode($item->translatedVerses, 1) : [];
+                $verses = $item->translatedVerses ? json_decode($item->translatedVerses, true) : [];
                 return array_key_exists($checker, $verses)
                     && array_key_exists("verses", $verses[$checker])
                     && !empty($verses[$checker]["verses"]);

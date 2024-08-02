@@ -21,15 +21,15 @@ class EncryptionCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->length = 32;
-
-        $error = null;
 
         $this->makeKey($this->length);
 
         $output->writeln("<info>An Encryption key has been generated.</>");
+
+        return 0;
     }
 
     public function makeKey($length)

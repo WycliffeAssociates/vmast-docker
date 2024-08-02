@@ -31,27 +31,27 @@ class ControllerCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->controllerName = $input->getArgument('controllerName');
         $this->methods = $input->getArgument('methods');
 
-        $error = null;
+        $error = 0;
         if (in_array($this->controllerName, ReservedWords::getList())) {
             $output->writeln("<error>Controller name cannot be a reserved word</>");
-            $error = true;
+            $error = 1;
         }
 
         if (is_array($this->methods)) {
             foreach ($this->methods as $method) {
                 if (in_array($method, ReservedWords::getList())) {
                     $output->writeln("<error>Method name ($method) cannot be a reserved word</>");
-                    $error = true;
+                    $error = 1;
                 }
             }
         }
 
-        if ($error == true) {
+        if ($error == 1) {
             exit;
         }
 
@@ -64,6 +64,8 @@ class ControllerCommand extends Command
         $this->makeController();
 
         $output->writeln("<info>Controller ".$this->controllerName." created with ".count($this->methods)." methods</>");
+
+        return $error;
     }
 
     private function makeViews()

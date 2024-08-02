@@ -17,19 +17,21 @@ class ClearLogsCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $logsPath = 'app/Storage/Logs';
         $logs = glob($logsPath.'/*');
-        $error = false;
+        $error = 0;
 
         if (is_dir($logsPath)) {
             $this->clearLogs($logs);
             $output->writeln("<info>The log files have been cleared.</>");
         } else {
             $output->writeln("<error>Logs directory does not exist.</>");
-            $error = true;
+            $error = 1;
         }
+
+        return $error;
     }
 
     public function clearLogs($files)

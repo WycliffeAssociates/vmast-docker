@@ -108,4 +108,11 @@ class MandrillTransport implements Swift_Transport
         return $this->key = $key;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function ping()
+    {
+    }
+
 }

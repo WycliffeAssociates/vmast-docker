@@ -91,7 +91,7 @@ use Shared\Legacy\Error;
                     class="form-control input-lg select-chosen-single"
                     name="projects"
                     data-type="projects"
-                    data-empty-error="<? echo __('projects_empty_error')?>"
+                    data-empty-error="<?php echo __('projects_empty_error')?>"
                     data-placeholder="<?php echo __("select_project") ?>">
                 <option></option>
                 <?php foreach (Projects::list() as $project): ?>
@@ -107,7 +107,7 @@ use Shared\Legacy\Error;
                     class="form-control input-lg select-chosen-single"
                     name="proj_lang"
                     data-type="proj_lang"
-                    data-empty-error="<? echo __('proj_lang_empty_error')?>"
+                    data-empty-error="<?php echo __('proj_lang_empty_error')?>"
                     data-placeholder="<?php echo __('proj_lang_select'); ?>">
                 <option></option>
                 <?php foreach ($languages as $lang):?>

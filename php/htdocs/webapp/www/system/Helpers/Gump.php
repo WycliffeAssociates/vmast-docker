@@ -280,8 +280,6 @@ class Gump
      */
     public static function sanitize(array $input, $fields = NULL, $utf8_encode = true)
     {
-        $magic_quotes = (bool)get_magic_quotes_gpc();
-
         if(is_null($fields))
         {
             $fields = array_keys($input);
@@ -301,12 +299,7 @@ class Gump
 
                 if(is_string($value))
                 {
-                    if($magic_quotes === TRUE)
-                    {
-                        $value = stripslashes($value);
-                    }
-
-                    if(strpos($value, "\r") !== FALSE)
+                    if(str_contains($value, "\r"))
                     {
                         $value = trim($value);
                     }

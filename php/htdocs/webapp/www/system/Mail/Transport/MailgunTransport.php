@@ -170,4 +170,10 @@ class MailgunTransport implements Swift_Transport
         return $this->domain = $domain;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function ping()
+    {
+    }
 }

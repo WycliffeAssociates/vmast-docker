@@ -105,7 +105,8 @@ class XCacheStore extends TaggableStore implements StoreInterface
      */
     public function flush()
     {
-        xcache_clear_cache(XC_TYPE_VAR);
+        if (defined('XC_TYPE_VAR') && function_exists('xcache_clear_cache'))
+            xcache_clear_cache(constant('XC_TYPE_VAR'));
     }
 
     /**

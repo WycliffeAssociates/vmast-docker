@@ -286,6 +286,7 @@ class ConverterExtra extends Converter
                     case 'center':
                         $right = ':';
                         $left = ':';
+                        break;
                     case 'right':
                         $right = ':';
                         break;

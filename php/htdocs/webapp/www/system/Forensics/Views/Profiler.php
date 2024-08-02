@@ -468,7 +468,10 @@
                 <?php $class = ''; ?>
                 <?php if (is_array($sections[$section])) { ?>
                     <?php foreach($sections[$section] as $key => $value) { ?>
-                        <tr><td class="<?= $class; ?>" style="width: 33%; vertical-align: top;"><b><?= $key; ?></td><td class="<?= $class; ?>" style="vertical-align: middle;"></b> <?=  $value; ?></td></tr>
+                        <tr>
+                            <td class="<?= $class; ?>" style="width: 33%; vertical-align: top;"><b><?= $key; ?></b></td>
+                            <td class="<?= $class; ?>" style="vertical-align: middle;"><?=  $value; ?></td>
+                        </tr>
                         <?php $class = ($class == '') ? 'alt' : ''; ?>
                     <?php } ?>
                 <?php } else { ?>

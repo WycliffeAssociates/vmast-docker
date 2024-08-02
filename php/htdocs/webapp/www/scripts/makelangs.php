@@ -28,11 +28,6 @@ $workPaths = array(
 );
 
 //
-function str_starts_with($haystack, $needle) {
-    return (($needle === '') || (strpos($haystack, $needle) === 0));
-}
-
-//
 function phpGrep($q, $path) {
     $ret = array();
 
