@@ -4,7 +4,7 @@ use Helpers\Session;
 
 if ($member)
 {
-    $langs = $member->profile->languages ? json_decode($member->profile->languages, true) : [];
+    $langs = $member->profile->languages ? (array)json_decode($member->profile->languages, true) : [];
     if (!empty($langs)) {
         $prefLang = key($langs);
     }

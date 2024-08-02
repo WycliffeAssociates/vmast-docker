@@ -691,7 +691,7 @@ class Gump
             "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q={$text}&langpair={$input_lang}|{$output_lang}"
         );
 
-        $json = $translation ? json_decode($translation, true) : [];
+        $json = $translation ? (array)json_decode($translation, true) : [];
 
         if($json['responseStatus'] != 200)
         {

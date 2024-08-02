@@ -95,7 +95,7 @@ class ReCaptcha
 
         // Evaluate the Google server response.
         if ($result !== false) {
-            $data = $result ? json_decode($result, true) : [];
+            $data = $result ? (array)json_decode($result, true) : [];
 
             if (is_array($data)) {
                 return ($data['success'] === true);

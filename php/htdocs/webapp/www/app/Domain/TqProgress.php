@@ -24,7 +24,7 @@ class TqProgress
         foreach ($event->chapters as $chapter) {
             $tmp["trID"] = $chapter->trID;
             $tmp["memberID"] = $chapter->memberID;
-            $tmp["chunks"] = $chapter->chunks ? json_decode($chapter->chunks, true) : [];
+            $tmp["chunks"] = $chapter->chunks ? (array)json_decode($chapter->chunks, true) : [];
             $tmp["done"] = $chapter->done;
 
             $data["chapters"][$chapter->chapter] = $tmp;
@@ -61,8 +61,8 @@ class TqProgress
             $data["chapters"][$key]["progress"] = 0;
 
             $currentChapter = $memberSteps[$chapter["memberID"]]["currentChapter"];
-            $otherCheck = $memberSteps[$chapter["memberID"]]["otherCheck"] ? json_decode($memberSteps[$chapter["memberID"]]["otherCheck"], true) : [];
-            $peerCheck = $memberSteps[$chapter["memberID"]]["peerCheck"] ? json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true) : [];
+            $otherCheck = $memberSteps[$chapter["memberID"]]["otherCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["otherCheck"], true) : [];
+            $peerCheck = $memberSteps[$chapter["memberID"]]["peerCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true) : [];
 
             // Set default values
             $data["chapters"][$key]["multi"]["state"] = StepsStates::NOT_STARTED;

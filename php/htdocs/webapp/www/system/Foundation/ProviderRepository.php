@@ -177,7 +177,7 @@ class ProviderRepository
         // service provided by the application and whether its provider is using
         // deferred loading or should be eagerly loaded on each request to us.
         if ($this->files->exists($path)) {
-            $manifest = $this->files->get($path) ? json_decode($this->files->get($path), true) : [];
+            $manifest = $this->files->get($path) ? (array)json_decode($this->files->get($path), true) : [];
 
             return array_merge($this->default, $manifest);
         }

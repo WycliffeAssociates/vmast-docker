@@ -50,11 +50,11 @@ class ApiModel extends Model
     public function getPredefinedChunks($book, $lang = "en", $project = "ulb") {
         try {
             $json = $this->downloadPredefinedChunks($book, $lang, $project);
-            $chunks = $json ? json_decode($json, true) : [];
+            $chunks = $json ? (array)json_decode($json, true) : [];
 
             if($chunks == null) {
                 $json = $this->downloadPredefinedChunks($book);
-                $chunks = $json ? json_decode($json, true) : [];
+                $chunks = $json ? (array)json_decode($json, true) : [];
             }
 
             $book = [];

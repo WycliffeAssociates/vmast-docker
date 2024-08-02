@@ -56,7 +56,7 @@
                                 <td>
                                     <?php $projects = array_map(function ($elm) {
                                         return __($elm);
-                                    }, $member->projects ? json_decode($member->projects, true) : []) ?>
+                                    }, $member->projects ? (array)json_decode($member->projects, true) : []) ?>
                                     <?php echo join(", ", $projects) ?>
                                 </td>
                                 <td>

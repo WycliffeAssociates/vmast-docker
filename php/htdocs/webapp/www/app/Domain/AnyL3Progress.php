@@ -27,7 +27,7 @@ class AnyL3Progress
 
                 $tmp["currentChapter"] = $chapter->checkerL3->currentChapter;
                 $tmp["step"] = $chapter->checkerL3->step;
-                $tmp["peerCheck"] = $chapter->checkerL3->peerCheck ? json_decode($chapter->checkerL3->peerCheck, true) : [];
+                $tmp["peerCheck"] = $chapter->checkerL3->peerCheck ? (array)json_decode($chapter->checkerL3->peerCheck, true) : [];
             }
 
             $data["chapters"][$chapter->chapter] = $tmp;

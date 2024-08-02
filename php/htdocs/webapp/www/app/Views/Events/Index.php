@@ -348,7 +348,7 @@ use Helpers\Tools;
             $eventImg = template_url("img/steps/big/peer-review.png");
         }
 
-        $wordsGroup = $event->words ? json_decode($event->words, true) : null;
+        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : null;
         $word = $event->word ?? null;
         ?>
         <div class="event_block <?php echo $key%2 == 0 ? "green-marked" : "" ?>">
@@ -454,7 +454,7 @@ use Helpers\Tools;
             $eventImg = template_url("img/steps/big/peer-review.png");
         }
 
-        $wordsGroup = $event->words ? json_decode($event->words, true) : null;
+        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : null;
         $word = $event->word ?? null;
         ?>
         <div class="event_block <?php echo $key%2 == 0 ? "gray-marked" : "" ?>">
@@ -633,7 +633,7 @@ use Helpers\Tools;
             $eventImg = template_url("img/steps/big/peer-review.png");
         }
 
-        $wordsGroup = $event->words ? json_decode($event->words, true) : null;
+        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : null;
         $word = $event->word ?? null;
         ?>
         <div class="event_block <?php echo $key%2 == 0 ? "gray-marked" : "" ?>">

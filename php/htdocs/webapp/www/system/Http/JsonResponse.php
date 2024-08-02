@@ -43,7 +43,7 @@ class JsonResponse extends SymfonyJsonResponse
      */
     public function getData($assoc = false, $depth = 512): mixed
     {
-        return $this->data ? json_decode($this->data, $assoc, $depth) : [];
+        return $this->data ? (array)json_decode($this->data, $assoc, $depth) : [];
     }
 
     /**

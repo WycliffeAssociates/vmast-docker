@@ -313,7 +313,7 @@ class EventsController extends Controller {
                                 $translation = [];
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $arr["firstvs"] = $tv->firstvs;
                                     $translation[] = $arr;
@@ -461,7 +461,7 @@ class EventsController extends Controller {
                         }
 
                         $data["event"][0]->checkerName = null;
-                        $verbCheck = $data["event"][0]->verbCheck ? json_decode($data["event"][0]->verbCheck, true) : [];
+                        $verbCheck = $data["event"][0]->verbCheck ? (array)json_decode($data["event"][0]->verbCheck, true) : [];
                         $checkDone = false;
                         if (array_key_exists($data["event"][0]->currentChapter, $verbCheck)) {
                             $memberID = $verbCheck[$data["event"][0]->currentChapter]["memberID"];
@@ -516,7 +516,7 @@ class EventsController extends Controller {
                                 $_POST = Gump::xss_clean($_POST);
 
                                 $chunks = $_POST["chunks_array"] ?? "";
-                                $chunks = $chunks ? json_decode($chunks) : [];
+                                $chunks = $chunks ? (array)json_decode($chunks) : [];
                                 if ($this->apiModel->testChunks($chunks, $sourceText["totalVerses"])) {
                                     // Include book title for chapter 1
                                     if ($data["event"][0]->currentChapter == 1) {
@@ -593,7 +593,7 @@ class EventsController extends Controller {
                                 );
 
                                 if (!empty($translationData)) {
-                                    $verses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                                    $verses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                                     $data["blind"] = $verses[EventMembers::TRANSLATOR]["blind"];
                                 }
                             } else {
@@ -691,7 +691,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $arr["firstvs"] = $tv->firstvs;
                                     $translation[] = $arr;
@@ -751,7 +751,7 @@ class EventsController extends Controller {
                                         $this->sendBookCompletedNotif($event);
                                     }
                                 } else {
-                                    $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                    $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                     if (!isset($peerCheck[$data["event"][0]->currentChapter])) {
                                         $peerCheck[$data["event"][0]->currentChapter] = [
                                             "memberID" => 0,
@@ -852,7 +852,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $arr["firstvs"] = $tv->firstvs;
                                     $translation[] = $arr;
@@ -871,8 +871,8 @@ class EventsController extends Controller {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                 $postdata = [];
                                 if ($peerCheck[$data["event"][0]->currentChapter]["done"] == 1) {
                                     $peerCheck[$data["event"][0]->currentChapter]["done"] = 2;
@@ -961,7 +961,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -979,8 +979,8 @@ class EventsController extends Controller {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                 if ($kwCheck[$data["event"][0]->currentChapter]["done"] == 1) {
                                     $kwCheck[$data["event"][0]->currentChapter]["done"] = 2;
                                     $crCheck[$data["event"][0]->currentChapter] = [
@@ -1038,7 +1038,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -1056,8 +1056,8 @@ class EventsController extends Controller {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
-                                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
+                                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                                 if ($crCheck[$data["event"][0]->currentChapter]["done"] == 1 &&
                                     (isset($crCheck[$data["event"][0]->currentChapter]["done2"]) && $crCheck[$data["event"][0]->currentChapter]["done2"] == 1)) {
                                     $crCheck[$data["event"][0]->currentChapter]["done"] = 2;
@@ -1114,7 +1114,7 @@ class EventsController extends Controller {
                                 $translation = [];
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -1188,7 +1188,7 @@ class EventsController extends Controller {
                                         foreach ($chaptersDB as $chapter) {
                                             $tmp["trID"] = $chapter["trID"];
                                             $tmp["memberID"] = $chapter["memberID"];
-                                            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                             $tmp["done"] = $chapter["done"];
 
                                             $chapters[$chapter["chapter"]] = $tmp;
@@ -1212,7 +1212,7 @@ class EventsController extends Controller {
                                         if (!empty($nextChapterDB))
                                             $nextChapter = $nextChapterDB[0]->chapter;
 
-                                        $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                                        $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                                         $otherCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                         $postdata = [
                                             "step" => $nextChapter > 0 ? EventSteps::PRAY : EventSteps::NONE,
@@ -1462,7 +1462,7 @@ class EventsController extends Controller {
                                     $data["event"][0]->currentChunk);
 
                                 if (!empty($translationData)) {
-                                    $verses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                                    $verses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                                     $data["translation"] = $verses[EventMembers::TRANSLATOR]["verses"];
                                 }
                             } else {
@@ -1532,7 +1532,7 @@ class EventsController extends Controller {
                                     $data["event"][0]->currentChapter);
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -1566,7 +1566,7 @@ class EventsController extends Controller {
                                 foreach ($chaptersDB as $chapter) {
                                     $tmp["trID"] = $chapter["trID"];
                                     $tmp["memberID"] = $chapter["memberID"];
-                                    $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                    $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                     $tmp["done"] = $chapter["done"];
 
                                     $chapters[$chapter["chapter"]] = $tmp;
@@ -1583,7 +1583,7 @@ class EventsController extends Controller {
                                 if (!empty($nextChapterDB))
                                     $nextChapter = $nextChapterDB[0]->chapter;
 
-                                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                                 if (!array_key_exists($data['currentChapter'], $otherCheck)) {
                                     $otherCheck[$data['currentChapter']] = [
                                         "memberID" => 0,
@@ -1733,7 +1733,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -1791,7 +1791,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -1829,7 +1829,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["done"] = $chapter["done"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -1846,7 +1846,7 @@ class EventsController extends Controller {
                                     if (!empty($nextChapterDB))
                                         $nextChapter = $nextChapterDB[0]->chapter;
 
-                                    $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                                    $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                                     if (!array_key_exists($data['currentChapter'], $otherCheck)) {
                                         $otherCheck[$data['currentChapter']] = [
                                             "memberID" => 0,
@@ -2011,7 +2011,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -2076,7 +2076,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -2118,7 +2118,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["done"] = $chapter["done"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -2137,7 +2137,7 @@ class EventsController extends Controller {
                                     if (!empty($nextChapterDB))
                                         $nextChapter = $nextChapterDB[0]->chapter;
 
-                                    $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                                    $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                                     if (!array_key_exists($data['currentChapter'], $otherCheck)) {
                                         $otherCheck[$data['currentChapter']] = [
                                             "memberID" => 0,
@@ -2315,7 +2315,7 @@ class EventsController extends Controller {
                                 $_POST = Gump::xss_clean($_POST);
 
                                 $chunks = $_POST["chunks_array"] ?? "";
-                                $chunks = $chunks ? json_decode($chunks) : [];
+                                $chunks = $chunks ? (array)json_decode($chunks) : [];
 
                                 if ($this->apiModel->testChunks($chunks, $sourceText["totalVerses"])) {
                                     // Include book title for chapter 1
@@ -2358,7 +2358,7 @@ class EventsController extends Controller {
                                     ->getEventTranslation($data["event"][0]->trID, $data["event"][0]->currentChapter, $data["event"][0]->currentChunk);
 
                                 if (!empty($translationData)) {
-                                    $verses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                                    $verses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                                     $data["words"] = $verses[EventMembers::TRANSLATOR]["words"];
                                 }
                             } else {
@@ -2418,7 +2418,7 @@ class EventsController extends Controller {
                                     ->getEventTranslation($data["event"][0]->trID, $data["event"][0]->currentChapter, $data["event"][0]->currentChunk);
 
                                 if (!empty($translationData)) {
-                                    $verses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                                    $verses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                                     $data["words"] = $verses[EventMembers::TRANSLATOR]["words"];
                                     $data["symbols"] = $verses[EventMembers::TRANSLATOR]["symbols"];
                                 }
@@ -2479,7 +2479,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -2507,7 +2507,7 @@ class EventsController extends Controller {
                                 foreach ($chaptersDB as $chapter) {
                                     $tmp["trID"] = $chapter["trID"];
                                     $tmp["memberID"] = $chapter["memberID"];
-                                    $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                    $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                     $tmp["done"] = $chapter["done"];
 
                                     $chapters[$chapter["chapter"]] = $tmp;
@@ -2523,7 +2523,7 @@ class EventsController extends Controller {
                                 if (!empty($nextChapterDB))
                                     $nextChapter = $nextChapterDB[0]->chapter;
 
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                 if (!array_key_exists($data["event"][0]->currentChapter, $kwCheck)) {
                                     $kwCheck[$data["event"][0]->currentChapter] = [
                                         "memberID" => 0,
@@ -2701,7 +2701,7 @@ class EventsController extends Controller {
                                     ->getEventTranslation($data["event"][0]->trID, $data["event"][0]->currentChapter, $data["event"][0]->currentChunk);
 
                                 if (!empty($translationData)) {
-                                    $verses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                                    $verses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                                     $data["words"] = $verses[EventMembers::TRANSLATOR]["words"];
                                 }
 
@@ -2816,7 +2816,7 @@ class EventsController extends Controller {
                                     ->getEventTranslation($data["event"][0]->trID, $data["event"][0]->currentChapter, $data["event"][0]->currentChunk);
 
                                 if (!empty($translationData)) {
-                                    $verses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                                    $verses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                                     $data["words"] = $verses[EventMembers::TRANSLATOR]["words"];
                                     $data["symbols"] = $verses[EventMembers::TRANSLATOR]["symbols"];
                                 }
@@ -2893,7 +2893,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -2921,7 +2921,7 @@ class EventsController extends Controller {
                                 foreach ($chaptersDB as $chapter) {
                                     $tmp["trID"] = $chapter["trID"];
                                     $tmp["memberID"] = $chapter["memberID"];
-                                    $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                    $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                     $tmp["done"] = $chapter["done"];
 
                                     $chapters[$chapter["chapter"]] = $tmp;
@@ -2937,7 +2937,7 @@ class EventsController extends Controller {
                                 if (!empty($nextChapterDB))
                                     $nextChapter = $nextChapterDB[0]->chapter;
 
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                 if (!array_key_exists($data["event"][0]->currentChapter, $kwCheck)) {
                                     $kwCheck[$data["event"][0]->currentChapter] = [
                                         "memberID" => 0,
@@ -3119,7 +3119,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -3174,7 +3174,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -3208,7 +3208,7 @@ class EventsController extends Controller {
                                 foreach ($chaptersDB as $chapter) {
                                     $tmp["trID"] = $chapter["trID"];
                                     $tmp["memberID"] = $chapter["memberID"];
-                                    $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                    $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                     $tmp["done"] = $chapter["done"];
 
                                     $chapters[$chapter["chapter"]] = $tmp;
@@ -3226,7 +3226,7 @@ class EventsController extends Controller {
                                     $nextChapter = $nextChapterDB[0]->chapter;
 
                                 // For the first checker
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 if (!array_key_exists($data['currentChapter'], $peerCheck)) {
                                     $peerCheck[$data['currentChapter']] = [
                                         "memberID" => 0,
@@ -3407,7 +3407,7 @@ class EventsController extends Controller {
                             );
 
                             if (!empty($translationData)) {
-                                $verses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                                $verses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                                 $data["translation"] = $verses[EventMembers::TRANSLATOR]["verses"];
                             }
                         } else {
@@ -3470,7 +3470,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -3504,7 +3504,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["done"] = $chapter["done"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -3524,7 +3524,7 @@ class EventsController extends Controller {
                                     if (!empty($nextChapterDB))
                                         $nextChapter = $nextChapterDB[0]->chapter;
 
-                                    $otherCheck = $event->otherCheck ? json_decode($event->otherCheck, true) : [];
+                                    $otherCheck = $event->otherCheck ? (array)json_decode($event->otherCheck, true) : [];
                                     if (!array_key_exists($event->currentChapter, $otherCheck)) {
                                         $otherCheck[$event->currentChapter] = [
                                             "memberID" => 0,
@@ -3689,7 +3689,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -3747,7 +3747,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -3781,7 +3781,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["done"] = $chapter["done"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -3801,7 +3801,7 @@ class EventsController extends Controller {
                                     if (!empty($nextChapterDB))
                                         $nextChapter = $nextChapterDB[0]->chapter;
 
-                                    $otherCheck = $event->otherCheck ? json_decode($event->otherCheck, true) : [];
+                                    $otherCheck = $event->otherCheck ? (array)json_decode($event->otherCheck, true) : [];
                                     if (!array_key_exists($event->currentChapter, $otherCheck)) {
                                         $otherCheck[$event->currentChapter] = [
                                             "memberID" => 0,
@@ -3970,7 +3970,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -4029,7 +4029,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -4063,7 +4063,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["done"] = $chapter["done"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -4083,7 +4083,7 @@ class EventsController extends Controller {
                                     if (!empty($nextChapterDB))
                                         $nextChapter = $nextChapterDB[0]->chapter;
 
-                                    $otherCheck = $event->otherCheck ? json_decode($event->otherCheck, true) : [];
+                                    $otherCheck = $event->otherCheck ? (array)json_decode($event->otherCheck, true) : [];
                                     if (!array_key_exists($event->currentChapter, $otherCheck)) {
                                         $otherCheck[$event->currentChapter] = [
                                             "memberID" => 0,
@@ -4170,7 +4170,7 @@ class EventsController extends Controller {
                         $translation = array();
 
                         foreach ($translationData as $tv) {
-                            $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                            $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                             $arr["tID"] = $tv->tID;
                             $arr["firstvs"] = $tv->firstvs;
                             $translation[] = $arr;
@@ -4187,15 +4187,15 @@ class EventsController extends Controller {
 
                         if (isset($_POST["confirm_step"])) {
                             if ($data["event"][0]->step == EventSteps::PEER_REVIEW) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 $peerCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                 $postdata["peerCheck"] = json_encode($peerCheck);
                             } elseif ($data["event"][0]->step == EventSteps::KEYWORD_CHECK) {
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                 $kwCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                 $postdata["kwCheck"] = json_encode($kwCheck);
                             } else {
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                 $thisMemberID = $this->member->memberID;
 
                                 if (isset($crCheck[$data["event"][0]->currentChapter]["memberID"]) &&
@@ -4301,7 +4301,7 @@ class EventsController extends Controller {
                 if (!empty($chapters)) {
                     $data["event"][0]->chunks = $chapters[0]["chunks"];
                 }
-                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                 $currentStep = $data["event"][0]->step;
 
                 switch ($currentStep) {
@@ -4485,7 +4485,7 @@ class EventsController extends Controller {
                                     $data["event"][0]->currentChapter);
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -4526,7 +4526,7 @@ class EventsController extends Controller {
                                     // 5 for PEER_REVIEW step
                                     $otherCheck[$data["event"][0]->currentChapter]["done"] = 5;
 
-                                    $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                    $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                     $peerCheck[$data["event"][0]->currentChapter] = [
                                         "memberID" => 0,
                                         "done" => 0
@@ -4574,7 +4574,7 @@ class EventsController extends Controller {
                                     $data["event"][0]->currentChapter);
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -4595,7 +4595,7 @@ class EventsController extends Controller {
                                 // 5 for PEER_REVIEW step
                                 $otherCheck[$data["event"][0]->currentChapter]["done"] = 5;
 
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 $peerCheck[$data["event"][0]->currentChapter] = [
                                     "memberID" => 0,
                                     "done" => 0
@@ -4644,7 +4644,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -4662,7 +4662,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                                 if ($data["event"][0]->peer == 1) {
                                     if (isset($peerCheck[$data['currentChapter']]) &&
@@ -4696,7 +4696,7 @@ class EventsController extends Controller {
                                         foreach ($chaptersDB as $chapter) {
                                             $tmp["trID"] = $chapter["trID"];
                                             $tmp["memberID"] = $chapter["memberID"];
-                                            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                             $tmp["done"] = $chapter["done"];
                                             $tmp["checked"] = $chapter["checked"];
 
@@ -4808,7 +4808,7 @@ class EventsController extends Controller {
                     $data["event"][0]->chunks = $chapters[0]["chunks"];
                 }
                 $data["isCheckerPage"] = true;
-                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                 $currentStep = $data["event"][0]->step;
 
                 switch ($data["event"][0]->step) {
@@ -4872,7 +4872,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -4918,7 +4918,7 @@ class EventsController extends Controller {
                                     // 2 for PEER_REVIEW step
                                     $otherCheck[$data["event"][0]->currentChapter]["done"] = 2;
 
-                                    $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                    $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                     if (!array_key_exists($data['currentChapter'], $peerCheck)) {
                                         $peerCheck[$data["event"][0]->currentChapter] = [
                                             "memberID" => 0,
@@ -4966,7 +4966,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -4984,7 +4984,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                                 if ($data["event"][0]->peer == 1) {
                                     if (isset($peerCheck[$data['currentChapter']]) &&
@@ -5018,7 +5018,7 @@ class EventsController extends Controller {
                                         foreach ($chaptersDB as $chapter) {
                                             $tmp["trID"] = $chapter["trID"];
                                             $tmp["memberID"] = $chapter["memberID"];
-                                            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                             $tmp["done"] = $chapter["done"];
                                             $tmp["checked"] = $chapter["checked"];
 
@@ -5126,7 +5126,7 @@ class EventsController extends Controller {
                 if (!empty($chapters)) {
                     $data["event"][0]->chunks = $chapters[0]["chunks"];
                 }
-                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                 $currentStep = $data["event"][0]->step;
 
                 switch ($currentStep) {
@@ -5197,7 +5197,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -5243,7 +5243,7 @@ class EventsController extends Controller {
                                     // 2 for PEER_REVIEW step
                                     $otherCheck[$data["event"][0]->currentChapter]["done"] = 2;
 
-                                    $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                    $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                     if (!array_key_exists($data['currentChapter'], $peerCheck)) {
                                         $peerCheck[$data["event"][0]->currentChapter] = [
                                             "memberID" => 0,
@@ -5297,7 +5297,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -5314,7 +5314,7 @@ class EventsController extends Controller {
                         if (isset($_POST) && !empty($_POST)) {
                             $confirm_step = isset($_POST["confirm_step"]) ? $_POST["confirm_step"] : false;
                             if ($confirm_step) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                                 if ($data["event"][0]->peer == 1) {
                                     if (isset($peerCheck[$data['currentChapter']]) &&
@@ -5352,7 +5352,7 @@ class EventsController extends Controller {
                                         foreach ($chaptersDB as $chapter) {
                                             $tmp["trID"] = $chapter["trID"];
                                             $tmp["memberID"] = $chapter["memberID"];
-                                            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                             $tmp["done"] = $chapter["done"];
                                             $tmp["checked"] = $chapter["checked"];
 
@@ -5465,7 +5465,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -5487,12 +5487,12 @@ class EventsController extends Controller {
                                     ]);
 
                                     if (!empty($keywords)) {
-                                        $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                        $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                         if (array_key_exists($data["event"][0]->currentChapter, $kwCheck)) {
                                             $kwCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                         }
 
-                                        $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                        $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                         $crCheck[$data["event"][0]->currentChapter] = [
                                             "memberID" => 0,
                                             "done" => 0
@@ -5541,7 +5541,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -5556,7 +5556,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                 if (array_key_exists($data["event"][0]->currentChapter, $crCheck)) {
                                     $crCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                 }
@@ -5600,7 +5600,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -5674,7 +5674,7 @@ class EventsController extends Controller {
                                             foreach ($chaptersDB as $chapter) {
                                                 $tmp["trID"] = $chapter["trID"];
                                                 $tmp["memberID"] = $chapter["memberID"];
-                                                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                                $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                                 $tmp["checked"] = $chapter["checked"];
 
                                                 $chapters[$chapter["chapter"]] = $tmp;
@@ -5701,7 +5701,7 @@ class EventsController extends Controller {
                                                 "chapter" => $data["event"][0]->currentChapter
                                             ]);
 
-                                            $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                            $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                             if (array_key_exists($data["event"][0]->currentChapter, $crCheck)) {
                                                 $crCheck[$data["event"][0]->currentChapter]["done"] = 2;
                                             }
@@ -5802,7 +5802,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -5817,12 +5817,12 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                 if (array_key_exists($data["event"][0]->currentChapter, $kwCheck)) {
                                     $kwCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                 }
 
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                 $crCheck[$data["event"][0]->currentChapter] = [
                                     "memberID" => 0,
                                     "done" => 0
@@ -5867,7 +5867,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -5919,7 +5919,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["checked"] = $chapter["checked"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -5940,7 +5940,7 @@ class EventsController extends Controller {
 
                                     $this->eventModel->updateChapter(["checked" => true], ["eventID" => $data["event"][0]->eventID, "chapter" => $data["event"][0]->currentChapter]);
 
-                                    $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                    $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                     if (array_key_exists($data["event"][0]->currentChapter, $crCheck)) {
                                         $crCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                     }
@@ -6014,7 +6014,7 @@ class EventsController extends Controller {
                 $data["isCheckerPage"] = true;
 
                 if ($data["event"][0]->step == EventSteps::PEER_REVIEW) {
-                    $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                    $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                     // Get radio source
                     $sourceText = $this->getOtherSourceText($data);
@@ -6032,7 +6032,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -6090,7 +6090,7 @@ class EventsController extends Controller {
                             foreach ($chaptersDB as $chapter) {
                                 $tmp["trID"] = $chapter["trID"];
                                 $tmp["memberID"] = $chapter["memberID"];
-                                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                 $tmp["done"] = $chapter["done"];
                                 $tmp["checked"] = $chapter["checked"];
 
@@ -6188,7 +6188,7 @@ class EventsController extends Controller {
                     $event->chunks = $chapters[0]["chunks"];
                 }
                 $data["isCheckerPage"] = true;
-                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                 $currentStep = $event->step;
 
                 switch ($event->step) {
@@ -6246,7 +6246,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -6284,7 +6284,7 @@ class EventsController extends Controller {
                                     // 2 for PEER_REVIEW step
                                     $otherCheck[$event->currentChapter]["done"] = 2;
 
-                                    $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                                    $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
                                     if (!array_key_exists($event->currentChapter, $peerCheck)) {
                                         $peerCheck[$event->currentChapter] = [
                                             "memberID" => 0,
@@ -6332,7 +6332,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -6346,7 +6346,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                                $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
 
                                 if ($event->peer == 1) {
                                     if (isset($peerCheck[$event->currentChapter]) &&
@@ -6380,7 +6380,7 @@ class EventsController extends Controller {
                                         foreach ($chaptersDB as $chapter) {
                                             $tmp["trID"] = $chapter["trID"];
                                             $tmp["memberID"] = $chapter["memberID"];
-                                            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                             $tmp["done"] = $chapter["done"];
                                             $tmp["checked"] = $chapter["checked"];
 
@@ -6498,7 +6498,7 @@ class EventsController extends Controller {
                     $event->chunks = $chapters[0]["chunks"];
                 }
                 $data["isCheckerPage"] = true;
-                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                 $currentStep = $event->step;
 
                 switch ($event->step) {
@@ -6566,7 +6566,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -6604,7 +6604,7 @@ class EventsController extends Controller {
                                     // 2 for PEER_REVIEW step
                                     $otherCheck[$event->currentChapter]["done"] = 2;
 
-                                    $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                                    $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
                                     if (!array_key_exists($event->currentChapter, $peerCheck)) {
                                         $peerCheck[$event->currentChapter] = [
                                             "memberID" => 0,
@@ -6657,7 +6657,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -6671,7 +6671,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                                $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
 
                                 if ($event->peer == 1) {
                                     if (isset($peerCheck[$event->currentChapter]) &&
@@ -6705,7 +6705,7 @@ class EventsController extends Controller {
                                         foreach ($chaptersDB as $chapter) {
                                             $tmp["trID"] = $chapter["trID"];
                                             $tmp["memberID"] = $chapter["memberID"];
-                                            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                             $tmp["done"] = $chapter["done"];
                                             $tmp["checked"] = $chapter["checked"];
 
@@ -6824,7 +6824,7 @@ class EventsController extends Controller {
                     $event->chunks = $chapters[0]["chunks"];
                 }
                 $data["isCheckerPage"] = true;
-                $otherCheck = $data["event"][0]->otherCheck ? json_decode($data["event"][0]->otherCheck, true) : [];
+                $otherCheck = $data["event"][0]->otherCheck ? (array)json_decode($data["event"][0]->otherCheck, true) : [];
                 $currentStep = $event->step;
 
                 switch ($event->step) {
@@ -6895,7 +6895,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -6933,7 +6933,7 @@ class EventsController extends Controller {
                                     // 2 for PEER_REVIEW step
                                     $otherCheck[$event->currentChapter]["done"] = 2;
 
-                                    $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                                    $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
                                     if (!array_key_exists($event->currentChapter, $peerCheck)) {
                                         $peerCheck[$event->currentChapter] = [
                                             "memberID" => 0,
@@ -6987,7 +6987,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -7001,7 +7001,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                                $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
 
                                 if ($event->peer == 1) {
                                     if (isset($peerCheck[$event->currentChapter]) &&
@@ -7035,7 +7035,7 @@ class EventsController extends Controller {
                                         foreach ($chaptersDB as $chapter) {
                                             $tmp["trID"] = $chapter["trID"];
                                             $tmp["memberID"] = $chapter["memberID"];
-                                            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                             $tmp["done"] = $chapter["done"];
                                             $tmp["checked"] = $chapter["checked"];
 
@@ -7192,7 +7192,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -7250,7 +7250,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -7305,7 +7305,7 @@ class EventsController extends Controller {
                                 foreach ($chaptersDB as $chapter) {
                                     $tmp["trID"] = $chapter["trID"];
                                     $tmp["memberID"] = $chapter["memberID"];
-                                    $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                    $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                     $tmp["done"] = $chapter["done"];
                                     $tmp["l2memberID"] = $chapter["l2memberID"];
                                     $tmp["l2chID"] = $chapter["l2chID"];
@@ -7323,8 +7323,8 @@ class EventsController extends Controller {
 
                                 $chapters[$data["event"][0]->currentChapter]["l2checked"] = true;
 
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
 
                                 if ($isMajorMode) {
                                     if (!isset($peerCheck[$data["event"][0]->currentChapter])) {
@@ -7436,7 +7436,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -7453,8 +7453,8 @@ class EventsController extends Controller {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                 if ($peerCheck[$data["event"][0]->currentChapter]["done"] == 1) {
                                     $peerCheck[$data["event"][0]->currentChapter]["done"] = 2;
                                     $kwCheck[$data["event"][0]->currentChapter] = [
@@ -7515,7 +7515,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -7532,8 +7532,8 @@ class EventsController extends Controller {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                 if ($kwCheck[$data["event"][0]->currentChapter]["done"] == 1) {
                                     $kwCheck[$data["event"][0]->currentChapter]["done"] = 2;
                                     $crCheck[$data["event"][0]->currentChapter] = [
@@ -7594,7 +7594,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -7611,7 +7611,7 @@ class EventsController extends Controller {
                             $_POST = Gump::xss_clean($_POST);
 
                             if (isset($_POST["confirm_step"])) {
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                 if ($crCheck[$data["event"][0]->currentChapter]["done"] == 1) {
                                     $crCheck[$data["event"][0]->currentChapter]["done"] = 2;
                                     $postdata = [
@@ -7625,7 +7625,7 @@ class EventsController extends Controller {
                                     $events = $this->eventModel->getMembersForRevisionEvent($data["event"][0]->eventID);
 
                                     foreach ($events as $event) {
-                                        $cr = $event["crCheck"] ? json_decode($event["crCheck"], true) : [];
+                                        $cr = $event["crCheck"] ? (array)json_decode($event["crCheck"], true) : [];
                                         if (!empty($cr)) {
                                             $chapters += $cr;
                                         }
@@ -7764,7 +7764,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -7782,15 +7782,15 @@ class EventsController extends Controller {
 
                         if (isset($_POST["confirm_step"])) {
                             if ($data["event"][0]->step == EventCheckSteps::PEER_REVIEW) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 $peerCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                 $postdata["peerCheck"] = json_encode($peerCheck);
                             } elseif ($data["event"][0]->step == EventCheckSteps::KEYWORD_CHECK) {
-                                $kwCheck = $data["event"][0]->kwCheck ? json_decode($data["event"][0]->kwCheck, true) : [];
+                                $kwCheck = $data["event"][0]->kwCheck ? (array)json_decode($data["event"][0]->kwCheck, true) : [];
                                 $kwCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                 $postdata["kwCheck"] = json_encode($kwCheck);
                             } else {
-                                $crCheck = $data["event"][0]->crCheck ? json_decode($data["event"][0]->crCheck, true) : [];
+                                $crCheck = $data["event"][0]->crCheck ? (array)json_decode($data["event"][0]->crCheck, true) : [];
                                 $crCheck[$data["event"][0]->currentChapter]["done"] = 1;
                                 $postdata["crCheck"] = json_encode($crCheck);
                             }
@@ -7924,7 +7924,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -7980,7 +7980,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -8023,7 +8023,7 @@ class EventsController extends Controller {
                                 foreach ($chaptersDB as $chapter) {
                                     $tmp["trID"] = $chapter["trID"];
                                     $tmp["memberID"] = $chapter["memberID"];
-                                    $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                    $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                     $tmp["done"] = $chapter["done"];
                                     $tmp["l2memberID"] = $chapter["l2memberID"];
                                     $tmp["l2chID"] = $chapter["l2chID"];
@@ -8051,7 +8051,7 @@ class EventsController extends Controller {
                                 if (!empty($nextChapterDB))
                                     $nextChapter = $nextChapterDB[0]->chapter;
 
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 if (!array_key_exists($data["event"][0]->currentChapter, $peerCheck)) {
                                     $peerCheck[$data["event"][0]->currentChapter] = [
                                         "memberID" => 0,
@@ -8163,7 +8163,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -8178,7 +8178,7 @@ class EventsController extends Controller {
 
                     if (isset($_POST) && !empty($_POST)) {
                         if (isset($_POST["confirm_step"])) {
-                            $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                            $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                             if (array_key_exists($data["event"][0]->currentChapter, $peerCheck)) {
                                 $peerCheck[$data["event"][0]->currentChapter]["done"] = 1;
                             }
@@ -8196,7 +8196,7 @@ class EventsController extends Controller {
                             $events = $this->eventModel->getMembersForRevisionEvent($data["event"][0]->eventID);
 
                             foreach ($events as $event) {
-                                $peer = $event["peerCheck"] ? json_decode($event["peerCheck"], true) : [];
+                                $peer = $event["peerCheck"] ? (array)json_decode($event["peerCheck"], true) : [];
                                 if (!empty($peer)) {
                                     $chapters += $peer;
                                 }
@@ -8312,7 +8312,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 $peerCheck[$data["currentChapter"]] = [
                                     "memberID" => 0,
                                     "done" => 0
@@ -8340,7 +8340,7 @@ class EventsController extends Controller {
                             ->shares("error", @$error);
 
                     case EventCheckSteps::PEER_REVIEW_L3:
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                         $data["currentChapter"] = $data["event"][0]->currentChapter;
 
                         // Get related ulb project
@@ -8366,7 +8366,7 @@ class EventsController extends Controller {
                             $ulbTranslation = ["l2" => [], "l3" => []];
 
                             foreach ($ulbTranslationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
 
                                 $ulbTranslation["l2"] += $arr[EventMembers::L2_CHECKER]["verses"];
                                 $ulbTranslation["l3"] += $arr[EventMembers::L3_CHECKER]["verses"];
@@ -8390,7 +8390,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -8400,7 +8400,7 @@ class EventsController extends Controller {
                                 $data["event"][0]->eventID, null,
                                 $data["event"][0]->currentChapter);
 
-                            $data["chunks"] = $chapters[0]["chunks"] ? json_decode($chapters[0]["chunks"], true) : [];
+                            $data["chunks"] = $chapters[0]["chunks"] ? (array)json_decode($chapters[0]["chunks"], true) : [];
                             $lastChunk = $data["chunks"][sizeof($data["chunks"]) - 1];
                             $data["totalVerses"] = $lastChunk[sizeof($lastChunk) - 1];
 
@@ -8463,7 +8463,7 @@ class EventsController extends Controller {
                         break;
 
                     case EventCheckSteps::PEER_EDIT_L3:
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                         $data["currentChapter"] = $data["event"][0]->currentChapter;
 
                         // Get related ulb project
@@ -8489,7 +8489,7 @@ class EventsController extends Controller {
                             $ulbTranslation = ["l2" => [], "l3" => []];
 
                             foreach ($ulbTranslationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
 
                                 $ulbTranslation["l2"] += $arr[EventMembers::L2_CHECKER]["verses"];
                                 $ulbTranslation["l3"] += $arr[EventMembers::L3_CHECKER]["verses"];
@@ -8513,7 +8513,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -8523,7 +8523,7 @@ class EventsController extends Controller {
                                 $data["event"][0]->eventID, null,
                                 $data["event"][0]->currentChapter);
 
-                            $data["chunks"] = $chapters[0]["chunks"] ? json_decode($chapters[0]["chunks"], true) : [];
+                            $data["chunks"] = $chapters[0]["chunks"] ? (array)json_decode($chapters[0]["chunks"], true) : [];
                             $lastChunk = $data["chunks"][sizeof($data["chunks"]) - 1];
                             $data["totalVerses"] = $lastChunk[sizeof($lastChunk) - 1];
 
@@ -8573,7 +8573,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["l3checked"] = $chapter["l3checked"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -8732,7 +8732,7 @@ class EventsController extends Controller {
                         if (empty($ulbEvent) || $ulbEvent[0]->state != EventStates::COMPLETE)
                             $error[] = __("l2_l3_event_notexist_error");
 
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                         if (!isset($error)) {
                             // Get ulb translation
@@ -8743,7 +8743,7 @@ class EventsController extends Controller {
                             $ulbTranslation = ["l2" => [], "l3" => []];
 
                             foreach ($ulbTranslationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
 
                                 $ulbTranslation["l2"] += $arr[EventMembers::L2_CHECKER]["verses"];
                                 $ulbTranslation["l3"] += $arr[EventMembers::L3_CHECKER]["verses"];
@@ -8767,7 +8767,7 @@ class EventsController extends Controller {
                             $translation = array();
 
                             foreach ($translationData as $tv) {
-                                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                 $arr["tID"] = $tv->tID;
                                 $translation[] = $arr;
                             }
@@ -8777,7 +8777,7 @@ class EventsController extends Controller {
                                 $data["event"][0]->eventID, null,
                                 $data["event"][0]->currentChapter);
 
-                            $data["chunks"] = $chapters[0]["chunks"] ? json_decode($chapters[0]["chunks"], true) : [];
+                            $data["chunks"] = $chapters[0]["chunks"] ? (array)json_decode($chapters[0]["chunks"], true) : [];
                             $lastChunk = $data["chunks"][sizeof($data["chunks"]) - 1];
                             $data["totalVerses"] = $lastChunk[sizeof($lastChunk) - 1];
 
@@ -8888,7 +8888,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 $peerCheck[$data["currentChapter"]] = [
                                     "memberID" => 0,
                                     "done" => 0
@@ -8917,7 +8917,7 @@ class EventsController extends Controller {
 
                     case EventCheckSteps::PEER_REVIEW_L3:
                         $sourceText = $this->getScriptureSourceText($data);
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                         if (!empty($sourceText)) {
                             if (!array_key_exists("error", $sourceText)) {
@@ -8930,7 +8930,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -9006,7 +9006,7 @@ class EventsController extends Controller {
 
                     case EventCheckSteps::PEER_EDIT_L3:
                         $sourceText = $this->getScriptureSourceText($data);
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                         if (!empty($sourceText)) {
                             if (!array_key_exists("error", $sourceText)) {
@@ -9019,7 +9019,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -9094,7 +9094,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["l3checked"] = $chapter["l3checked"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -9225,7 +9225,7 @@ class EventsController extends Controller {
                     case EventCheckSteps::PEER_REVIEW_L3:
                     case EventCheckSteps::PEER_EDIT_L3:
                         $sourceText = $this->getScriptureSourceText($data);
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                         if (!empty($sourceText)) {
                             if (!array_key_exists("error", $sourceText)) {
@@ -9238,7 +9238,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -9355,7 +9355,7 @@ class EventsController extends Controller {
 
                         if (isset($_POST) && !empty($_POST)) {
                             if (isset($_POST["confirm_step"])) {
-                                $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                                $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
                                 $peerCheck[$data["currentChapter"]] = [
                                     "memberID" => 0,
                                     "done" => 0
@@ -9384,7 +9384,7 @@ class EventsController extends Controller {
 
                     case EventCheckSteps::PEER_REVIEW_L3:
                         $sourceText = $this->getScriptureSourceText($data);
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                         if (!empty($sourceText)) {
                             if (!array_key_exists("error", $sourceText)) {
@@ -9397,7 +9397,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -9473,7 +9473,7 @@ class EventsController extends Controller {
 
                     case EventCheckSteps::PEER_EDIT_L3:
                         $sourceText = $this->getScriptureSourceText($data);
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                         if (!empty($sourceText)) {
                             if (!array_key_exists("error", $sourceText)) {
@@ -9486,7 +9486,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -9549,7 +9549,7 @@ class EventsController extends Controller {
                                     foreach ($chaptersDB as $chapter) {
                                         $tmp["trID"] = $chapter["trID"];
                                         $tmp["memberID"] = $chapter["memberID"];
-                                        $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                                        $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                                         $tmp["l3checked"] = $chapter["l3checked"];
 
                                         $chapters[$chapter["chapter"]] = $tmp;
@@ -9690,7 +9690,7 @@ class EventsController extends Controller {
                     case EventCheckSteps::PEER_REVIEW_L3:
                     case EventCheckSteps::PEER_EDIT_L3:
                         $sourceText = $this->getScriptureSourceText($data);
-                        $peerCheck = $data["event"][0]->peerCheck ? json_decode($data["event"][0]->peerCheck, true) : [];
+                        $peerCheck = $data["event"][0]->peerCheck ? (array)json_decode($data["event"][0]->peerCheck, true) : [];
 
                         if (!empty($sourceText)) {
                             if (!array_key_exists("error", $sourceText)) {
@@ -9703,7 +9703,7 @@ class EventsController extends Controller {
                                 $translation = array();
 
                                 foreach ($translationData as $tv) {
-                                    $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                                    $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                                     $arr["tID"] = $tv->tID;
                                     $translation[] = $arr;
                                 }
@@ -9808,7 +9808,7 @@ class EventsController extends Controller {
         $mode = $event->bookProject;
 
         if (isset($post["draft"]) && Tools::trim(Tools::strip_tags($post["draft"])) != "") {
-            $chunks = $event->chunks ? json_decode($event->chunks, true) : [];
+            $chunks = $event->chunks ? (array)json_decode($event->chunks, true) : [];
             $chunk = $chunks[$event->currentChunk];
 
             $post["draft"] = preg_replace("/[\\r\\n]/", " ", $post["draft"]);
@@ -9833,7 +9833,7 @@ class EventsController extends Controller {
             if (!empty($translationData)) {
                 if ($translationData[0]->chapter == $event->currentChapter
                     && $translationData[0]->chunk == $event->currentChunk) {
-                    $translationVerses = $translationData[0]->translatedVerses ? json_decode($translationData[0]->translatedVerses, true) : [];
+                    $translationVerses = $translationData[0]->translatedVerses ? (array)json_decode($translationData[0]->translatedVerses, true) : [];
                     $shouldUpdate = true;
                 }
             }
@@ -9965,7 +9965,7 @@ class EventsController extends Controller {
                     EventMembers::L3_CHECKER => ["verses" => []],
                 ];
                 $encoded = json_encode($translationVerses);
-                $chunks = $event->chunks ? json_decode($event->chunks, true) : [];
+                $chunks = $event->chunks ? (array)json_decode($event->chunks, true) : [];
 
                 foreach ($post["chunks"] as $key => $chunk) {
                     $chunk = $chunks[$key];
@@ -9996,7 +9996,7 @@ class EventsController extends Controller {
             $translation = [];
 
             foreach ($translationData as $tv) {
-                $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+                $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
                 $arr["tID"] = $tv->tID;
                 $translation[] = $arr;
             }
@@ -10115,7 +10115,7 @@ class EventsController extends Controller {
                     exit;
                 }
             } elseif ($event->step == EventCheckSteps::PEER_EDIT_L3) {
-                $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
                 if (array_key_exists($event->currentChapter, $peerCheck) &&
                     $peerCheck[$event->currentChapter]["done"] == 2) {
                     $response["errorType"] = "checkDone";
@@ -10132,7 +10132,7 @@ class EventsController extends Controller {
         $translation = array();
 
         foreach ($translationData as $tv) {
-            $arr = $tv->translatedVerses ? json_decode($tv->translatedVerses, true) : [];
+            $arr = $tv->translatedVerses ? (array)json_decode($tv->translatedVerses, true) : [];
             $arr["tID"] = $tv->tID;
             $translation[] = $arr;
         }
@@ -10859,21 +10859,21 @@ class EventsController extends Controller {
             $postData = [];
             switch ($step) {
                 case EventSteps::PEER_REVIEW:
-                    $peerCheck = $notif->peerCheck ? json_decode($notif->peerCheck, true) : [];
+                    $peerCheck = $notif->peerCheck ? (array)json_decode($notif->peerCheck, true) : [];
                     if (isset($peerCheck[$chapter])) {
                         $peerCheck[$chapter] = ["memberID" => Session::get("memberID"), "done" => 0];
                     }
                     $postData["peerCheck"] = json_encode($peerCheck);
                     break;
                 case EventSteps::KEYWORD_CHECK:
-                    $kwCheck = $notif->kwCheck ? json_decode($notif->kwCheck, true) : [];
+                    $kwCheck = $notif->kwCheck ? (array)json_decode($notif->kwCheck, true) : [];
                     if (isset($kwCheck[$chapter])) {
                         $kwCheck[$chapter] = ["memberID" => Session::get("memberID"), "done" => 0];
                     }
                     $postData["kwCheck"] = json_encode($kwCheck);
                     break;
                 case EventSteps::CONTENT_REVIEW:
-                    $crCheck = $notif->crCheck ? json_decode($notif->crCheck, true) : [];
+                    $crCheck = $notif->crCheck ? (array)json_decode($notif->crCheck, true) : [];
                     if (isset($crCheck[$chapter])) {
                         if ($vChecker == 1 && $crCheck[$chapter]["memberID"] == 0) {
                             $crCheck[$chapter]["memberID"] = Session::get("memberID");
@@ -10918,7 +10918,7 @@ class EventsController extends Controller {
                 $postdata = [];
 
                 if ($notification->peer == 1) {
-                    $otherCheck = $notification->otherCheck ? json_decode($notification->otherCheck, true) : [];
+                    $otherCheck = $notification->otherCheck ? (array)json_decode($notification->otherCheck, true) : [];
                     if (isset($otherCheck[$chapter]) && $otherCheck[$chapter]["memberID"] == 0) {
                         $otherCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->otherCheck = json_encode($otherCheck);
@@ -10928,7 +10928,7 @@ class EventsController extends Controller {
                         $canApply = true;
                     }
                 } else {
-                    $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
+                    $peerCheck = $notification->peerCheck ? (array)json_decode($notification->peerCheck, true) : [];
                     if (isset($peerCheck[$chapter]) && $peerCheck[$chapter]["memberID"] == 0) {
                         $peerCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->peerCheck = json_encode($peerCheck);
@@ -10983,7 +10983,7 @@ class EventsController extends Controller {
                 && $step == $notification->step
                 && $chapter == $notification->currentChapter) {
                 if ($step == EventCheckSteps::PEER_REVIEW) {
-                    $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
+                    $peerCheck = $notification->peerCheck ? (array)json_decode($notification->peerCheck, true) : [];
                     if (isset($peerCheck[$chapter]) && $peerCheck[$chapter]["memberID"] == 0) {
                         $peerCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->peerCheck = json_encode($peerCheck);
@@ -10991,7 +10991,7 @@ class EventsController extends Controller {
                         $canApply = true;
                     }
                 } elseif ($step == EventCheckSteps::KEYWORD_CHECK) {
-                    $kwCheck = $notification->kwCheck ? json_decode($notification->kwCheck, true) : [];
+                    $kwCheck = $notification->kwCheck ? (array)json_decode($notification->kwCheck, true) : [];
                     if (isset($kwCheck[$chapter]) && $kwCheck[$chapter]["memberID"] == 0) {
                         $kwCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->kwCheck = json_encode($kwCheck);
@@ -10999,7 +10999,7 @@ class EventsController extends Controller {
                         $canApply = true;
                     }
                 } elseif ($step == EventCheckSteps::CONTENT_REVIEW) {
-                    $crCheck = $notification->crCheck ? json_decode($notification->crCheck, true) : [];
+                    $crCheck = $notification->crCheck ? (array)json_decode($notification->crCheck, true) : [];
                     if (isset($crCheck[$chapter]) && $crCheck[$chapter]["memberID"] == 0) {
                         $crCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->crCheck = json_encode($crCheck);
@@ -11007,7 +11007,7 @@ class EventsController extends Controller {
                         $canApply = true;
                     }
                 } elseif ($step == EventCheckSteps::PEER_REVIEW_L3) {
-                    $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
+                    $peerCheck = $notification->peerCheck ? (array)json_decode($notification->peerCheck, true) : [];
                     if (isset($peerCheck[$chapter]) && $peerCheck[$chapter]["memberID"] == 0) {
                         $peerCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->peerCheck = json_encode($peerCheck);
@@ -11076,7 +11076,7 @@ class EventsController extends Controller {
                 && $step == $notification->step
                 && $chapter == $notification->currentChapter) {
                 if ($step == EventSteps::THEO_CHECK) {
-                    $kwCheck = $notification->kwCheck ? json_decode($notification->kwCheck, true) : [];
+                    $kwCheck = $notification->kwCheck ? (array)json_decode($notification->kwCheck, true) : [];
                     if (isset($kwCheck[$chapter]) && $kwCheck[$chapter]["memberID"] == 0) {
                         $kwCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->kwCheck = json_encode($kwCheck);
@@ -11084,7 +11084,7 @@ class EventsController extends Controller {
                         $canApply = true;
                     }
                 } elseif ($step == EventSteps::CONTENT_REVIEW) {
-                    $crCheck = $notification->crCheck ? json_decode($notification->crCheck, true) : [];
+                    $crCheck = $notification->crCheck ? (array)json_decode($notification->crCheck, true) : [];
                     if (isset($crCheck[$chapter]) && $crCheck[$chapter]["memberID"] == 0) {
                         $crCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->crCheck = json_encode($crCheck);
@@ -11139,7 +11139,7 @@ class EventsController extends Controller {
                 && $step == $notification->step
                 && $chapter == $notification->currentChapter) {
                 if ($step == EventSteps::PEER_REVIEW) {
-                    $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
+                    $peerCheck = $notification->peerCheck ? (array)json_decode($notification->peerCheck, true) : [];
                     if (isset($peerCheck[$chapter]) && $peerCheck[$chapter]["memberID"] == 0) {
                         $peerCheck[$chapter]["memberID"] = Session::get("memberID");
                         $notification->peerCheck = json_encode($peerCheck);
@@ -11200,7 +11200,7 @@ class EventsController extends Controller {
             }
 
             if (!empty($event) && $chkName != null) {
-                $verbCheck = $event[0]->verbCheck ? json_decode($event[0]->verbCheck, true) : [];
+                $verbCheck = $event[0]->verbCheck ? (array)json_decode($event[0]->verbCheck, true) : [];
                 $checker = $chkID != null ? $chkID : $chkName;
 
                 if ($event[0]->step == EventSteps::VERBALIZE && !array_key_exists($event[0]->currentChapter, $verbCheck)) {
@@ -11312,7 +11312,7 @@ class EventsController extends Controller {
 
         $initChapter = $data["event"][0]->bookProject != "tn" ? 0 : -1;
         $currentChunkText = [];
-        $chunks = $data["event"][0]->chunks ? json_decode($data["event"][0]->chunks, true) : [];
+        $chunks = $data["event"][0]->chunks ? (array)json_decode($data["event"][0]->chunks, true) : [];
         $data["chunks"] = $chunks;
 
         if ($currentChapter == $initChapter) {
@@ -11437,7 +11437,7 @@ class EventsController extends Controller {
             $data["currentChapter"] = $currentChapter;
             $data["currentChunk"] = $currentChunk;
 
-            $chunks = $data["event"][0]->chunks ? json_decode($data["event"][0]->chunks, true) : [];
+            $chunks = $data["event"][0]->chunks ? (array)json_decode($data["event"][0]->chunks, true) : [];
             $data["chunks"] = $chunks;
 
             if ($currentChapter > 0) {
@@ -11502,7 +11502,7 @@ class EventsController extends Controller {
             end($data["questions"]);
             $data["totalVerses"] = key($data["questions"]);
 
-            $chunks = $data["event"][0]->chunks ? json_decode($data["event"][0]->chunks, true) : [];
+            $chunks = $data["event"][0]->chunks ? (array)json_decode($data["event"][0]->chunks, true) : [];
             $data["chunks"] = $chunks;
 
             $data["nosource"] = false;
@@ -11528,7 +11528,7 @@ class EventsController extends Controller {
         if (!empty($source)) {
             $initChapter = 0;
             $currentChunkText = [];
-            $chunks = $data["event"][0]->chunks ? json_decode($data["event"][0]->chunks, true) : [];
+            $chunks = $data["event"][0]->chunks ? (array)json_decode($data["event"][0]->chunks, true) : [];
             $data["chunks"] = $chunks;
 
             if ($currentChapter == $initChapter) {
@@ -11564,7 +11564,7 @@ class EventsController extends Controller {
             foreach ($chapters as $chapter) {
                 $tmp["trID"] = $chapter["trID"];
                 $tmp["memberID"] = $chapter["memberID"];
-                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+                $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
                 $tmp["done"] = $chapter["done"];
 
                 $data["chapters"][$chapter["chapter"]] = $tmp;
@@ -11623,7 +11623,7 @@ class EventsController extends Controller {
             $data["currentChapter"] = $currentChapter;
             $data["currentChunk"] = $currentChunk;
 
-            $chunks = $data["event"][0]->chunks ? json_decode($data["event"][0]->chunks, true) : [];
+            $chunks = $data["event"][0]->chunks ? (array)json_decode($data["event"][0]->chunks, true) : [];
             $data["chunks"] = $chunks;
 
             $data["nosource"] = false;
@@ -11839,7 +11839,7 @@ class EventsController extends Controller {
         foreach ($chaptersDB as $chapter) {
             $tmp["trID"] = $chapter["trID"];
             $tmp["memberID"] = $chapter["memberID"];
-            $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
+            $tmp["chunks"] = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
             $tmp["done"] = $chapter["done"];
             $tmp["checked"] = $chapter["checked"];
             $tmp["l2checked"] = $chapter["l2checked"];
