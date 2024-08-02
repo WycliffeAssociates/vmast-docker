@@ -622,7 +622,7 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
         $items = array_map(function ($value)
         {
             if ($value instanceof JsonableInterface) {
-                return json_decode($value->toJson(), true);
+                return $value->toJson() ? json_decode($value->toJson(), true) : [];
             } elseif ($value instanceof ArrayableInterface) {
                 return $value->toArray();
             } else {

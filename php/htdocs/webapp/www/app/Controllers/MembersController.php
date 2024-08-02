@@ -366,8 +366,8 @@ class MembersController extends Controller
         $profile = $publicMember->profile;
 
         $profile->proj_lang = $this->languageRepo->get($profile->proj_lang);
-        $profile->projects = (array)json_decode($profile->projects, true);
-        $profileLangs = (array)json_decode($profile->languages, true);
+        $profile->projects = $profile->projects ? json_decode($profile->projects, true) : [];
+        $profileLangs = $profile->languages ? json_decode($profile->languages, true) : [];
 
         $profile->languages = $this->languageRepo->all()
             ->filter(function ($lang) use ($profileLangs) {
@@ -377,11 +377,11 @@ class MembersController extends Controller
                 $lang->fluency = $profileLangs[$lang->langID][0];
                 return $lang;
             });
-        $profile->prefered_roles = (array)json_decode($profile->prefered_roles, true);
-        $profile->mast_role = (array)json_decode($profile->mast_role, true);
-        $profile->church_role = (array)json_decode($profile->church_role, true);
-        $profile->education = (array)json_decode($profile->education, true);
-        $profile->ed_area = (array)json_decode($profile->ed_area, true);
+        $profile->prefered_roles = $profile->prefered_roles ? json_decode($profile->prefered_roles, true) : [];
+        $profile->mast_role = $profile->mast_role ? json_decode($profile->mast_role, true) : [];
+        $profile->church_role = $profile->church_role ? json_decode($profile->church_role, true) : [];
+        $profile->education = $profile->education ? json_decode($profile->education, true) : [];
+        $profile->ed_area = $profile->ed_area ? json_decode($profile->ed_area, true) : [];
 
         $data["facilitation_activities"] = $publicMember->adminEvents;
         $data["translation_activities"] = $publicMember->translators;
@@ -413,10 +413,10 @@ class MembersController extends Controller
             foreach ($checking as $check) {
                 if (in_array($check->bookProject, ["ulb", "udb"])) {
                     // Level 1 (ulb, udb) checking
-                    $verbCheck = (array)json_decode($check->verbCheck, true);
-                    $peerCheck = (array)json_decode($check->peerCheck, true);
-                    $kwCheck = (array)json_decode($check->kwCheck, true);
-                    $crCheck = (array)json_decode($check->crCheck, true);
+                    $verbCheck = $check->verbCheck ? json_decode($check->verbCheck, true) : [];
+                    $peerCheck = $check->peerCheck ? json_decode($check->peerCheck, true) : [];
+                    $kwCheck = $check->kwCheck ? json_decode($check->kwCheck, true) : [];
+                    $crCheck = $check->crCheck ? json_decode($check->crCheck, true) : [];
 
                     foreach ($verbCheck as $chapter => $memID)
                         if ($memberID == $memID)
@@ -434,10 +434,10 @@ class MembersController extends Controller
                         if ($memberID == $memID)
                             $chaps[] = $chapter;
                 } else {
-                    $peerCheck = (array)json_decode($check->peerCheck, true);
-                    $kwCheck = (array)json_decode($check->kwCheck, true);
-                    $crCheck = (array)json_decode($check->crCheck, true);
-                    $otherCheck = (array)json_decode($check->otherCheck, true);
+                    $peerCheck = $check->peerCheck ? json_decode($check->peerCheck, true) : [];
+                    $kwCheck = $check->kwCheck ? json_decode($check->kwCheck, true) : [];
+                    $crCheck = $check->crCheck ? json_decode($check->crCheck, true) : [];
+                    $otherCheck = $check->otherCheck ? json_decode($check->otherCheck, true) : [];
 
                     foreach ($peerCheck as $chapter => $member_data)
                         if ($memberID == $member_data["memberID"])
@@ -485,9 +485,9 @@ class MembersController extends Controller
                 // Second checker
                 $checking = $this->_eventModel->getMemberEventsForRevisionChecker(null, $checking_activity->eventID);
                 foreach ($checking as $check) {
-                    $peerCheck = (array)json_decode($check->peerCheck, true);
-                    $kwCheck = (array)json_decode($check->kwCheck, true);
-                    $crCheck = (array)json_decode($check->crCheck, true);
+                    $peerCheck = $check->peerCheck ? json_decode($check->peerCheck, true) : [];
+                    $kwCheck = $check->kwCheck ? json_decode($check->kwCheck, true) : [];
+                    $crCheck = $check->crCheck ? json_decode($check->crCheck, true) : [];
 
                     foreach ($peerCheck as $chapter => $member_data)
                         if ($memberID == $member_data["memberID"])
@@ -509,7 +509,7 @@ class MembersController extends Controller
                 // Sun Revision
                 $checking = $this->_eventModel->getMemberEventsForSunRevisionChecker($memberID, $checking_activity->eventID);
                 foreach ($checking as $check) {
-                    $peerCheck = (array)json_decode($check->peerCheck, true);
+                    $peerCheck = $check->peerCheck ? json_decode($check->peerCheck, true) : [];
 
                     foreach ($peerCheck as $chapter => $member_data)
                         if ($memberID == $member_data["memberID"])
@@ -542,7 +542,7 @@ class MembersController extends Controller
                 // Second checker
                 $checking = $this->_eventModel->getMemberEventsForCheckerL3($memberID, $checking_activity->eventID);
                 foreach ($checking as $check) {
-                    $peerCheck = (array)json_decode($check->peerCheck, true);
+                    $peerCheck = $check->peerCheck ? json_decode($check->peerCheck, true) : [];
 
                     foreach ($peerCheck as $chapter => $member_data)
                         if($memberID == $member_data["memberID"])
@@ -1275,7 +1275,7 @@ class MembersController extends Controller
                         $data["message"] = $message;
 
                         $firstLang = "en";
-                        $languages = json_decode($admin->profile->languages, true);
+                        $languages = $admin->profile->languages ? json_decode($admin->profile->languages, true) : [];
                         if(is_array($languages) && !empty($languages))
                         {
                             $keys = array_keys($languages);

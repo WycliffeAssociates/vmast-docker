@@ -69,11 +69,11 @@ class ProjectContributors
 
     private function setCheckers($translators) {
         foreach ($translators as $translator) {
-            $verbCheck = (array)json_decode($translator->pivot->verbCheck);
-            $peerCheck = (array)json_decode($translator->pivot->peerCheck);
-            $kwCheck = (array)json_decode($translator->pivot->kwCheck);
-            $crCheck = (array)json_decode($translator->pivot->crCheck);
-            $otherCheck = (array)json_decode($translator->pivot->otherCheck);
+            $verbCheck = $translator->pivot->verbCheck ? json_decode($translator->pivot->verbCheck) : [];
+            $peerCheck = $translator->pivot->peerCheck ? json_decode($translator->pivot->peerCheck) : [];
+            $kwCheck = $translator->pivot->kwCheck ? json_decode($translator->pivot->kwCheck) : [];
+            $crCheck = $translator->pivot->crCheck ? json_decode($translator->pivot->crCheck) : [];
+            $otherCheck = $translator->pivot->otherCheck ? json_decode($translator->pivot->otherCheck) : [];
 
             $this->contributorsIDs = Arrays::append($this->contributorsIDs, array_values(array_map(function ($elm) {
                 return $elm->memberID;
@@ -95,9 +95,9 @@ class ProjectContributors
 
     private function setCheckersL2($checkers) {
         foreach ($checkers as $checker) {
-            $peerCheck = (array)json_decode($checker->pivot->peerCheck);
-            $kwCheck = (array)json_decode($checker->pivot->kwCheck);
-            $crCheck = (array)json_decode($checker->pivot->crCheck);
+            $peerCheck = $checker->pivot->peerCheck ? json_decode($checker->pivot->peerCheck) : [];
+            $kwCheck = $checker->pivot->kwCheck ? json_decode($checker->pivot->kwCheck) : [];
+            $crCheck = $checker->pivot->crCheck ? json_decode($checker->pivot->crCheck) : [];
 
             $this->contributorsIDs = Arrays::append($this->contributorsIDs, array_values(array_map(function ($elm) {
                 return $elm->memberID;
@@ -113,7 +113,7 @@ class ProjectContributors
 
     private function setCheckersL3($checkers) {
         foreach ($checkers as $checker) {
-            $peerCheck = (array)json_decode($checker->pivot->peerCheck);
+            $peerCheck = $checker->pivot->peerCheck ? json_decode($checker->pivot->peerCheck) : [];
 
             $this->contributorsIDs = Arrays::append($this->contributorsIDs, array_values(array_map(function ($elm) {
                 return $elm->memberID;
@@ -155,7 +155,7 @@ class ProjectContributors
                 $role = "";
 
                 if ($this->withRoles) {
-                    $church_role = (array)json_decode($member->profile->church_role);
+                    $church_role = $member->profile->church_role ? json_decode($member->profile->church_role) : [];
 
                     if (in_array("Pastor", $church_role))
                         $role = __('pastor');

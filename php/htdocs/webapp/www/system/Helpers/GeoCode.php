@@ -40,7 +40,7 @@ class GeoCode
                $address['zipcode'].
                $url_end;
 
-        $result = json_decode(file_get_contents($url), true);
+        $result = file_get_contents($url) ? json_decode(file_get_contents($url), true) : [];
 
         if ($result['status'] == 'OK') {
             return array(

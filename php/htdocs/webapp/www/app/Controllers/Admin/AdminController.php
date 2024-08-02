@@ -9,7 +9,6 @@ use App\Models\ApiModel;
 use App\Models\EventsModel;
 use App\Models\MembersModel;
 use App\Models\NewsModel;
-use App\Models\ORM\Translation;
 use App\Models\ORM\Word;
 use App\Models\SailDictionaryModel;
 use App\Models\TranslationsModel;
@@ -959,7 +958,7 @@ class AdminController extends Controller {
         $projectType = isset($_POST['projectType']) && $_POST['projectType'] != "" ? $_POST['projectType'] : null;
         $act = isset($_POST['act']) && $_POST['act'] != "" ? $_POST['act'] : "create";
         $projectID = isset($_POST['projectID']) && $_POST['projectID'] != "" ? $_POST['projectID'] : null;
-        $admins = isset($_POST['project_admins']) && !empty($_POST['project_admins']) ? array_filter($_POST['project_admins']) : [];
+        $admins = !empty($_POST['project_admins']) ? array_filter($_POST['project_admins']) : [];
 
         $admins = array_filter($admins, function($elm) {
             return is_numeric($elm);
@@ -1957,7 +1956,7 @@ class AdminController extends Controller {
                         }
 
                         foreach ($translations as $tran) {
-                            $verses = (array)json_decode($tran->translatedVerses, true);
+                            $verses = $tran->translatedVerses ? json_decode($tran->translatedVerses, true) : [];
 
                             foreach ($verses[EventMembers::TRANSLATOR]["verses"] as $verse => $text) {
                                 if(isset($usfmData["chapters"][$tran->chapter]) &&
@@ -2262,7 +2261,7 @@ class AdminController extends Controller {
                     if(sizeof($contentChunks) == sizeof($translations))
                     {
                         foreach ($translations as $tran) {
-                            $verses = (array)json_decode($tran->translatedVerses, true);
+                            $verses = $tran->translatedVerses ? json_decode($tran->translatedVerses, true) : [];
 
                             if(isset($resource[$tran->chapter]) &&
                                 isset($resource[$tran->chapter][$tran->firstvs]) &&
@@ -3195,11 +3194,11 @@ class AdminController extends Controller {
                     $currentChapter = $translator->currentChapter;
                     $checkerID = $translator->checkerID;
                     $checkDone = $translator->checkDone;
-                    $verbCheck = (array)json_decode($translator->verbCheck, true);
-                    $peerCheck = (array)json_decode($translator->peerCheck, true);
-                    $kwCheck = (array)json_decode($translator->kwCheck, true);
-                    $crCheck = (array)json_decode($translator->crCheck, true);
-                    $otherCheck = (array)json_decode($translator->otherCheck, true);
+                    $verbCheck = $translator->verbCheck ? json_decode($translator->verbCheck, true) : [];
+                    $peerCheck = $translator->peerCheck ? json_decode($translator->peerCheck, true) : [];
+                    $kwCheck = $translator->kwCheck ? json_decode($translator->kwCheck, true) : [];
+                    $crCheck = $translator->crCheck ? json_decode($translator->crCheck, true) : [];
+                    $otherCheck = $translator->otherCheck ? json_decode($translator->otherCheck, true) : [];
 
                     // Migrate completed chapters
                     $tmpVerb = [];
@@ -3312,7 +3311,7 @@ class AdminController extends Controller {
                         $glProjectObj = $glProjectsCache[$admin->glID];
                     }
 
-                    $members = (array)json_decode($admin->admins, true);
+                    $members = $admin->admins ? json_decode($admin->admins, true) : [];
                     foreach ($members as $member) {
                         $memberObj = null;
                         if (!array_key_exists($member, $membersCache)) {
@@ -3333,9 +3332,9 @@ class AdminController extends Controller {
 
                 pr("Reassigning Event admins");
                 foreach ($admins as $admin) {
-                    $members = (array)json_decode($admin->admins, true);
-                    $members = array_merge($members, (array)json_decode($admin->admins_l2, true));
-                    $members = array_merge($members, (array)json_decode($admin->admins_l3, true));
+                    $members = $admin->admins ? json_decode($admin->admins, true) : [];
+                    $members = array_merge($members, $admin->admins_l2 ? json_decode($admin->admins_l2, true) : []);
+                    $members = array_merge($members, $admin->admins_l3 ? json_decode($admin->admins_l3, true) : []);
                     $members = array_unique($members);
 
                     foreach ($members as $member) {
@@ -3374,7 +3373,7 @@ class AdminController extends Controller {
                 $events->each(function($event) {
                     $translations = $event->chunks;
                     $translations->each(function($translation) {
-                        $chunk = json_decode($translation->translatedVerses, true);
+                        $chunk = $translation->translatedVerses ? json_decode($translation->translatedVerses, true) : [];
 
                         $translatorVerses = $chunk[EventMembers::TRANSLATOR]["verses"];
                         if (array_key_exists("img", $translatorVerses)) {
@@ -3447,7 +3446,7 @@ class AdminController extends Controller {
             $members = $this->memberRepo->all();
             $members->each(function($member) use(&$updated) {
                 if ($member->profile) {
-                    $projects = (array)json_decode($member->profile->projects, true);
+                    $projects = $member->profile->projects ? json_decode($member->profile->projects, true) : [];
                     foreach ($projects as $key => $project) {
                         switch ($project) {
                             case "vmast":
@@ -3597,7 +3596,7 @@ class AdminController extends Controller {
                 if (in_array($mode, ["ulb","udb"])) {
                     $event->translators->each(function($translator) use (&$updated, $specUser, $event) {
                         $memberID = $translator->memberID;
-                        $crc = (array)json_decode($translator->pivot->crCheck, true);
+                        $crc = $translator->pivot->crCheck ? json_decode($translator->pivot->crCheck, true) : [];
                         foreach ($crc as $chapter => $data) {
                             $crc[$chapter]["memberID2"] = 0;
                             $crc[$chapter]["done2"] = 0;
@@ -3630,7 +3629,7 @@ class AdminController extends Controller {
 
                 if (in_array($mode, ["ulb","udb"]) || ($mode == "sun" && $source != "odb")) {
                     foreach ($event->chapters as $chapter) {
-                        $chunks = (array)json_decode($chapter->chunks, true);
+                        $chunks = $chapter->chunks ? json_decode($chapter->chunks, true) : [];
                         if (empty($chunks)) continue;
 
                         // Not migrated

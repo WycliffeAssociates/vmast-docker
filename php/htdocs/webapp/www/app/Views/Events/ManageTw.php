@@ -44,7 +44,7 @@ if(!isset($error)):
                         $group_name = null;
                         foreach ($data["word_groups"] as $word_group) {
                             if($word_group->groupID == $chapter) {
-                                $words = (array) json_decode($word_group->words, true);
+                                $words = (array) $word_group->words ? json_decode($word_group->words, true) : [];
                                 $group_name = join(", ", $words);
                                 break;
                             }

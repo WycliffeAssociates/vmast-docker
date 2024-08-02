@@ -78,7 +78,7 @@ class CloudRepository implements ICloudRepository {
             "redirect_uri" => "{$_ENV["APP_URL"]}members/oauth/$this->server",
         ];
         $response = $this->authRequest("/login/oauth/access_token", $post);
-        $json = json_decode($response);
+        $json = $response ? json_decode($response) : [];
 
         if (!isset($json->error)) {
             Session::set($this->server, [
@@ -148,17 +148,17 @@ class CloudRepository implements ICloudRepository {
 
     private function getUsername($server) {
         $data = $this->request("/user");
-        $user = json_decode($data);
+        $user = $data ? json_decode($data) : [];
         return !isset($user->error) ? $user->login : "unknown";
     }
 
     private function getRepo($repoName) {
         $data = $this->request("/repos/{$this->username}/{$repoName}");
-        return json_decode($data);
+        return $data ? json_decode($data) : [];
     }
 
     private function createEmptyRepo($repoName) {
         $data = $this->request("/user/repos", ["name" => $repoName]);
-        return json_decode($data);
+        return $data ? json_decode($data) : [];
     }
 }

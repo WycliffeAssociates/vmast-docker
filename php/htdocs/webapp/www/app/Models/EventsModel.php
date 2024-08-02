@@ -154,10 +154,10 @@ class EventsModel extends Model
             }
 
             if (in_array($event->bookProject, ["ulb","udb"])) {
-                $peerCheck = (array)json_decode($event->peerCheck, true);
-                $kwCheck = (array)json_decode($event->kwCheck, true);
-                $crCheck = (array)json_decode($event->crCheck, true);
-                $otherCheck = (array)json_decode($event->otherCheck, true);
+                $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+                $kwCheck = $event->kwCheck ? json_decode($event->kwCheck, true) : [];
+                $crCheck = $event->crCheck ? json_decode($event->crCheck, true) : [];
+                $otherCheck = $event->otherCheck ? json_decode($event->otherCheck, true) : [];
 
                 foreach ($peerCheck as $chap => $data) {
                     if ($data["done"] < 2 && $includeCheckers && (!isset($chapter) || $chapter == $chap)) {
@@ -315,9 +315,9 @@ class EventsModel extends Model
             }
             $event->admins = $eventAdmins;
 
-            $peerCheck = (array)json_decode($event->peerCheck, true);
-            $kwCheck = (array)json_decode($event->kwCheck, true);
-            $crCheck = (array)json_decode($event->crCheck, true);
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+            $kwCheck = $event->kwCheck ? json_decode($event->kwCheck, true) : [];
+            $crCheck = $event->crCheck ? json_decode($event->crCheck, true) : [];
 
             foreach ($peerCheck as $chap => $data) {
                 // Exclude translator's events
@@ -454,8 +454,8 @@ class EventsModel extends Model
             $event->admins = $eventAdmins;
             $event->manageMode = $event->bookProject;
 
-            $otherCheck = (array)json_decode($event->otherCheck, true);
-            $peerCheck = (array)json_decode($event->peerCheck, true);
+            $otherCheck = $event->otherCheck ? json_decode($event->otherCheck, true) : [];
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
 
             if ($type == "all" || $type == "edit") {
                 foreach ($otherCheck as $chap => $data) {
@@ -613,8 +613,8 @@ class EventsModel extends Model
             $event->admins = $eventAdmins;
             $event->manageMode = $event->bookProject;
 
-            $otherCheck = (array)json_decode($event->otherCheck, true);
-            $peerCheck = (array)json_decode($event->peerCheck, true);
+            $otherCheck = $event->otherCheck ? json_decode($event->otherCheck, true) : [];
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
 
             if ($type == "all" || $type == "edit") {
                 foreach ($otherCheck as $chap => $data) {
@@ -811,7 +811,7 @@ class EventsModel extends Model
             // Checker event
             if (empty($eventAdmins)) $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
             $event->admins = $eventAdmins;
-            $peerCheck = (array)json_decode($event->peerCheck, true);
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
             foreach ($peerCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
                     if ($data["memberID"] == $memberID && $data["done"] != 1) {
@@ -954,9 +954,9 @@ class EventsModel extends Model
                 $filtered[] = $event;
             }
 
-            $peerCheck = (array)json_decode($event->peerCheck, true);
-            $kwCheck = (array)json_decode($event->kwCheck, true);
-            $crCheck = (array)json_decode($event->crCheck, true);
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
+            $kwCheck = $event->kwCheck ? json_decode($event->kwCheck, true) : [];
+            $crCheck = $event->crCheck ? json_decode($event->crCheck, true) : [];
 
             foreach ($peerCheck as $chap => $data) {
                 if ($event->bookProject == "sun" && $data["memberID"] != $memberID) continue;
@@ -1048,7 +1048,7 @@ class EventsModel extends Model
             $event->admins = $eventAdmins[$event->eventID];
             $event->manageMode = "l2";
 
-            $peerCheck = (array)json_decode($event->peerCheck, true);
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
             foreach ($peerCheck as $chap => $data) {
                 // Exclude finished events
                 if ($data["done"] > 0) continue;
@@ -1069,7 +1069,7 @@ class EventsModel extends Model
                 $filtered[] = $ev;
             }
 
-            $kwCheck = (array)json_decode($event->kwCheck, true);
+            $kwCheck = $event->kwCheck ? json_decode($event->kwCheck, true) : [];
             foreach ($kwCheck as $chap => $data) {
                 // Exclude translator's events
                 if ($event->memberID == $memberID) continue;
@@ -1091,7 +1091,7 @@ class EventsModel extends Model
                 $filtered[] = $ev;
             }
 
-            $crCheck = (array)json_decode($event->crCheck, true);
+            $crCheck = $event->crCheck ? json_decode($event->crCheck, true) : [];
             foreach ($crCheck as $chap => $data) {
                 // Exclude translator's events
                 if ($event->memberID == $memberID) continue;
@@ -1169,7 +1169,7 @@ class EventsModel extends Model
             }
             $event->admins = $eventAdmins[$event->eventID];
 
-            $peerCheck = (array)json_decode($event->peerCheck, true);
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
             foreach ($peerCheck as $chap => $data) {
                 // Exclude finished events
                 if ($data["done"] > 0) continue;
@@ -1308,7 +1308,7 @@ class EventsModel extends Model
             }
 
             // Peer Check events
-            $peerCheck = (array)json_decode($event->peerCheck, true);
+            $peerCheck = $event->peerCheck ? json_decode($event->peerCheck, true) : [];
             foreach ($peerCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
                     if ($data["memberID"] == $memberID && $data["done"] != 2) {
@@ -1397,7 +1397,7 @@ class EventsModel extends Model
             // Theo Check events
             if (empty($eventAdmins)) $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
             $event->admins = $eventAdmins;
-            $kwCheck = (array)json_decode($event->kwCheck, true);
+            $kwCheck = $event->kwCheck ? json_decode($event->kwCheck, true) : [];
             foreach ($kwCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
                     if ($data["memberID"] == $checkerID && $data["done"] == 0) {
@@ -1414,7 +1414,7 @@ class EventsModel extends Model
             }
 
             // Verse-by-verse Check events
-            $crCheck = (array)json_decode($event->crCheck, true);
+            $crCheck = $event->crCheck ? json_decode($event->crCheck, true) : [];
             foreach ($crCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
                     $doneStatus = $event->sourceBible == "odb" ? 1 : 2;
@@ -1488,7 +1488,7 @@ class EventsModel extends Model
             }
 
             // Theo Check events
-            $kwCheck = (array)json_decode($event->kwCheck, true);
+            $kwCheck = $event->kwCheck ? json_decode($event->kwCheck, true) : [];
             foreach ($kwCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
                     if ($data["memberID"] == $checkerID && $data["done"] == 0) {
@@ -1505,7 +1505,7 @@ class EventsModel extends Model
             }
 
             // Verse-by-verse Check events
-            $crCheck = (array)json_decode($event->crCheck, true);
+            $crCheck = $event->crCheck ? json_decode($event->crCheck, true) : [];
             foreach ($crCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
                     if ($data["memberID"] == $checkerID && $data["done"] != 2) {
@@ -1635,9 +1635,9 @@ class EventsModel extends Model
         $notifs = [];
 
         foreach ($notifications as $notification) {
-            $peerCheck = (array)json_decode($notification->peerCheck, true);
-            $kwCheck = (array)json_decode($notification->kwCheck, true);
-            $crCheck = (array)json_decode($notification->crCheck, true);
+            $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
+            $kwCheck = $notification->kwCheck ? json_decode($notification->kwCheck, true) : [];
+            $crCheck = $notification->crCheck ? json_decode($notification->crCheck, true) : [];
 
             foreach ($peerCheck as $chapter => $data) {
                 // Exclude taken chapters
@@ -1725,8 +1725,8 @@ class EventsModel extends Model
         $notifs = [];
 
         foreach ($questionsNotifications as $notification) {
-            $otherCheck = (array)json_decode($notification->otherCheck, true);
-            $peerCheck = (array)json_decode($notification->peerCheck, true);
+            $otherCheck = $notification->otherCheck ? json_decode($notification->otherCheck, true) : [];
+            $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
 
             foreach ($otherCheck as $chapter => $data) {
                 // Exclude taken chapters
@@ -1740,7 +1740,7 @@ class EventsModel extends Model
                         "groupID" => $chapter,
                         "eventID" => $notification->eventID]);
 
-                    $words = (array)json_decode($group[0]->words, true);
+                    $words = $group[0]->words ? json_decode($group[0]->words, true) : [];
                     $notification->group = $words[0] . "..." . $words[sizeof($words) - 1];
                 } elseif ($notification->bookProject == "bca") {
                     $e = $this->eventRepo->get($notification->eventID);
@@ -1770,7 +1770,7 @@ class EventsModel extends Model
                         "groupID" => $chapter,
                         "eventID" => $notification->eventID]);
 
-                    $words = (array)json_decode($group[0]->words, true);
+                    $words = $group[0]->words ? json_decode($group[0]->words, true) : [];
                     $notification->group = $words[0] . "..." . $words[sizeof($words) - 1];
                 } elseif ($notification->bookProject == "bca") {
                     $e = $this->eventRepo->get($notification->eventID);
@@ -1834,9 +1834,9 @@ class EventsModel extends Model
             if ($notification->memberID != Session::get("memberID")) {
                 $notification->manageMode = "l2";
 
-                $peerCheck = (array)json_decode($notification->peerCheck, true);
-                $kwCheck = (array)json_decode($notification->kwCheck, true);
-                $crCheck = (array)json_decode($notification->crCheck, true);
+                $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
+                $kwCheck = $notification->kwCheck ? json_decode($notification->kwCheck, true) : [];
+                $crCheck = $notification->crCheck ? json_decode($notification->crCheck, true) : [];
 
                 foreach ($peerCheck as $chapter => $data) {
                     // Exclude taken chapters
@@ -1911,7 +1911,7 @@ class EventsModel extends Model
                 continue;
 
             // Peer check notifications
-            $peerCheck = (array)json_decode($notification->peerCheck, true);
+            $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
             foreach ($peerCheck as $chapter => $data) {
                 // Exclude taken chapters
                 if ($data["memberID"] > 0)
@@ -1959,7 +1959,7 @@ class EventsModel extends Model
         foreach ($notifications as $notification) {
             // Theological check notifications
             if ($notification->memberID != Session::get("memberID")) {
-                $kwCheck = (array)json_decode($notification->kwCheck, true);
+                $kwCheck = $notification->kwCheck ? json_decode($notification->kwCheck, true) : [];
                 foreach ($kwCheck as $chapter => $data) {
                     // Exclude taken chapters
                     if ($data["memberID"] > 0) continue;
@@ -1974,7 +1974,7 @@ class EventsModel extends Model
 
             // Verse-by-verse check notifications
             if ($notification->memberID != Session::get("memberID")) {
-                $crCheck = (array)json_decode($notification->crCheck, true);
+                $crCheck = $notification->crCheck ? json_decode($notification->crCheck, true) : [];
                 foreach ($crCheck as $chapter => $data) {
                     // Exclude taken chapters
                     if ($data["memberID"] > 0) continue;
@@ -2022,7 +2022,7 @@ class EventsModel extends Model
         foreach ($notifications as $notification) {
             // Peer check notifications
             if ($notification->memberID != Session::get("memberID")) {
-                $peerCheck = (array)json_decode($notification->peerCheck, true);
+                $peerCheck = $notification->peerCheck ? json_decode($notification->peerCheck, true) : [];
                 foreach ($peerCheck as $chapter => $data) {
                     // Exclude taken chapters
                     if ($data["memberID"] > 0) continue;

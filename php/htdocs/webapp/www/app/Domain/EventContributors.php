@@ -91,7 +91,7 @@ class EventContributors
                 $role = "";
 
                 if ($this->withRoles) {
-                    $church_role = (array)json_decode($member->profile->church_role);
+                    $church_role = $member->profile->church_role ? json_decode($member->profile->church_role) : [];
 
                     if (in_array("Pastor", $church_role))
                         $role = __('pastor');
@@ -137,11 +137,11 @@ class EventContributors
 
     private function setContributorsL1() {
         foreach ($this->event->translators as $translator) {
-            $verbCheck = (array)json_decode($translator->pivot->verbCheck);
-            $peerCheck = (array)json_decode($translator->pivot->peerCheck);
-            $kwCheck = (array)json_decode($translator->pivot->kwCheck);
-            $crCheck = (array)json_decode($translator->pivot->crCheck);
-            $otherCheck = (array)json_decode($translator->pivot->otherCheck);
+            $verbCheck = $translator->pivot->verbCheck ? json_decode($translator->pivot->verbCheck) : [];
+            $peerCheck = $translator->pivot->peerCheck ? json_decode($translator->pivot->peerCheck) : [];
+            $kwCheck = $translator->pivot->kwCheck ? json_decode($translator->pivot->kwCheck) : [];
+            $crCheck = $translator->pivot->crCheck ? json_decode($translator->pivot->crCheck) : [];
+            $otherCheck = $translator->pivot->otherCheck ? json_decode($translator->pivot->otherCheck) : [];
 
             if (in_array($this->mode, ["tn", "sun", "tw", "tq", "rad", "ulb", "udb"])) {
                 $this->checkersArr = Arrays::append($this->checkersArr, array_values(array_map(function ($elm) {
@@ -184,9 +184,9 @@ class EventContributors
     private function setContributorsL2() {
         if (in_array($this->mode, ["udb","ulb","sun"])) {
             foreach ($this->event->checkersL2 as $checker) {
-                $peerCheck = (array)json_decode($checker->pivot->peerCheck);
-                $kwCheck = (array)json_decode($checker->pivot->kwCheck);
-                $crCheck = (array)json_decode($checker->pivot->crCheck);
+                $peerCheck = $checker->pivot->peerCheck ? json_decode($checker->pivot->peerCheck) : [];
+                $kwCheck = $checker->pivot->kwCheck ? json_decode($checker->pivot->kwCheck) : [];
+                $crCheck = $checker->pivot->crCheck ? json_decode($checker->pivot->crCheck) : [];
 
                 $peerMems = [];
                 foreach ($peerCheck as $item) {
@@ -230,7 +230,7 @@ class EventContributors
 
     private function setContributorsL3() {
         foreach ($this->event->checkersL3 as $translator) {
-            $peerCheck = (array)json_decode($translator->pivot->peerCheck);
+            $peerCheck = $translator->pivot->peerCheck ? json_decode($translator->pivot->peerCheck) : [];
             $peerMems = [];
             foreach ($peerCheck as $item) {
                 $peerMems[] = $item->memberID;

@@ -25,7 +25,7 @@ class SunRevisionProgress
             if ($chapter->checkerL2) {
                 $tmp["currentChapter"] = $chapter->checkerL2->currentChapter;
                 $tmp["step"] = $chapter->checkerL2->step;
-                $tmp["peerCheck"] = (array)json_decode($chapter->checkerL2->peerCheck, true);
+                $tmp["peerCheck"] = $chapter->checkerL2->peerCheck ? json_decode($chapter->checkerL2->peerCheck, true) : [];
             }
 
             $data["chapters"][$chapter->chapter] = $tmp;

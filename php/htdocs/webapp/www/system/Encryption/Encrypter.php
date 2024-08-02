@@ -146,7 +146,7 @@ class Encrypter
      */
     protected function getJsonPayload($payload)
     {
-        $payload = json_decode(base64_decode($payload), true);
+        $payload = base64_decode($payload) ? json_decode(base64_decode($payload), true) : [];
 
         if (! $payload || $this->invalidPayload($payload)) {
             throw new DecryptException('The payload is invalid.');

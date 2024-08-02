@@ -143,13 +143,13 @@ class ManageController extends Controller {
             foreach ($chapters as $chapter) {
                 $tmp["trID"] = $chapter["trID"];
                 $tmp["memberID"] = $chapter["memberID"];
-                $tmp["chunks"] = json_decode($chapter["chunks"], true);
+                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
                 $tmp["done"] = $chapter["done"];
-                $tmp["verbCheck"] = (array)json_decode($chapter["verbCheck"], true);
-                $tmp["kwCheck"] = (array)json_decode($chapter["kwCheck"], true);
-                $tmp["crCheck"] = (array)json_decode($chapter["crCheck"], true);
-                $tmp["peerCheck"] = (array)json_decode($chapter["peerCheck"], true);
-                $tmp["otherCheck"] = (array)json_decode($chapter["otherCheck"], true);
+                $tmp["verbCheck"] = $chapter["verbCheck"] ? json_decode($chapter["verbCheck"], true) : [];
+                $tmp["kwCheck"] = $chapter["kwCheck"] ? json_decode($chapter["kwCheck"], true) : [];
+                $tmp["crCheck"] = $chapter["crCheck"] ? json_decode($chapter["crCheck"], true) : [];
+                $tmp["peerCheck"] = $chapter["peerCheck"] ? json_decode($chapter["peerCheck"], true) : [];
+                $tmp["otherCheck"] = $chapter["otherCheck"] ? json_decode($chapter["otherCheck"], true) : [];
                 $tmp["step"] = $chapter["step"];
                 $tmp["currentChapter"] = $chapter["currentChapter"];
 
@@ -215,7 +215,7 @@ class ManageController extends Controller {
             $data["words_in_groups"] = [];
 
             foreach ($data["word_groups"] as $group) {
-                $words = (array)json_decode($group->words, true);
+                $words = $group->words ? json_decode($group->words, true) : [];
                 $data["words_in_groups"] = Arrays::append($data["words_in_groups"], $words);
             }
 
@@ -234,10 +234,10 @@ class ManageController extends Controller {
             foreach ($chapters as $chapter) {
                 $tmp["trID"] = $chapter["trID"];
                 $tmp["memberID"] = $chapter["memberID"];
-                $tmp["chunks"] = json_decode($chapter["chunks"], true);
+                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
                 $tmp["done"] = $chapter["done"];
-                $tmp["otherCheck"] = (array)json_decode($chapter["otherCheck"], true);
-                $tmp["peerCheck"] = (array)json_decode($chapter["peerCheck"], true);
+                $tmp["otherCheck"] = $chapter["otherCheck"] ? json_decode($chapter["otherCheck"], true) : [];
+                $tmp["peerCheck"] = $chapter["peerCheck"] ? json_decode($chapter["peerCheck"], true) : [];
 
                 $tmpChapters[$chapter["chapter"]] = $tmp;
             }
@@ -303,7 +303,7 @@ class ManageController extends Controller {
             foreach ($chapters as $chapter) {
                 $tmp["trID"] = $chapter["trID"];
                 $tmp["memberID"] = $chapter["memberID"];
-                $tmp["chunks"] = json_decode($chapter["chunks"], true);
+                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
                 $tmp["done"] = $chapter["done"];
 
                 $member = $members->find($chapter["memberID"]);
@@ -312,8 +312,8 @@ class ManageController extends Controller {
                     : $chapter["memberID"];
                 $tmp["memberName"] = $name;
 
-                $otherCheck = (array)json_decode($chapter["otherCheck"], true);
-                $peerCheck = (array)json_decode($chapter["peerCheck"], true);
+                $otherCheck = $chapter["otherCheck"] ? json_decode($chapter["otherCheck"], true) : [];
+                $peerCheck = $chapter["peerCheck"] ? json_decode($chapter["peerCheck"], true) : [];
 
                 $hasOther = !empty($otherCheck)
                     && array_key_exists($chapter["chapter"], $otherCheck)
@@ -410,11 +410,11 @@ class ManageController extends Controller {
 
                 $tmp["l2chID"] = $chapter["l2chID"];
                 $tmp["l2memberID"] = $chapter["l2memberID"];
-                $tmp["chunks"] = json_decode($chapter["chunks"], true);
+                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
                 $tmp["l2checked"] = $chapter["l2checked"];
-                $tmp["peerCheck"] = (array)json_decode($chapter["peerCheck"], true);
-                $tmp["kwCheck"] = (array)json_decode($chapter["kwCheck"], true);
-                $tmp["crCheck"] = (array)json_decode($chapter["crCheck"], true);
+                $tmp["peerCheck"] = $chapter["peerCheck"] ? json_decode($chapter["peerCheck"], true) : [];
+                $tmp["kwCheck"] = $chapter["kwCheck"] ? json_decode($chapter["kwCheck"], true) : [];
+                $tmp["crCheck"] = $chapter["crCheck"] ? json_decode($chapter["crCheck"], true) : [];
 
                 $tmpChapters[$chapter["chapter"]] = $tmp;
             }
@@ -479,9 +479,9 @@ class ManageController extends Controller {
 
                 $tmp["l3chID"] = $chapter["l3chID"];
                 $tmp["l3memberID"] = $chapter["l3memberID"];
-                $tmp["chunks"] = json_decode($chapter["chunks"], true);
+                $tmp["chunks"] = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
                 $tmp["l3checked"] = $chapter["l3checked"];
-                $tmp["peerCheck"] = (array)json_decode($chapter["peerCheck"], true);
+                $tmp["peerCheck"] = $chapter["peerCheck"] ? json_decode($chapter["peerCheck"], true) : [];
 
                 $tmpChapters[$chapter["chapter"]] = $tmp;
             }
@@ -582,7 +582,7 @@ class ManageController extends Controller {
                     }
                     $finishedState = EventStates::TRANSLATED;
                     if (Tools::isHelp($mode)) {
-                        $otherCheck = (array)json_decode($member->otherCheck, true);
+                        $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                         $chk = array_key_exists($chapter, $otherCheck);
                     }
                     $allSteps = EventSteps::enumArray($mode, $chk);
@@ -617,20 +617,20 @@ class ManageController extends Controller {
 
                     if ($confirm < MoveBackConfirm::MOVE_STEP) {
                         if (Tools::isHelp($mode) && $currentStep != EventSteps::PRAY) {
-                            $otherCheck = (array)json_decode($member->otherCheck, true);
+                            $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                             if ($chk && $otherCheck[$chapter]["memberID"] > 0) {
                                 $checkerMember = $this->memberRepo->get($otherCheck[$chapter]["memberID"]);
                                 $memberName = $checkerMember->firstName . " " . mb_substr($checkerMember->lastName, 0, 1) . ".";
                             }
                         } elseif ($mode == "sun") {
                             if ($prevStep == EventSteps::FINAL_REVIEW || $prevStep == EventSteps::CONTENT_REVIEW) {
-                                $crCheck = (array)json_decode($member->crCheck, true);
+                                $crCheck = $member->crCheck ? json_decode($member->crCheck, true) : [];
                                 if ($crCheck[$chapter]["memberID"] > 0) {
                                     $checkerMember = $this->memberRepo->get($crCheck[$chapter]["memberID"]);
                                     $memberName = $checkerMember->firstName . " " . mb_substr($checkerMember->lastName, 0, 1) . ".";
                                 }
                             } elseif ($prevStep == EventSteps::THEO_CHECK) {
-                                $kwCheck = (array)json_decode($member->kwCheck, true);
+                                $kwCheck = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
                                 if ($kwCheck[$chapter]["memberID"] > 0) {
                                     $checkerMember = $this->memberRepo->get($kwCheck[$chapter]["memberID"]);
                                     $memberName = $checkerMember->firstName . " " . mb_substr($checkerMember->lastName, 0, 1) . ".";
@@ -638,7 +638,7 @@ class ManageController extends Controller {
                             }
                         } elseif ($mode == "l2_sun") {
                             if ($prevStep == EventCheckSteps::PEER_REVIEW) {
-                                $peerCheck = (array)json_decode($member->peerCheck, true);
+                                $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
                                 if ($peerCheck[$chapter]["memberID"] > 0) {
                                     $checkerMember = $this->memberRepo->get($peerCheck[$chapter]["memberID"]);
                                     $memberName = $checkerMember->firstName . " " . mb_substr($checkerMember->lastName, 0, 1) . ".";
@@ -728,7 +728,7 @@ class ManageController extends Controller {
         switch ($toStep) {
             case EventSteps::PRAY:
                 if (Tools::isHelp($mode) && $chk) {
-                    $otherCheck = (array)json_decode($member->otherCheck, true);
+                    $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                     if (array_key_exists($chapter, $otherCheck)) {
                         $otherCheck[$chapter]["done"] = TnCheckSteps::PRAY;
                         $postData["otherCheck"] = json_encode($otherCheck);
@@ -746,14 +746,14 @@ class ManageController extends Controller {
                     if (in_array($mode, ["obs","odbsun"])) {
                         $postData["currentChunk"] = 0;
                     } else {
-                        $verbCheck = (array)json_decode($member->verbCheck, true);
+                        $verbCheck = $member->verbCheck ? json_decode($member->verbCheck, true) : [];
                         if (array_key_exists($chapter, $verbCheck))
                             unset($verbCheck[$chapter]);
                         $postData["verbCheck"] = json_encode($verbCheck);
                     }
                 } else {
                     if ($chk) {
-                        $otherCheck = (array)json_decode($member->otherCheck, true);
+                        $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                         if (array_key_exists($chapter, $otherCheck)) {
                             $otherCheck[$chapter]["done"] = TnCheckSteps::CONSUME;
                             $postData["otherCheck"] = json_encode($otherCheck);
@@ -774,7 +774,7 @@ class ManageController extends Controller {
 
             case EventSteps::HIGHLIGHT:
                 if ($mode == "tn" && $chk) {
-                    $otherCheck = (array)json_decode($member->otherCheck, true);
+                    $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                     if (array_key_exists($chapter, $otherCheck)) {
                         $otherCheck[$chapter]["done"] = TnCheckSteps::HIGHLIGHT;
                         $postData["otherCheck"] = json_encode($otherCheck);
@@ -785,7 +785,7 @@ class ManageController extends Controller {
             case EventSteps::VERBALIZE:
                 $postData["step"] = EventSteps::VERBALIZE;
 
-                $verbCheck = (array)json_decode($member->verbCheck, true);
+                $verbCheck = $member->verbCheck ? json_decode($member->verbCheck, true) : [];
                 if (array_key_exists($chapter, $verbCheck)) {
                     unset($verbCheck[$chapter]);
                 }
@@ -830,7 +830,7 @@ class ManageController extends Controller {
                     return ["otherChapterInProgress"];
                 } else {
                     if (Tools::isHelp($mode) && $fromStep != EventSteps::PRAY) {
-                        $otherCheck = (array)json_decode($member->otherCheck, true);
+                        $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                         if (array_key_exists($chapter, $otherCheck)) {
                             $otherCheck[$chapter]["done"] = TnCheckSteps::SELF_CHECK;
                             $postData["otherCheck"] = json_encode($otherCheck);
@@ -843,8 +843,8 @@ class ManageController extends Controller {
                             "eventID" => $member->eventID,
                             "chapter" => $chapter]);
 
-                        $peerCheck = (array)json_decode($member->peerCheck, true);
-                        $otherCheck = (array)json_decode($member->otherCheck, true);
+                        $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
+                        $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                         if (array_key_exists($chapter, $peerCheck))
                             unset($peerCheck[$chapter]);
                         if (array_key_exists($chapter, $otherCheck))
@@ -853,7 +853,7 @@ class ManageController extends Controller {
                         $postData["otherCheck"] = json_encode($otherCheck);
 
                         if (in_array($mode, ["odbsun","sun"])) {
-                            $kwCheck = (array)json_decode($member->kwCheck, true);
+                            $kwCheck = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
                             if (array_key_exists($chapter, $kwCheck))
                                 unset($kwCheck[$chapter]);
                             $postData["kwCheck"] = json_encode($kwCheck);
@@ -867,9 +867,9 @@ class ManageController extends Controller {
                 break;
 
             case EventSteps::PEER_REVIEW:
-                $peerCheck = (array)json_decode($member->peerCheck, true);
+                $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
                 if (Tools::isHelp($mode) && $chk) {
-                    $otherCheck = (array)json_decode($member->otherCheck, true);
+                    $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                     if (array_key_exists($chapter, $peerCheck)) {
                         $peerCheck[$chapter] = ["memberID" => 0, "done" => 0];
                     }
@@ -879,8 +879,8 @@ class ManageController extends Controller {
                     $postData["peerCheck"] = json_encode($peerCheck);
                     $postData["otherCheck"] = json_encode($otherCheck);
                 } else {
-                    $peerCheck = (array)json_decode($member->peerCheck, true);
-                    $kwCheck = (array)json_decode($member->kwCheck, true);
+                    $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
+                    $kwCheck = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
                     if (array_key_exists($chapter, $kwCheck))
                         unset($kwCheck[$chapter]);
                     $peerCheck[$chapter] = ["memberID" => 0, "done" => 0];
@@ -892,8 +892,8 @@ class ManageController extends Controller {
             case EventSteps::KEYWORD_CHECK:
             case EventSteps::THEO_CHECK:
                 if (Tools::isHelp($mode) && $chk) {
-                    $peerCheck = (array)json_decode($member->peerCheck, true);
-                    $otherCheck = (array)json_decode($member->otherCheck, true);
+                    $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
+                    $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                     if (array_key_exists($chapter, $peerCheck))
                         unset($peerCheck[$chapter]);
                     if (array_key_exists($chapter, $otherCheck)) {
@@ -906,8 +906,8 @@ class ManageController extends Controller {
                         $postData["otherCheck"] = json_encode($otherCheck);
                     }
                 } else {
-                    $kwCheck = (array)json_decode($member->kwCheck, true);
-                    $crCheck = (array)json_decode($member->crCheck, true);
+                    $kwCheck = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
+                    $crCheck = $member->crCheck ? json_decode($member->crCheck, true) : [];
                     if (array_key_exists($chapter, $crCheck))
                         unset($crCheck[$chapter]);
                     $kwCheck[$chapter] = ["memberID" => 0, "done" => 0];
@@ -917,8 +917,8 @@ class ManageController extends Controller {
                 break;
 
             case EventSteps::CONTENT_REVIEW:
-                $crCheck = (array)json_decode($member->crCheck, true);
-                $otherCheck = (array)json_decode($member->otherCheck, true);
+                $crCheck = $member->crCheck ? json_decode($member->crCheck, true) : [];
+                $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                 $crCheck[$chapter] = ["memberID" => 0, "done" => 0, "memberID2" => 0, "done2" => 0];
                 if (array_key_exists($chapter, $otherCheck))
                     unset($otherCheck[$chapter]);
@@ -928,13 +928,13 @@ class ManageController extends Controller {
 
             case EventSteps::FINAL_REVIEW:
                 if ($mode == "sun") {
-                    $crCheck = (array)json_decode($member->crCheck, true);
+                    $crCheck = $member->crCheck ? json_decode($member->crCheck, true) : [];
                     if (array_key_exists($chapter, $crCheck)) {
                         $crCheck[$chapter]["done"] = 1;
                     }
                     $postData["crCheck"] = json_encode($crCheck);
                 } else {
-                    $otherCheck = (array)json_decode($member->otherCheck, true);
+                    $otherCheck = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
                     $otherCheck[$chapter] = ["memberID" => 0, "done" => 0];
                     $postData["otherCheck"] = json_encode($otherCheck);
                 }
@@ -977,8 +977,8 @@ class ManageController extends Controller {
 
                     $postData["step"] = EventCheckSteps::SELF_CHECK;
                     $postData["currentChapter"] = $chapter;
-                    $peerCheck = (array)json_decode($member->peerCheck, true);
-                    $kwCheck = (array)json_decode($member->kwCheck, true);
+                    $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
+                    $kwCheck = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
                     if (array_key_exists($chapter, $peerCheck)) {
                         unset($peerCheck[$chapter]);
                     }
@@ -991,8 +991,8 @@ class ManageController extends Controller {
                 break;
 
             case EventCheckSteps::PEER_REVIEW:
-                $peerCheck = (array)json_decode($member->peerCheck, true);
-                $kwCheck = (array)json_decode($member->kwCheck, true);
+                $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
+                $kwCheck = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
                 if (array_key_exists($chapter, $peerCheck)) {
                     $peerCheck[$chapter] = ["memberID" => 0, "done" => 0];
                 }
@@ -1004,8 +1004,8 @@ class ManageController extends Controller {
                 break;
 
             case EventCheckSteps::KEYWORD_CHECK:
-                $kwCheck = (array)json_decode($member->kwCheck, true);
-                $crCheck = (array)json_decode($member->crCheck, true);
+                $kwCheck = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
+                $crCheck = $member->crCheck ? json_decode($member->crCheck, true) : [];
                 if (array_key_exists($chapter, $kwCheck)) {
                     $kwCheck[$chapter] = ["memberID" => 0, "done" => 0];
                 }
@@ -1017,7 +1017,7 @@ class ManageController extends Controller {
                 break;
 
             case EventCheckSteps::CONTENT_REVIEW:
-                $crCheck = (array)json_decode($member->crCheck, true);
+                $crCheck = $member->crCheck ? json_decode($member->crCheck, true) : [];
                 if (array_key_exists($chapter, $crCheck)) {
                     $crCheck[$chapter] = ["memberID" => 0, "done" => 0];
                 }
@@ -1043,7 +1043,7 @@ class ManageController extends Controller {
             case EventCheckSteps::PRAY:
                 $postData["step"] = EventSteps::PRAY;
 
-                $peerCheck = (array)json_decode($member->peerCheck, true);
+                $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
                 if (array_key_exists($chapter, $peerCheck))
                     unset($peerCheck[$chapter]);
 
@@ -1053,7 +1053,7 @@ class ManageController extends Controller {
             case EventCheckSteps::PEER_REVIEW_L3:
                 $postData["step"] = EventCheckSteps::PEER_REVIEW_L3;
 
-                $peerCheck = (array)json_decode($member->peerCheck, true);
+                $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
                 if (array_key_exists($chapter, $peerCheck))
                     $peerCheck[$chapter]["done"] = 0;
 
@@ -1070,7 +1070,7 @@ class ManageController extends Controller {
                     $postData["step"] = EventCheckSteps::PEER_EDIT_L3;
                     $postData["currentChapter"] = $chapter;
 
-                    $peerCheck = (array)json_decode($member->peerCheck, true);
+                    $peerCheck = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
                     if (array_key_exists($chapter, $peerCheck))
                         $peerCheck[$chapter]["done"] = 1;
 
@@ -1084,16 +1084,16 @@ class ManageController extends Controller {
 
     private function getMemberCurrentStep($member, $chapter, $chapterDone, $mode, $manageMode) {
         if ($manageMode == "l3") {
-            $peer = (array)json_decode($member->peerCheck, true);
+            $peer = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
             if (array_key_exists($chapter, $peer) && $peer[$chapter]["done"] == 2 && $member->currentChapter != $chapter) {
                 $step = EventCheckSteps::FINISHED;
             } else {
                 $step = $member->step;
             }
         } elseif ($manageMode == "l2") {
-            $peer = (array)json_decode($member->peerCheck, true);
-            $kw = (array)json_decode($member->kwCheck, true);
-            $cr = (array)json_decode($member->crCheck, true);
+            $peer = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
+            $kw = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
+            $cr = $member->crCheck ? json_decode($member->crCheck, true) : [];
 
             $done = 2;
             $peerDone = $mode == "l2_sun" ? 1 : $done;
@@ -1112,10 +1112,10 @@ class ManageController extends Controller {
                 $step = $member->step;
             }
         } else {
-            $peer = (array)json_decode($member->peerCheck, true);
-            $kw = (array)json_decode($member->kwCheck, true);
-            $cr = (array)json_decode($member->crCheck, true);
-            $other = (array)json_decode($member->otherCheck, true);
+            $peer = $member->peerCheck ? json_decode($member->peerCheck, true) : [];
+            $kw = $member->kwCheck ? json_decode($member->kwCheck, true) : [];
+            $cr = $member->crCheck ? json_decode($member->crCheck, true) : [];
+            $other = $member->otherCheck ? json_decode($member->otherCheck, true) : [];
 
             $done = 2;
             $finalDone = 1;
@@ -1201,7 +1201,7 @@ class ManageController extends Controller {
         } else {
             $checker = $manageMode == "l2" ? EventMembers::L2_CHECKER : EventMembers::L3_CHECKER;
             $checkerTranslations = $translations->filter(function($item) use ($checker) {
-                $verses = (array)json_decode($item->translatedVerses, 1);
+                $verses = $item->translatedVerses, 1 ? json_decode($item->translatedVerses, 1) : [];
                 return array_key_exists($checker, $verses)
                     && array_key_exists("verses", $verses[$checker])
                     && !empty($verses[$checker]["verses"]);
@@ -1291,7 +1291,7 @@ class ManageController extends Controller {
                     foreach ($chapters as $chap) {
                         $tmp["trID"] = $chap["trID"];
                         $tmp["memberID"] = $chap["memberID"];
-                        $tmp["chunks"] = json_decode($chap["chunks"], true);
+                        $tmp["chunks"] = $chap["chunks"] ? json_decode($chap["chunks"], true) : [];
                         $tmp["done"] = $chap["done"];
                         $tmp["l2memberID"] = $chap["l2memberID"];
                         $tmp["l2chID"] = $chap["l2chID"];
@@ -1396,11 +1396,11 @@ class ManageController extends Controller {
                                         $event->translations()->where("chapter", $chapter)->delete();
                                         $event->comments()->where("chapter", $chapter)->where("level", 1)->delete();
 
-                                        $verbCheck = (array)json_decode($translator->pivot->verbCheck, true);
-                                        $peerCheck = (array)json_decode($translator->pivot->peerCheck, true);
-                                        $kwCheck = (array)json_decode($translator->pivot->kwCheck, true);
-                                        $crCheck = (array)json_decode($translator->pivot->crCheck, true);
-                                        $otherCheck = (array)json_decode($translator->pivot->otherCheck, true);
+                                        $verbCheck = $translator->pivot->verbCheck ? json_decode($translator->pivot->verbCheck, true) : [];
+                                        $peerCheck = $translator->pivot->peerCheck ? json_decode($translator->pivot->peerCheck, true) : [];
+                                        $kwCheck = $translator->pivot->kwCheck ? json_decode($translator->pivot->kwCheck, true) : [];
+                                        $crCheck = $translator->pivot->crCheck ? json_decode($translator->pivot->crCheck, true) : [];
+                                        $otherCheck = $translator->pivot->otherCheck ? json_decode($translator->pivot->otherCheck, true) : [];
                                         if (array_key_exists($chapter, $verbCheck)) {
                                             unset($verbCheck[$chapter]);
                                             $trPostData["verbCheck"] = json_encode($verbCheck);
@@ -1446,7 +1446,7 @@ class ManageController extends Controller {
                                                 ->delete();
 
                                             $translations->each(function($item) {
-                                                $verses = (array)json_decode($item->translatedVerses, true);
+                                                $verses = $item->translatedVerses ? json_decode($item->translatedVerses, true) : [];
                                                 if (array_key_exists(EventMembers::L2_CHECKER, $verses)) {
                                                     $verses[EventMembers::L2_CHECKER]["verses"] = [];
                                                 }
@@ -1480,9 +1480,9 @@ class ManageController extends Controller {
                                             $trPostData["currentChapter"] = 0;
                                         }
 
-                                        $peerCheck = (array)json_decode($checker->pivot->peerCheck, true);
-                                        $kwCheck = (array)json_decode($checker->pivot->kwCheck, true);
-                                        $crCheck = (array)json_decode($checker->pivot->crCheck, true);
+                                        $peerCheck = $checker->pivot->peerCheck ? json_decode($checker->pivot->peerCheck, true) : [];
+                                        $kwCheck = $checker->pivot->kwCheck ? json_decode($checker->pivot->kwCheck, true) : [];
+                                        $crCheck = $checker->pivot->crCheck ? json_decode($checker->pivot->crCheck, true) : [];
                                         if (array_key_exists($chapter, $peerCheck)) {
                                             unset($peerCheck[$chapter]);
                                             $trPostData["peerCheck"] = json_encode($peerCheck);
@@ -1512,7 +1512,7 @@ class ManageController extends Controller {
                                                 ->delete();
 
                                             $translations->each(function($item) {
-                                                $verses = (array)json_decode($item->translatedVerses, true);
+                                                $verses = $item->translatedVerses ? json_decode($item->translatedVerses, true) : [];
                                                 if (array_key_exists(EventMembers::L3_CHECKER, $verses)) {
                                                     $verses[EventMembers::L3_CHECKER]["verses"] = [];
                                                 }
@@ -1546,7 +1546,7 @@ class ManageController extends Controller {
                                             $trPostData["currentChapter"] = $event->project->bookProject == "tn" ? -1 : 0;
                                         }
 
-                                        $peerCheck = (array)json_decode($checker->pivot->peerCheck, true);
+                                        $peerCheck = $checker->pivot->peerCheck ? json_decode($checker->pivot->peerCheck, true) : [];
                                         if (array_key_exists($chapter, $peerCheck)) {
                                             unset($peerCheck[$chapter]);
                                             $trPostData["peerCheck"] = json_encode($peerCheck);
@@ -1657,7 +1657,7 @@ class ManageController extends Controller {
         }
 
         /*if ($userType == EventMembers::L2_CHECKER || $userType == EventMembers::L3_CHECKER) {
-            $education = (array)json_decode($appliedMember->profile->education);
+            $education = $appliedMember->profile->education ? json_decode($appliedMember->profile->education) : [];
             if (empty($education)) {
                 $data["errors"][] = __("education_public");
             } else {
@@ -1669,7 +1669,7 @@ class ManageController extends Controller {
                 }
             }
 
-            $ed_area = (array)json_decode($appliedMember->profile->ed_area);
+            $ed_area = $appliedMember->profile->ed_area ? json_decode($appliedMember->profile->ed_area) : [];
             if (empty($ed_area))
                 $data["errors"][] = __("ed_area");
             else {
@@ -1690,7 +1690,7 @@ class ManageController extends Controller {
             if (empty($appliedMember->profile->greek_knwlg))
                 $data["errors"][] = __("greek_knwlg");
 
-            $church_role = (array)json_decode($appliedMember->profile->church_role);
+            $church_role = $appliedMember->profile->church_role ? json_decode($appliedMember->profile->church_role) : [];
             if (empty($church_role))
                 $data["errors"][] = __("church_role_public");
             else {
@@ -1863,7 +1863,7 @@ class ManageController extends Controller {
 
                 $testGroup = [];
                 foreach ($groups as $gr) {
-                    $elm = (array)json_decode($gr->words, true);
+                    $elm = $gr->words ? json_decode($gr->words, true) : [];
                     $testGroup = Arrays::append($testGroup, $elm);
                 }
 

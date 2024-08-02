@@ -158,7 +158,7 @@ if(!isset($error)):
                                                     ? $chunk[0]." - ".$chunk[sizeof($chunk)-1] 
                                                     : __("intro")); ?>
                                                 <?php if(array_key_exists($index, (array)$chapter["chunksData"])) : ?>
-                                                    <?php $verses = (array)json_decode($chapter["chunksData"][$index]->translatedVerses); ?>
+                                                    <?php $verses = $chapter["chunksData"][$index]->translatedVerses ? json_decode($chapter["chunksData"][$index]->translatedVerses) : []; ?>
                                                     <?php if(isset($verses["checker"]) && !empty($verses["checker"]->verses)) :?>
                                                         &nbsp;&nbsp;<span class="finished_msg glyphicon glyphicon-ok"></span>
                                                     <?php endif; ?>

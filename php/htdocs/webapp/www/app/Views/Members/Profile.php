@@ -106,7 +106,7 @@ use Shared\Legacy\Error;
                         <option value="<?php echo $lang?>" selected><?php echo $lang?></option>
                     <?php endforeach; ?>
                 <?php else:?>
-                    <?php foreach ((array)json_decode($profile->languages, true) as $lang => $values): ?>
+                    <?php foreach (($profile->languages ? json_decode($profile->languages, true) : []) as $lang => $values): ?>
                         <option value="<?php echo $lang.":".$values[0].":".$values[1]?>" selected><?php echo $lang?></option>
                     <?php endforeach; ?>
                 <?php endif; ?>

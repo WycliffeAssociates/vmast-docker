@@ -155,13 +155,13 @@ class TranslationsController extends Controller
 
                 if (!in_array($bookProject, ["tn","tq","tw","obs","bc","bca"])) {
                     if (!$bookTitleRendered && $chapterNumber == 1) {
-                        $verses = json_decode($chap[0]->translatedVerses);
+                        $verses = $chap[0]->translatedVerses ? json_decode($chap[0]->translatedVerses) : [];
                         $data["data"]->bookTitle = $this->getVerseContent($verses);
                         $bookTitleRendered = true;
                     }
 
                     $titleChunk = $chapterNumber == 1 ? $chap[1] : $chap[0];
-                    $verses = json_decode($titleChunk->translatedVerses);
+                    $verses = $titleChunk->translatedVerses ? json_decode($titleChunk->translatedVerses) : [];
                     $chapterTitle = $this->getVerseContent($verses);
                 }
 
@@ -182,8 +182,8 @@ class TranslationsController extends Controller
                 }
 
                 foreach ($chap as $chunk) {
-                    $verses = json_decode($chunk->translatedVerses);
-                    $chunks = (array)json_decode($chapter["chunks"], true);
+                    $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : [];
+                    $chunks = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
 
                     if($verses == null) continue;
 
@@ -607,7 +607,7 @@ class TranslationsController extends Controller
                 $lastChapter = 0;
             }
 
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : [];
 
             if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
                 $chunkVerses = $verses->{EventMembers::L3_CHECKER}->verses;
@@ -751,7 +751,7 @@ class TranslationsController extends Controller
         $lastChapter = -1;
 
         foreach ($book as $chunk) {
-            $verses = json_decode($chunk->translatedVerses, true);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses, true) : [];
 
             if(!empty($verses[EventMembers::L3_CHECKER]["verses"])) {
                 $chunkVerses = $verses[EventMembers::L3_CHECKER]["verses"];
@@ -903,7 +903,7 @@ class TranslationsController extends Controller
                 }
             }
 
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : [];
 
             if($chunk->chapter != $lastChapter) {
                 $lastChapter = $chunk->chapter;
@@ -1001,7 +1001,7 @@ class TranslationsController extends Controller
         $root = !$upload ? $books[0]->targetLang."_".$books[0]->bookProject . "/" : "";
 
         foreach ($books as $chunk) {
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : [];
 
             if($chunk->chapter != $lastChapter) {
                 $lastChapter = $chunk->chapter;
@@ -1014,7 +1014,7 @@ class TranslationsController extends Controller
                 $chapter = $chapters[0];
             }
 
-            $chunks = (array)json_decode($chapter["chunks"], true);
+            $chunks = $chapter["chunks"] ? json_decode($chapter["chunks"], true) : [];
             $currChunk = $chunks[$chunk->chunk] ?? 1;
 
             $bookPath = $chunk->bookCode;
@@ -1113,8 +1113,8 @@ class TranslationsController extends Controller
         $root = !$upload ? $books[0]->targetLang."_tw/" : "";
 
         foreach ($books as $chunk) {
-            $verses = json_decode($chunk->translatedVerses);
-            $words = (array) json_decode($chunk->words, true);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : [];
+            $words = (array) $chunk->words ? json_decode($chunk->words, true) : [];
 
             $currWord = $words[$chunk->chunk] ?? null;
 
@@ -1184,7 +1184,7 @@ class TranslationsController extends Controller
         $words = [];
 
         foreach ($books as $chunk) {
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : [];
 
             if($chunk->chapter != $lastChapter) {
                 $lastChapter = $chunk->chapter;
@@ -1326,8 +1326,8 @@ class TranslationsController extends Controller
 
     private function sortBcaBook(&$book) {
         usort($book, function($a, $b) {
-            $aVerses = json_decode($a[0]->translatedVerses);
-            $bVerses = json_decode($b[0]->translatedVerses);
+            $aVerses = $a[0]->translatedVerses ? json_decode($a[0]->translatedVerses) : [];
+            $bVerses = $b[0]->translatedVerses ? json_decode($b[0]->translatedVerses) : [];
 
             if (!empty($aVerses->{EventMembers::CHECKER}->verses)) {
                 $aVerse = $aVerses->{EventMembers::CHECKER}->verses->text;
@@ -1353,8 +1353,8 @@ class TranslationsController extends Controller
         $book = $combined;
 
         usort($book[0], function($a, $b) {
-            $aVerses = json_decode($a->translatedVerses);
-            $bVerses = json_decode($b->translatedVerses);
+            $aVerses = $a->translatedVerses ? json_decode($a->translatedVerses) : [];
+            $bVerses = $b->translatedVerses ? json_decode($b->translatedVerses) : [];
 
             if (!empty($aVerses->{EventMembers::CHECKER}->verses)) {
                 $aVerse = $aVerses->{EventMembers::CHECKER}->verses;

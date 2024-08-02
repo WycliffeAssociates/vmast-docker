@@ -619,7 +619,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         function str_replace_array($search, array $replace, $subject)
         {
             foreach ($replace as $value) {
-                $subject = preg_replace('/' . $search . '/', $value, $subject, 1);
+                $subject = preg_replace('/' . $search . '/', $value ?? '', $subject, 1);
             }
 
             return $subject;

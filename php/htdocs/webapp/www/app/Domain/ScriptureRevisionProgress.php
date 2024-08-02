@@ -29,9 +29,9 @@ class ScriptureRevisionProgress
             if ($chapter->checkerL2) {
                 $tmp["currentChapter"] = $chapter->checkerL2->currentChapter;
                 $tmp["step"] = $chapter->checkerL2->step;
-                $tmp["peerCheck"] = (array)json_decode($chapter->checkerL2->peerCheck, true);
-                $tmp["kwCheck"] = (array)json_decode($chapter->checkerL2->kwCheck, true);
-                $tmp["crCheck"] = (array)json_decode($chapter->checkerL2->crCheck, true);
+                $tmp["peerCheck"] = $chapter->checkerL2->peerCheck ? json_decode($chapter->checkerL2->peerCheck, true) : [];
+                $tmp["kwCheck"] = $chapter->checkerL2->kwCheck ? json_decode($chapter->checkerL2->kwCheck, true) : [];
+                $tmp["crCheck"] = $chapter->checkerL2->crCheck ? json_decode($chapter->checkerL2->crCheck, true) : [];
             }
 
             $data["chapters"][$chapter->chapter] = $tmp;
