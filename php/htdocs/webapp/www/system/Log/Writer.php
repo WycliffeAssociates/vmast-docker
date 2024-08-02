@@ -2,6 +2,7 @@
 
 use BadMethodCallException;
 use Events\Dispatcher;
+use Monolog\Level;
 use Support\Contracts\JsonableInterface;
 use Support\Contracts\ArrayableInterface;
 
@@ -143,7 +144,7 @@ class Writer
      * Parse the string level into a Monolog constant.
      *
      * @param  string  $level
-     * @return int
+     * @return Level
      *
      * @throws \InvalidArgumentException
      */
@@ -151,28 +152,28 @@ class Writer
     {
         switch ($level) {
             case 'debug':
-                return MonologLogger::DEBUG;
+                return Level::Debug;
 
             case 'info':
-                return MonologLogger::INFO;
+                return Level::Info;
 
             case 'notice':
-                return MonologLogger::NOTICE;
+                return Level::Notice;
 
             case 'warning':
-                return MonologLogger::WARNING;
+                return Level::Warning;
 
             case 'error':
-                return MonologLogger::ERROR;
+                return Level::Error;
 
             case 'critical':
-                return MonologLogger::CRITICAL;
+                return Level::Critical;
 
             case 'alert':
-                return MonologLogger::ALERT;
+                return Level::Alert;
 
             case 'emergency':
-                return MonologLogger::EMERGENCY;
+                return Level::Emergency;
 
             default:
                 throw new \InvalidArgumentException("Invalid log level.");
