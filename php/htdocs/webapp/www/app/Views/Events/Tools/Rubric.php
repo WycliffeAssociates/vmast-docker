@@ -6,7 +6,7 @@
  * Time: 5:11 PM
  */
 
-if (!empty($data["rubric"])): ?>
+if ($data["rubric"]): ?>
     <div class="ttools_panel rubric_tool panel panel-default">
         <div class="panel-heading">
             <h1 class="panel-title"><?php echo __("show_rubric") ?></h1>

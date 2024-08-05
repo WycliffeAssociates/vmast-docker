@@ -1956,9 +1956,9 @@ class AdminController extends Controller {
                         }
 
                         foreach ($translations as $tran) {
-                            $verses = $tran->translatedVerses ? json_decode($tran->translatedVerses, true) : null;
+                            $verses = $tran->translatedVerses ? (array)json_decode($tran->translatedVerses, true) : [];
 
-                            if (!$verses) continue;
+                            if (empty($verses)) continue;
 
                             foreach ($verses[EventMembers::TRANSLATOR]["verses"] as $verse => $text) {
                                 if(isset($usfmData["chapters"][$tran->chapter][$verse]) && trim($usfmData["chapters"][$tran->chapter][$verse]) != "") {
@@ -2261,9 +2261,9 @@ class AdminController extends Controller {
                     if(sizeof($contentChunks) == sizeof($translations))
                     {
                         foreach ($translations as $tran) {
-                            $verses = $tran->translatedVerses ? json_decode($tran->translatedVerses, true) : null;
+                            $verses = $tran->translatedVerses ? (array)json_decode($tran->translatedVerses, true) : [];
 
-                            if (!$verses) continue;
+                            if (empty($verses)) continue;
 
                             if(isset($resource[$tran->chapter][$tran->firstvs]) &&
                                 trim($resource[$tran->chapter][$tran->firstvs][0]) != "")

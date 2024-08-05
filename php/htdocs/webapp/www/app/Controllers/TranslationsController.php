@@ -12,15 +12,17 @@ use App\Repositories\Cloud\ICloudRepository;
 use App\Repositories\Event\IEventRepository;
 use App\Repositories\Member\IMemberRepository;
 use App\Repositories\Project\IProjectRepository;
+use Exception;
 use Helpers\Constants\EventMembers;
 use Helpers\Constants\EventStates;
 use Helpers\Constants\OdbSections;
 use Helpers\Constants\RadioSections;
+use Helpers\Git;
 use Helpers\Manifest\Normal\Project;
 use Helpers\ProjectFile;
 use Helpers\Spyc;
 use Helpers\Tools;
-use Shared\Legacy\Error;
+use Helpers\ZipStream\Exception\OverflowException;
 use View;
 use Config\Config;
 use Helpers\Session;
@@ -416,7 +418,9 @@ class TranslationsController extends Controller
             if(!empty($book) && isset($book[0])) {
                 $root = $book[0]->targetLang."_".$book[0]->bookCode."_text_".$book[0]->bookProject;
                 $projectFiles = $this->getTsProjectFiles($book);
+                $tmpDir = $this->addGitInitFiles($projectFiles);
                 $this->_model->generateZip($root . ".tstudio", $projectFiles, true);
+                if ($tmpDir) File::deleteDirectory($tmpDir);
             } else {
                 echo "There is no such book translation.";
             }
@@ -703,8 +707,12 @@ class TranslationsController extends Controller
         return $projectFiles;
     }
 
-
-    private function getTsProjectFiles($book) {
+    /**
+     * @param array $book
+     * @return ProjectFile[]
+     */
+    private function getTsProjectFiles(array $book): array
+    {
         $projectFiles = [];
 
         switch ($book[0]->state) {
@@ -758,16 +766,16 @@ class TranslationsController extends Controller
         $lastChapter = -1;
 
         foreach ($book as $chunk) {
-            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses, true) : null;
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
 
             if (!$verses) continue;
 
-            if(!empty($verses[EventMembers::L3_CHECKER]["verses"])) {
-                $chunkVerses = $verses[EventMembers::L3_CHECKER]["verses"];
-            } elseif (!empty($verses[EventMembers::L2_CHECKER]["verses"])) {
-                $chunkVerses = $verses[EventMembers::L2_CHECKER]["verses"];
+            if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
+                $chunkVerses = $verses->{EventMembers::L3_CHECKER}->verses;
+            } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
+                $chunkVerses = $verses->{EventMembers::L2_CHECKER}->verses;
             } else {
-                $chunkVerses = $verses[EventMembers::TRANSLATOR]["verses"];
+                $chunkVerses = $verses->{EventMembers::TRANSLATOR}->verses;
             }
 
             foreach ($chunkVerses as $vNum => $vText) {
@@ -833,15 +841,6 @@ class TranslationsController extends Controller
                     $manifest->addFinishedChunk($chapPath."-".$chunkPath);
                 }
             }
-        }
-
-        // Add git initial files
-        $tmpDir = "/tmp";
-        if(Tools::unzip("../app/Templates/Default/Assets/.git.zip", $tmpDir)) {
-            foreach (Tools::iterateDir($tmpDir . "/.git/") as $file) {
-                $projectFiles[] = ProjectFile::withFile($root . "/.git/" . $file["rel"], $file["abs"]);
-            }
-            File::delete($tmpDir . "/.git");
         }
 
         // Add license file
@@ -1397,5 +1396,33 @@ class TranslationsController extends Controller
 
             return strcasecmp($aVerse, $bVerse);
         });
+    }
+
+    /**
+     * @param ProjectFile[] $projectFiles
+     * @return string|null
+     */
+    private function addGitInitFiles(array &$projectFiles): string|null
+    {
+        $tmpDir = null;
+        preg_match("/^\/?(.*?)\//", $projectFiles[0]->relPath(), $matches);
+        $root = sizeof($matches) > 1 ? $matches[1] : null;
+
+        if (!$root) return null;
+
+        try {
+            // Initialize git
+            $tmpDir = "/tmp/" . uniqid();
+            $repoDir = "{$tmpDir}/{$root}";
+            File::makeDirectory($repoDir, 0755, true);
+            Git::create($repoDir);
+
+            foreach (Tools::iterateDir($tmpDir) as $file) {
+                $projectFiles[] = ProjectFile::withFile($file["rel"], $file["abs"]);
+            }
+        } catch (Exception $e) {
+        }
+
+        return $tmpDir;
     }
 }

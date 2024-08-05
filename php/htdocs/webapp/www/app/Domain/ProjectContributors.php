@@ -155,7 +155,7 @@ class ProjectContributors
                 $role = "";
 
                 if ($this->withRoles) {
-                    $church_role = $member->profile->church_role ? (array)json_decode($member->profile->church_role) : [];
+                    $church_role = $member->profile->church_role ? (array)json_decode($member->profile->church_role, true) : [];
 
                     if (in_array("Pastor", $church_role))
                         $role = __('pastor');

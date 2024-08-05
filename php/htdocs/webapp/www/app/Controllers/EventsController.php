@@ -2315,7 +2315,7 @@ class EventsController extends Controller {
                                 $_POST = Gump::xss_clean($_POST);
 
                                 $chunks = $_POST["chunks_array"] ?? "";
-                                $chunks = $chunks ? (array)json_decode($chunks) : [];
+                                $chunks = $chunks ? (array)json_decode($chunks, true) : [];
 
                                 if ($this->apiModel->testChunks($chunks, $sourceText["totalVerses"])) {
                                     // Include book title for chapter 1
@@ -2328,7 +2328,6 @@ class EventsController extends Controller {
                                     if ($this->eventModel->updateChapter(["chunks" => json_encode($chunks)], ["eventID" => $data["event"][0]->eventID, "chapter" => $data["event"][0]->currentChapter])) {
                                         $this->eventModel->updateTranslator(["step" => EventSteps::REARRANGE], ["trID" => $data["event"][0]->trID]);
                                         Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
-                                        exit;
                                     } else {
                                         $error[] = __("error_occurred");
                                     }
@@ -2345,7 +2344,6 @@ class EventsController extends Controller {
                             ->shares("title", $title)
                             ->shares("data", $data)
                             ->shares("error", @$error);
-                        break;
 
                     case EventSteps::REARRANGE:
                         $sourceText = $this->getScriptureSourceText($data, true);
@@ -2370,9 +2368,9 @@ class EventsController extends Controller {
                             Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
                         }
 
-                        if (isset($_POST) && !empty($_POST)) {
+                        if (!empty($_POST)) {
                             $_POST = Gump::xss_clean($_POST);
-                            $words = isset($_POST["draft"]) ? $_POST["draft"] : "";
+                            $words = $_POST["draft"] ?? "";
 
                             if (isset($_POST["confirm_step"])) {
                                 if (trim($words) != "") {
@@ -2386,7 +2384,6 @@ class EventsController extends Controller {
                                         $postdata["step"] = EventSteps::REARRANGE;
                                     }
 
-                                    $upd = $this->eventModel->updateTranslator($postdata, ["trID" => $data["event"][0]->trID]);
                                     Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
                                 } else {
                                     $error[] = __("empty_words_error");

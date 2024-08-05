@@ -348,7 +348,7 @@ use Helpers\Tools;
             $eventImg = template_url("img/steps/big/peer-review.png");
         }
 
-        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : null;
+        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : [];
         $word = $event->word ?? null;
         ?>
         <div class="event_block <?php echo $key%2 == 0 ? "green-marked" : "" ?>">
@@ -392,7 +392,7 @@ use Helpers\Tools;
                         <div class="step_current">
                             <div>
                                 <?php echo ($event->currentChapter > 0
-                                ? ($wordsGroup
+                                ? (!empty($wordsGroup)
                                     ? "[".$wordsGroup[0]."...".$wordsGroup[sizeof($wordsGroup)-1]."]"
                                     : ($word ?: __("chapter_number", ["chapter" => $event->currentChapter])))
                                 : ($event->currentChapter == 0 && $event->bookProject == "tn"
@@ -454,7 +454,7 @@ use Helpers\Tools;
             $eventImg = template_url("img/steps/big/peer-review.png");
         }
 
-        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : null;
+        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : [];
         $word = $event->word ?? null;
         ?>
         <div class="event_block <?php echo $key%2 == 0 ? "gray-marked" : "" ?>">
@@ -504,7 +504,7 @@ use Helpers\Tools;
                     <div class="step_current">
                         <div>
                             <?php echo ($event->currentChapter > 0
-                                ? ($wordsGroup ?
+                                ? (!empty($wordsGroup) ?
                                     "[".$wordsGroup[0]."...".$wordsGroup[sizeof($wordsGroup)-1]."] "
                                     : ($word ?: __("chapter_number", ["chapter" => $event->currentChapter])))
                                 : __("front")) ?>
@@ -633,7 +633,7 @@ use Helpers\Tools;
             $eventImg = template_url("img/steps/big/peer-review.png");
         }
 
-        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : null;
+        $wordsGroup = $event->words ? (array)json_decode($event->words, true) : [];
         $word = $event->word ?? null;
         ?>
         <div class="event_block <?php echo $key%2 == 0 ? "gray-marked" : "" ?>">
@@ -683,7 +683,7 @@ use Helpers\Tools;
                     <div class="step_current">
                         <div>
                             <?php echo ($event->currentChapter > 0
-                                    ? ($wordsGroup ?
+                                    ? (!empty($wordsGroup) ?
                                         "[".$wordsGroup[0]."...".$wordsGroup[sizeof($wordsGroup)-1]."] "
                                         : ($word ?: __("chapter_number", ["chapter" => $event->currentChapter])))
                                     : __("front")) ?>

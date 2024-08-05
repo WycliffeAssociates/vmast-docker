@@ -477,13 +477,13 @@ class TranslationsModel extends Model
 
         foreach ($files as $file)
         {
-            if($file->isFromDisk())
-            {
-                $zip->addFileFromPath($file->relPath(), $file->absPath());
+            // Treat directory paths differently
+            if (str_ends_with($file->relPath(), "/") || !$file->isFromDisk()) {
+                $zip->addFile($file->relPath(), $file->content() ?? "");
             }
             else
             {
-                $zip->addFile($file->relPath(), $file->content());
+                $zip->addFileFromPath($file->relPath(), $file->absPath());
             }
         }
 

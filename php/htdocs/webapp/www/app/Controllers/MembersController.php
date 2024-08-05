@@ -1326,10 +1326,10 @@ class MembersController extends Controller
             $this->cloudRepo->initialize($server);
             $request = $this->cloudRepo->requestAccessToken($data["code"]);
 
-            if (!isset($request->error)) {
+            if ($request && !isset($request->error)) {
                 echo "<script>window.close();</script>";
             } else {
-                echo $request->error_description;
+                echo $request->error_description ?? "unknown error";
             }
         } else {
             echo "State is wrong";

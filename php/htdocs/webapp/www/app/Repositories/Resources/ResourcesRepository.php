@@ -262,7 +262,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($qaguide_cache_key)) {
             $source = Cache::get($qaguide_cache_key);
-            $qaGuide = $source ? (array)json_decode($source) : [];
+            $qaGuide = $source ? json_decode($source) : null;
         } else {
             $qaGuide = $this->parseQaGuide($lang);
             if ($qaGuide) {
@@ -1003,17 +1003,16 @@ class ResourcesRepository implements IResourcesRepository {
     }
 
     private function parseQaGuide($lang) {
-        $qaGuide = [];
         $url = $this->qaGuideUrl . $lang;
 
         $folderPath = $this->downloadResource($lang, "rubric", $url);
-        if (!$folderPath) return $qaGuide;
+        if (!$folderPath) return null;
 
         $filePath = $folderPath . "/rubric.json";
 
         $source = File::get($filePath);
 
-        return $source ? (array)json_decode($source) : [];
+        return $source ? json_decode($source) : null;
 
     }
 
