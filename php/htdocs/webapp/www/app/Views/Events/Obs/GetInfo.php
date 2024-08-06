@@ -44,12 +44,12 @@ foreach ($data["chapters"] as $key => $chapter):?>
                 <div class="section_translator">
                     <div class="section_translator_name tnleft">
                         <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                        <span><b><?php echo $data["members"][$chapter["memberID"]]["name"] ?></b></span>
+                        <span><b><?php echo $data["members"][$chapter["memberID"]]["name"] ?? "" ?></b></span>
                     </div>
                     <?php if(isset($chapter["checkerID"])): ?>
                         <div class="section_translator_name tnright">
                             <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                            <span><b><?php echo $data["members"][$chapter["checkerID"]]["name"] ?></b></span>
+                            <span><b><?php echo $data["members"][$chapter["checkerID"]]["name"] ?? "" ?></b></span>
                         </div>
                     <?php endif; ?>
                     <div class="clear"></div>
@@ -115,7 +115,7 @@ foreach ($data["chapters"] as $key => $chapter):?>
                             <div class="step_checker">
                                 <div>
                                     <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                    <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                    <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?? "" ?></div>
                                 </div>
                                 <?php if($chapter["peerChk"]["state"] == StepsStates::CHECKED || $chapter["peerChk"]["state"] == StepsStates::FINISHED): ?>
                                     <span class="glyphicon glyphicon-ok checked"></span>

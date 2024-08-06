@@ -2384,6 +2384,7 @@ class EventsController extends Controller {
                                         $postdata["step"] = EventSteps::REARRANGE;
                                     }
 
+                                    $this->eventModel->updateTranslator($postdata, ["trID" => $data["event"][0]->trID]);
                                     Url::redirect('events/translator-sun/' . $data["event"][0]->eventID);
                                 } else {
                                     $error[] = __("empty_words_error");

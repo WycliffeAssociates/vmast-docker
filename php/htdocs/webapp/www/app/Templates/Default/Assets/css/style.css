@@ -1580,6 +1580,7 @@ div.ui-datepicker {
     line-height: 31px;
     padding: 8px;
     border: 1px solid #4596cc;
+    overflow: hidden;
 }
 
 .notes_editor {
