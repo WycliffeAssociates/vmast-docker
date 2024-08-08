@@ -11,7 +11,6 @@ class USFMParser
     private array $ignoredTags;
     private bool $ignoreUnknownMarkers;
     private static string $splitRegex = "/\\\\([a-z0-9-]*\**)([^\\\\]*)/";
-    private $fafawf = "/\\\\([a-z0-9\\-]*\\**)([^\\\\]*)/";
 
     /**
      * @param ?string[] $tagsToIgnore
@@ -54,53 +53,6 @@ class USFMParser
         }
 
         return $output;
-    }
-
-    /**
-     * Return book array with chapters and verses organized
-     * @param string $input
-     * @return array
-     */
-    public function parseToArray(string $input): array
-    {
-        $book = [];
-
-        $document = $this->parseFromString($input);
-
-        $book["id"] = $document->getChildMarkers(Markers\IDMarker::class)[0]->textIdentifier ?? "";
-        $book["ide"] = $document->getChildMarkers(Markers\IDEMarker::class)[0]->encoding ?? "";
-        $book["h"] = $document->getChildMarkers(Markers\HMarker::class)[0]->headerText ?? "";
-        $book["toc1"] = $document->getChildMarkers(Markers\TOC1Marker::class)[0]->longTableOfContentsText ?? "";
-        $book["toc2"] = $document->getChildMarkers(Markers\TOC2Marker::class)[0]->shortTableOfContentsText ?? "";
-        $book["toc3"] = $document->getChildMarkers(Markers\TOC3Marker::class)[0]->bookAbbreviation ?? "";
-        $book["mt"] = $document->getChildMarkers(Markers\MTMarker::class)[0]->title ?? "";
-
-        $book["chapters"] = [];
-
-        $chapters = array_filter($document->contents, fn($m) => $m::class == Markers\CMarker::class);
-        foreach ($chapters as /** @var Markers\CMarker $chapter */ $chapter) {
-            $chapterNumber = $chapter->number;
-            $book["chapters"][$chapterNumber] = [];
-            $verses = $chapter->getChildMarkers(Markers\VMarker::class);
-            $chunk = 0;
-            foreach ($verses as /** @var Markers\VMarker $verse */ $verse) {
-                if (!array_key_exists($chunk, $book["chapters"][$chapterNumber])) {
-                    $book["chapters"][$chapterNumber][$chunk] = [];
-                }
-                $verseNumber = $verse->verseNumber;
-                $text = "";
-                $textNodes = $verse->getChildMarkers(Markers\TextBlock::class);
-                foreach ($textNodes as /** @var Markers\TextBlock $content */ $content) {
-                    $text .= trim($content->text) . " " ?? "";
-                }
-                $book["chapters"][$chapterNumber][$chunk][$verseNumber] = $text;
-
-                $hasSMarker = !empty($verse->getChildMarkers(Markers\SMarker::class));
-                if ($hasSMarker) $chunk++;
-            }
-        }
-
-        return $book;
     }
 
     /**

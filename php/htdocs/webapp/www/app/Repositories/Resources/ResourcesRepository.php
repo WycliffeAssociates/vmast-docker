@@ -17,6 +17,7 @@ use Helpers\Manifest\MediaData;
 use Helpers\Manifest\MediaFormat;
 use Helpers\Arrays;
 use Helpers\Parsedown;
+use Helpers\Tools;
 use Helpers\UsfmParser\USFMParser;
 use SplFileObject;
 use Support\Collection;
@@ -608,7 +609,8 @@ class ResourcesRepository implements IResourcesRepository {
 
             $source = File::get($filePath);
             $parser = new USFMParser(ignoreUnknownMarkers: true);
-            $usfm = $parser->parseToArray($source);
+            $usfmDocument = $parser->parseFromString($source);
+            $usfm = Tools::USFMDocumentToBook($usfmDocument);
 
             if ($usfm && !empty($usfm["chapters"])) {
                 $book["id"] = $usfm["id"] ?? "";

@@ -37,6 +37,7 @@ use Helpers\Manifest\TextFormat;
 use Helpers\Manifest\ManifestParser;
 use Helpers\Password;
 use Helpers\Session;
+use Helpers\Tools;
 use Helpers\Url;
 use Helpers\UsfmParser\USFMParser;
 use Shared\Legacy\Error;
@@ -1698,7 +1699,8 @@ class AdminController extends Controller {
     private function importScriptureToEvent($usfm, $projectID, $eventID, $bookCode, $level) {
         $response = ["success" => false];
         $parser = new USFMParser(ignoreUnknownMarkers: true);
-        $usfmData = $parser->parseToArray($usfm);
+        $usfmDocument = $parser->parseFromString($usfm);
+        $usfmData = Tools::USFMDocumentToBook($usfmDocument);
 
         // Check if a "fake" user exists
         $member = $this->memberRepo->getByUsername("spec");
