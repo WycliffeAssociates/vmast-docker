@@ -9,12 +9,12 @@
 
 use Config\Config;
 use Helpers\Url;
+use JetBrains\PhpStorm\NoReturn;
+use Routing\Route;
+use Support\Arr;
+use Support\Collection;
 use Support\Str;
-use Support\Facades\Crypt;
 use Support\Facades\Language;
-
-use Closure as Closure;
-
 
 if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
 
@@ -25,7 +25,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * @param string $path
      * @return string
      */
-    function site_url($path = '/')
+    function site_url(string $path = '/'): string
     {
         // The base URL.
         $siteUrl = Config::get('app.url');
@@ -39,7 +39,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * @param string|null $module
      * @return string
      */
-    function resource_url($path, $module = null)
+    function resource_url(string $path, string $module = null): string
     {
         return Url::resourcePath($module) .ltrim($path, '/');
     }
@@ -51,7 +51,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * @param string $folder
      * @return string
      */
-    function template_url($path, $template = TEMPLATE, $folder = '/assets/')
+    function template_url(string $path, $template = TEMPLATE, string $folder = '/assets/'): string
     {
         return Url::templatePath($template, $folder) .ltrim($path, '/');
     }
@@ -60,7 +60,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * Application Path helper
      * @return string
      */
-    function app_path()
+    function app_path(): string
     {
         return APPDIR;
     }
@@ -69,7 +69,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * Storage Path helper
      * @return string
      */
-    function storage_path()
+    function storage_path(): string
     {
         return STORAGE_PATH;
     }
@@ -81,14 +81,13 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * Get the formatted and translated message back.
      *
      * @param string $message English default message
-     * @param mixed $args
+     * @param mixed|null $args
      * @return string|void
      */
-    function __($message, $args = null)
+    function __(string $message, mixed $args = null)
     {
-        if (! $message) return '';
+        if (!$message) return '';
 
-        //
         $params = (func_num_args() === 2) ? (array)$args : array_slice(func_get_args(), 1);
 
         return Language::instance('app')->translate($message, $params);
@@ -99,10 +98,10 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      *
      * @param string $domain
      * @param string $message
-     * @param mixed $args
+     * @param mixed|null $args
      * @return string|void
      */
-    function __d($domain, $message, $args = null)
+    function __d(string $domain, string $message, mixed $args = null)
     {
         if (! $message) return '';
 
@@ -115,10 +114,10 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
     /**
      * Get the root Facade application instance.
      *
-     * @param  string  $make
+     * @param string|null $make
      * @return mixed
      */
-    function app($make = null)
+    function app(string $make = null): mixed
     {
         if (! is_null($make)) {
             return app()->make($make);
@@ -130,13 +129,13 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
     /**
      * Generate a URL to a named route.
      *
-     * @param  string  $name
-     * @param  array   $parameters
-     * @param  bool  $absolute
-     * @param  \Routing\Route $route
+     * @param string $name
+     * @param array $parameters
+     * @param bool $absolute
+     * @param Route|null $route
      * @return string
      */
-    function route($name, $parameters = array(), $absolute = true, $route = null)
+    function route(string $name, array $parameters = array(), bool $absolute = true, Route $route = null): string
     {
         return app('url')->route($name, $parameters, $absolute, $route);
     }
@@ -144,27 +143,27 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
     /**
      * Generate a URL to a controller action.
      *
-     * @param  string  $name
-     * @param  array   $parameters
+     * @param string $name
+     * @param array $parameters
      * @return string
      */
-    function action($name, $parameters = array())
+    function action(string $name, array $parameters = array()): string
     {
         return app('url')->action($name, $parameters);
     }
 
     /** Array helpers. */
 
-    /**
-     * Add an element to an array if it doesn't exist.
-     *
-     * @param  array   $array
-     * @param  string  $key
-     * @param  mixed   $value
-     * @return array
-     */
     if(!function_exists("array_add")) {
-        function array_add($array, $key, $value)
+        /**
+         * Add an element to an array if it doesn't exist.
+         *
+         * @param array $array
+         * @param string $key
+         * @param  mixed   $value
+         * @return array
+         */
+        function array_add(array $array, string $key, mixed $value): array
         {
             if (! isset($array[$key])) $array[$key] = $value;
 
@@ -172,16 +171,15 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-
-    /**
-     * Build a new array using a callback.
-     *
-     * @param  array  $array
-     * @param  \Closure  $callback
-     * @return array
-     */
     if(!function_exists("array_build")) {
-        function array_build($array, Closure $callback)
+        /**
+         * Build a new array using a callback.
+         *
+         * @param array $array
+         * @param  Closure  $callback
+         * @return array
+         */
+        function array_build(array $array, Closure $callback): array
         {
             $results = array();
 
@@ -195,28 +193,28 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Divide an array into two arrays. One with keys and the other with values.
-     *
-     * @param  array  $array
-     * @return array
-     */
     if(!function_exists("array_divide")) {
-        function array_divide($array)
+        /**
+         * Divide an array into two arrays. One with keys and the other with values.
+         *
+         * @param array $array
+         * @return array
+         */
+        function array_divide(array $array): array
         {
             return array(array_keys($array), array_values($array));
         }
     }
 
-    /**
-     * Flatten a multi-dimensional associative array with dots.
-     *
-     * @param  array   $array
-     * @param  string  $prepend
-     * @return array
-     */
     if(!function_exists("array_dot")) {
-        function array_dot($array, $prepend = '')
+        /**
+         * Flatten a multi-dimensional associative array with dots.
+         *
+         * @param array $array
+         * @param string $prepend
+         * @return array
+         */
+        function array_dot(array $array, string $prepend = ''): array
         {
             $results = array();
 
@@ -232,30 +230,32 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Get all of the given array except for a specified array of items.
-     *
-     * @param  array  $array
-     * @param  array  $keys
-     * @return array
-     */
     if(!function_exists("array_except")) {
-        function array_except($array, $keys)
+        /**
+         * Get all the given array except for a specified array of items.
+         *
+         * @param array $array
+         * @param array $keys
+         * @return array
+         */
+        function array_except(array $array, array $keys): array
         {
-            return array_diff_key($array, array_flip((array)$keys));
+            return array_diff_key($array, array_flip($keys));
         }
     }
 
-    /**
-     * Fetch a flattened array of a nested array element.
-     *
-     * @param  array   $array
-     * @param  string  $key
-     * @return array
-     */
     if(!function_exists("array_fetch")) {
-        function array_fetch($array, $key)
+        /**
+         * Fetch a flattened array of a nested array element.
+         *
+         * @param array $array
+         * @param string $key
+         * @return array
+         */
+        function array_fetch(array $array, string $key): array
         {
+            $results = array();
+
             foreach (explode('.', $key) as $segment) {
                 $results = array();
 
@@ -272,16 +272,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Return the first element in an array passing a given truth test.
-     *
-     * @param  array    $array
-     * @param  Closure  $callback
-     * @param  mixed    $default
-     * @return mixed
-     */
     if(!function_exists("array_first")) {
-        function array_first($array, $callback, $default = null)
+        /**
+         * Return the first element in an array passing a given truth test.
+         *
+         * @param array $array
+         * @param Closure $callback
+         * @param mixed|null $default
+         * @return mixed
+         */
+        function array_first(array $array, Closure $callback, mixed $default = null): mixed
         {
             foreach ($array as $key => $value) {
                 if (call_user_func($callback, $key, $value)) return $value;
@@ -291,29 +291,29 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Return the last element in an array passing a given truth test.
-     *
-     * @param  array    $array
-     * @param  Closure  $callback
-     * @param  mixed    $default
-     * @return mixed
-     */
     if(!function_exists("array_last")) {
-        function array_last($array, $callback, $default = null)
+        /**
+         * Return the last element in an array passing a given truth test.
+         *
+         * @param array $array
+         * @param Closure $callback
+         * @param mixed|null $default
+         * @return mixed
+         */
+        function array_last(array $array, Closure $callback, mixed $default = null): mixed
         {
             return array_first(array_reverse($array), $callback, $default);
         }
     }
 
-    /**
-     * Flatten a multi-dimensional array into a single level.
-     *
-     * @param  array  $array
-     * @return array
-     */
     if(!function_exists("array_flatten")) {
-        function array_flatten($array)
+        /**
+         * Flatten a multi-dimensional array into a single level.
+         *
+         * @param array $array
+         * @return array
+         */
+        function array_flatten(array $array): array
         {
             $return = array();
 
@@ -325,16 +325,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Get an item from an array using "dot" notation.
-     *
-     * @param  array   $array
-     * @param  string  $key
-     * @param  mixed   $default
-     * @return mixed
-     */
     if(!function_exists("array_get")) {
-        function array_get($array, $key, $default = null)
+        /**
+         * Get an item from an array using "dot" notation.
+         *
+         * @param array $array
+         * @param ?string $key
+         * @param mixed|null $default
+         * @return mixed
+         */
+        function array_get(array $array, ?string $key, mixed $default = null): mixed
         {
             if (is_null($key)) return $array;
 
@@ -352,62 +352,47 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Set an array item to a given value using "dot" notation.
-     *
-     * If no key is given to the method, the entire array will be replaced.
-     *
-     * @param  array   $array
-     * @param  string  $key
-     * @param  mixed   $value
-     * @return array
-     */
     if(!function_exists("array_set")) {
-        function array_set(&$array, $key, $value)
+        /**
+         * Set an array item to a given value using "dot" notation.
+         *
+         * If no key is given to the method, the entire array will be replaced.
+         *
+         * @param array $array
+         * @param string $key
+         * @param  mixed   $value
+         * @return array
+         */
+        function array_set(array &$array, string $key, mixed $value): array
         {
-            if (is_null($key)) return $array = $value;
-
-            $keys = explode('.', $key);
-
-            while (count($keys) > 1) {
-                $key = array_shift($keys);
-
-                if (!isset($array[$key]) || !is_array($array[$key])) {
-                    $array[$key] = array();
-                }
-
-                $array =& $array[$key];
-            }
-
-            $array[array_shift($keys)] = $value;
-
-            return $array;
+            return Arr::set($array, $key, $value);
         }
     }
 
-    /**
-     * Get a subset of the items from the given array.
-     *
-     * @param  array  $array
-     * @param  array  $keys
-     * @return array
-     */
+
     if(!function_exists("array_only")) {
-        function array_only($array, $keys)
+        /**
+         * Get a subset of the items from the given array.
+         *
+         * @param array $array
+         * @param array $keys
+         * @return array
+         */
+        function array_only(array $array, array $keys): array
         {
-            return array_intersect_key($array, array_flip((array)$keys));
+            return array_intersect_key($array, array_flip($keys));
         }
     }
 
-    /**
-     * Remove an array item from a given array using "dot" notation.
-     *
-     * @param  array   $array
-     * @param  string  $key
-     * @return void
-     */
     if(!function_exists("array_forget")) {
-        function array_forget(&$array, $key)
+        /**
+         * Remove an array item from a given array using "dot" notation.
+         *
+         * @param array $array
+         * @param string $key
+         * @return void
+         */
+        function array_forget(array &$array, string $key): void
         {
             $keys = explode('.', $key);
 
@@ -425,16 +410,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Pluck an array of values from an array.
-     *
-     * @param  array   $array
-     * @param  string  $value
-     * @param  string  $key
-     * @return array
-     */
     if(!function_exists("array_pluck")) {
-        function array_pluck($array, $value, $key = null)
+        /**
+         * Pluck an array of values from an array.
+         *
+         * @param array $array
+         * @param string $value
+         * @param string|null $key
+         * @return array
+         */
+        function array_pluck(array $array, string $value, string $key = null): array
         {
             $results = array();
 
@@ -442,7 +427,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
                 $itemValue = is_object($item) ? $item->{$value} : $item[$value];
 
                 // If the key is "null", we will just append the value to the array and keep
-                // looping. Otherwise we will key the array using the value of the key we
+                // looping. Otherwise, we will key the array using the value of the key we
                 // received from the developer. Then we'll return the final array form.
                 if (is_null($key)) {
                     $results[] = $itemValue;
@@ -457,16 +442,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Get a value from the array, and remove it.
-     *
-     * @param  array   $array
-     * @param  string  $key
-     * @param  mixed   $default
-     * @return mixed
-     */
     if(!function_exists("array_pull")) {
-        function array_pull(&$array, $key, $default = null)
+        /**
+         * Get a value from the array, and remove it.
+         *
+         * @param array $array
+         * @param string $key
+         * @param mixed|null $default
+         * @return mixed
+         */
+        function array_pull(array &$array, string $key, mixed $default = null): mixed
         {
             $value = array_get($array, $key, $default);
 
@@ -476,29 +461,29 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Sort the array using the given Closure.
-     *
-     * @param  array  $array
-     * @param  \Closure  $callback
-     * @return array
-     */
     if(!function_exists("array_sort")) {
-        function array_sort($array, Closure $callback)
+        /**
+         * Sort the array using the given Closure.
+         *
+         * @param array $array
+         * @param  \Closure  $callback
+         * @return array
+         */
+        function array_sort(array $array, Closure $callback): array
         {
-            return \Support\Collection::make($array)->sortBy($callback)->all();
+            return Collection::make($array)->sortBy($callback)->all();
         }
     }
 
-    /**
-     * Filter the array using the given Closure.
-     *
-     * @param  array  $array
-     * @param  \Closure  $callback
-     * @return array
-     */
     if(!function_exists("array_where")) {
-        function array_where($array, Closure $callback)
+        /**
+         * Filter the array using the given Closure.
+         *
+         * @param array $array
+         * @param  \Closure  $callback
+         * @return array
+         */
+        function array_where(array $array, Closure $callback): array
         {
             $filtered = array();
 
@@ -510,27 +495,27 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Get the first element of an array.
-     *
-     * @param  array  $array
-     * @return mixed
-     */
     if(!function_exists("head")) {
-        function head($array)
+        /**
+         * Get the first element of an array.
+         *
+         * @param array $array
+         * @return mixed
+         */
+        function head(array $array): mixed
         {
             return reset($array);
         }
     }
 
-    /**
-     * Get the last element from an array.
-     *
-     * @param  array  $array
-     * @return mixed
-     */
     if(!function_exists("last")) {
-        function last($array)
+        /**
+         * Get the last element from an array.
+         *
+         * @param array $array
+         * @return mixed
+         */
+        function last(array $array): mixed
         {
             return end($array);
         }
@@ -538,85 +523,86 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
 
     /** String helpers. */
 
-    /**
-     * Determine if a given string matches a given pattern.
-     *
-     * @param  string  $pattern
-     * @param  string  $value
-     * @return bool
-     */
     if(!function_exists("str_is")) {
-        function str_is($pattern, $value)
+        /**
+         * Determine if a given string matches a given pattern.
+         *
+         * @param string $pattern
+         * @param string $value
+         * @return bool
+         */
+        function str_is(string $pattern, string $value): bool
         {
             return Str::is($pattern, $value);
         }
     }
 
-    /**
-     * Determine if a given string contains a given substring.
-     *
-     * @param  string  $haystack
-     * @param  string|array  $needles
-     * @return bool
-     */
     if(!function_exists("str_contains")) {
-        function str_contains($haystack, $needles)
+        /**
+         * Determine if a given string contains a given substring.
+         *
+         * @param string $haystack
+         * @param array|string $needles
+         * @return bool
+         */
+        function str_contains(string $haystack, array|string $needles): bool
         {
             return Str::contains($haystack, $needles);
         }
     }
 
-    /**
-     * Test for string starts with
-     * @param $haystack
-     * @param $needle
-     * @return bool
-     */
     if(!function_exists("str_starts_with")) {
-        function str_starts_with($haystack, $needle)
+        /**
+         * Test for string starts with
+         * @param $haystack
+         * @param $needle
+         * @return bool
+         */
+        function str_starts_with($haystack, $needle): bool
         {
             return Str::startsWith($haystack, $needle);
         }
     }
 
-    /**
-     * Test for string ends with
-     * @param $haystack
-     * @param $needle
-     * @return bool
-     */
     if(!function_exists("str_ends_with")) {
-        function str_ends_with($haystack, $needle)
+        /**
+         * Test for string ends with
+         * @param $haystack
+         * @param $needle
+         * @return bool
+         */
+        function str_ends_with($haystack, $needle): bool
         {
             return Str::endsWith($haystack, $needle);
         }
     }
 
-    /**
-     * Generate a random alpha-numeric string.
-     *
-     * @param  int     $length
-     * @return string
-     *
-     * @throws \RuntimeException
-     */
+
     if(!function_exists("str_random")) {
-        function str_random($length = 16)
+        /**
+         * Generate a random alphanumeric string.
+         *
+         * @param int $length
+         * @return string
+         *
+         * @throws RuntimeException
+         */
+        function str_random(int $length = 16): string
         {
             return Str::random($length);
         }
     }
 
-    /**
-     * Replace a given value in the string sequentially with an array.
-     *
-     * @param  string  $search
-     * @param  array   $replace
-     * @param  string  $subject
-     * @return string
-     */
     if(!function_exists("str_replace_array")) {
-        function str_replace_array($search, array $replace, $subject)
+        /**
+         * Replace a given value in the string sequentially with an array.
+         *
+         * @param string $search
+         * @param  array   $replace
+         * @param string $subject
+         * @return string
+         */
+        function str_replace_array(string $search, array $replace, string $subject): string
         {
             foreach ($replace as $value) {
                 $subject = preg_replace('/' . $search . '/', $value ?? '', $subject, 1);
@@ -626,26 +612,26 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Escape HTML entities in a string.
-     *
-     * @param  string  $value
-     * @return string
-     */
     if(!function_exists("e")) {
-        function e($value)
+        /**
+         * Escape HTML entities in a string.
+         *
+         * @param string $value
+         * @return string
+         */
+        function e(string $value): string
         {
             return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
         }
     }
 
-    /**
-     * Class name helper
-     * @param string $className
-     * @return string
-     */
     if(!function_exists("class_basename")) {
-        function class_basename($class)
+        /**
+         * Class name helper
+         * @param $class
+         * @return string
+         */
+        function class_basename($class): string
         {
             $className = is_object($class) ? get_class($class) : $class;
 
@@ -653,14 +639,14 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Returns all traits used by a trait and its traits
-     *
-     * @param  string  $trait
-     * @return array
-     */
     if(!function_exists("trait_uses_recursive")) {
-        function trait_uses_recursive($trait)
+        /**
+         * Returns all traits used by a trait and its traits
+         *
+         * @param string $trait
+         * @return array
+         */
+        function trait_uses_recursive(string $trait): array
         {
             $traits = class_uses($trait);
 
@@ -672,14 +658,14 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Returns all traits used by a class, it's subclasses and trait of their traits
-     *
-     * @param  string  $class
-     * @return array
-     */
     if(!function_exists("class_uses_recursive")) {
-        function class_uses_recursive($class)
+        /**
+         * Returns all traits used by a class, it's subclasses and trait of their traits
+         *
+         * @param string $class
+         * @return array
+         */
+        function class_uses_recursive(string $class): array
         {
             $results = [];
 
@@ -691,40 +677,40 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Determine if the given object has a toString method.
-     *
-     * @param  object  $object
-     * @return bool
-     */
     if(!function_exists("str_object")) {
-        function str_object($object)
+        /**
+         * Determine if the given object has a toString method.
+         *
+         * @param object $object
+         * @return bool
+         */
+        function str_object(object $object): bool
         {
-            return (is_object($object) && method_exists($object, '__toString'));
+            return (method_exists($object, '__toString'));
         }
     }
 
-    /**
-     * Return the default value of the given value.
-     *
-     * @param  mixed  $value
-     * @return mixed
-     */
     if(!function_exists("value")) {
-        function value($value)
+        /**
+         * Return the default value of the given value.
+         *
+         * @param  mixed $value
+         * @return mixed
+         */
+        function value(mixed $value): mixed
         {
             return $value instanceof Closure ? $value() : $value;
         }
     }
 
-    /**
-     * Return the given object.
-     *
-     * @param  mixed  $object
-     * @return mixed
-     */
     if(!function_exists("with")) {
-        function with($object)
+        /**
+         * Return the given object.
+         *
+         * @param  mixed  $object
+         * @return mixed
+         */
+        function with(mixed $object): mixed
         {
             return $object;
         }
@@ -732,16 +718,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
 
     /** Common data lookup methods. */
 
-    /**
-     * Get an item from an array or object using "dot" notation.
-     *
-     * @param  mixed   $target
-     * @param  string  $key
-     * @param  mixed   $default
-     * @return mixed
-     */
     if(!function_exists("data_get")) {
-        function data_get($target, $key, $default = null)
+        /**
+         * Get an item from an array or object using "dot" notation.
+         *
+         * @param  mixed $target
+         * @param ?string $key
+         * @param mixed|null $default
+         * @return mixed
+         */
+        function data_get(mixed $target, ?string $key, mixed $default = null): mixed
         {
             if (is_null($key)) return $target;
 
@@ -767,16 +753,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Get an item from an object using "dot" notation.
-     *
-     * @param  object  $object
-     * @param  string  $key
-     * @param  mixed   $default
-     * @return mixed
-     */
     if(!function_exists("object_get")) {
-        function object_get($object, $key, $default = null)
+        /**
+         * Get an item from an object using "dot" notation.
+         *
+         * @param object $object
+         * @param ?string $key
+         * @param mixed|null $default
+         * @return mixed
+         */
+        function object_get(object $object, ?string $key, mixed $default = null): mixed
         {
             if (is_null($key) || trim($key) == '') return $object;
 
@@ -792,14 +778,12 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * Dump the passed variables and end the script.
-     *
-     * @param  dynamic  mixed
-     * @return void
-     */
     if(!function_exists("dd")) {
-        function dd()
+        /**
+         * Dump the passed variables and end the script.
+         * @return void
+         */
+        #[NoReturn] function dd(): void
         {
             array_map(function ($x) {
                 var_dump($x);
@@ -808,117 +792,137 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    /**
-     * print_r call wrapped in pre tags
-     *
-     * @param  string or array $data
-     * @param  boolean $exit
-     */
     if(!function_exists("pr")) {
-        function pr($data, $exit = false)
+        /**
+         * print_r call wrapped in pre tags
+         *
+         * @param mixed $data or array $data
+         * @param boolean $exit
+         */
+        function pr(mixed $data, bool $exit = false): void
         {
             echo "<pre>";
             print_r($data);
             echo "</pre>";
 
-            if ($exit == true) {
+            if ($exit) {
                 exit;
             }
         }
     }
 
-    /**
-     * var_dump call
-     *
-     * @param  string or array $data
-     * @param  boolean $exit
-     *
-     */
     if(!function_exists("vd")) {
-        function vd($data, $exit = false)
+        /**
+         * var_dump call
+         *
+         * @param string $data or array $data
+         * @param boolean $exit
+         *
+         */
+        function vd(string $data, bool $exit = false): void
         {
             var_dump($data);
 
-            if ($exit == true) {
+            if ($exit) {
                 exit;
             }
         }
     }
 
-    /**
-     * strlen call - count the length of the string.
-     *
-     * @param  string $data
-     * @return string return the count
-     */
     if(!function_exists("sl")) {
-        function sl($data)
+        /**
+         * count the length of the string.
+         *
+         * @param string $data
+         * @return string return the count
+         */
+        function sl(string $data): string
         {
             return strlen($data);
         }
     }
 
-    /**
-     * strtoupper - convert string to uppercase.
-     *
-     * @param  string $data
-     * @return string
-     */
     if(!function_exists("stu")) {
-        function stu($data)
+        /**
+         * convert string to uppercase.
+         *
+         * @param string $data
+         * @return string
+         */
+        function stu(string $data): string
         {
             return strtoupper($data);
         }
     }
 
-    /**
-     * strtolower - convert string to lowercase.
-     *
-     * @param  string $data
-     * @return string
-     */
     if(!function_exists("stl")) {
-        function stl($data)
+        /**
+         * convert string to lowercase.
+         *
+         * @param string $data
+         * @return string
+         */
+        function stl(string $data): string
         {
             return strtolower($data);
         }
     }
 
-    /**
-     * ucwords - the first letter of each word to be a capital.
-     *
-     * @param  string $data
-     * @return string
-     */
     if(!function_exists("ucw")) {
-        function ucw($data)
+        /**
+         * the first letter of each word to be a capital.
+         *
+         * @param string $data
+         * @return string
+         */
+        function ucw(string $data): string
         {
             return ucwords($data);
         }
     }
 
-    /**
-     * key - this will generate a 32 character key
-     * @return string
-     */
     if(!function_exists("createKey")) {
-        function createKey($length = 32)
+        /**
+         * this will generate a 32 character key
+         * @param int $length
+         * @return string
+         */
+        function createKey(int $length = 32): string
         {
             return str_random($length);
         }
     }
 
-    /**
-     * addhttp - this will ensire $url starts with http
-     *
-     * @param $url string
-     * @param $scheme string
-     * @return string
-     */
     if(!function_exists("add_http")) {
-        function add_http($url, $scheme = 'http://')
+        /**
+         * this will ensure $url starts with http
+         *
+         * @param $url string
+         * @param $scheme string
+         * @return string
+         */
+        function add_http(string $url, string $scheme = 'http://'): string
         {
             return parse_url($url, PHP_URL_SCHEME) === null ? $scheme . $url : $url;
+        }
+    }
+
+    if(!function_exists("array_any")) {
+        /**
+         * Returns true if array has at least one element.
+         *
+         * @param $array array
+         * @param $fn callable
+         * @return bool
+         */
+        function array_any(array $array, callable $fn): bool
+        {
+            foreach ($array as $value) {
+                if($fn($value)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
