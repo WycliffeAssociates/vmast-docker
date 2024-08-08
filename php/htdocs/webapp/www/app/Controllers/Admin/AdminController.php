@@ -39,12 +39,12 @@ use Helpers\Password;
 use Helpers\Session;
 use Helpers\Tools;
 use Helpers\Url;
-use Helpers\UsfmParser\USFMParser;
 use Shared\Legacy\Error;
 use stdClass;
 use Support\Facades\Cache;
 use Support\Facades\Input;
 use Support\Facades\View;
+use USFM\USFMParser\USFMParser;
 
 class AdminController extends Controller {
 

@@ -18,11 +18,11 @@ use Helpers\Manifest\MediaFormat;
 use Helpers\Arrays;
 use Helpers\Parsedown;
 use Helpers\Tools;
-use Helpers\UsfmParser\USFMParser;
 use SplFileObject;
 use Support\Collection;
 use Cache;
 use Support\Str;
+use USFM\USFMParser\USFMParser;
 use ZipArchive;
 
 class ResourcesRepository implements IResourcesRepository {

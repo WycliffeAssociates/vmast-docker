@@ -10,18 +10,18 @@ namespace Helpers;
 
 
 use Helpers\Constants\EventSteps;
-use Helpers\UsfmParser\Models\Markers\CMarker;
-use Helpers\UsfmParser\Models\Markers\HMarker;
-use Helpers\UsfmParser\Models\Markers\IDEMarker;
-use Helpers\UsfmParser\Models\Markers\IDMarker;
-use Helpers\UsfmParser\Models\Markers\MTMarker;
-use Helpers\UsfmParser\Models\Markers\SMarker;
-use Helpers\UsfmParser\Models\Markers\TextBlock;
-use Helpers\UsfmParser\Models\Markers\TOC1Marker;
-use Helpers\UsfmParser\Models\Markers\TOC2Marker;
-use Helpers\UsfmParser\Models\Markers\TOC3Marker;
-use Helpers\UsfmParser\Models\Markers\USFMDocument;
-use Helpers\UsfmParser\Models\Markers\VMarker;
+use USFM\USFMParser\Models\Markers\CMarker;
+use USFM\USFMParser\Models\Markers\HMarker;
+use USFM\USFMParser\Models\Markers\IDEMarker;
+use USFM\USFMParser\Models\Markers\IDMarker;
+use USFM\USFMParser\Models\Markers\MTMarker;
+use USFM\USFMParser\Models\Markers\SMarker;
+use USFM\USFMParser\Models\Markers\TextBlock;
+use USFM\USFMParser\Models\Markers\TOC1Marker;
+use USFM\USFMParser\Models\Markers\TOC2Marker;
+use USFM\USFMParser\Models\Markers\TOC3Marker;
+use USFM\USFMParser\Models\Markers\USFMDocument;
+use USFM\USFMParser\Models\Markers\VMarker;
 
 class Tools {
 

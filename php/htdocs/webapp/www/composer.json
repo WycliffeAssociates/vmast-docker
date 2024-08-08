@@ -36,6 +36,7 @@
     "myclabs/php-enum": "~1.8",
     "vlucas/phpdotenv": "~5.6",
     "php-amqplib/php-amqplib": ">=3.0",
+    "usfmphp/usfmparser":  "~0.1",
     "ext-curl": "*",
     "ext-sockets": "*",
     "ext-json": "*"
