@@ -1,6 +1,6 @@
 # FROM node:14-alpine
 # -alpine has yarn installed already
-FROM node:21-alpine3.19
+FROM node:22-alpine3.20
 
 # RUN apk update && apk add nano procps
 RUN yarn global add pm2
