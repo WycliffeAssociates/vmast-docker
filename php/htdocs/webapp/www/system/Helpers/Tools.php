@@ -289,7 +289,7 @@ class Tools {
 
         $book["chapters"] = [];
 
-        $chapters = array_filter($document->contents, fn($m) => $m::class == CMarker::class);
+        $chapters = $document->getChildMarkers(CMarker::class);
         foreach ($chapters as /** @var CMarker $chapter */ $chapter) {
             $chapterNumber = $chapter->number;
             $book["chapters"][$chapterNumber] = [];
