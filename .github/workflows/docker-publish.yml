@@ -1,7 +1,6 @@
-name: Docker
+name: Build + Push Docker Images
 
 on: [workflow_dispatch, push]
-
 jobs:
   build-php-image:
     runs-on: ubuntu-20.04
