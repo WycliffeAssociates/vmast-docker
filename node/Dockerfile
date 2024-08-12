@@ -11,6 +11,5 @@ COPY ./yarn.lock .
 RUN yarn install
 COPY ./node_entrypoint.sh /node_entrypoint.sh
 RUN chmod +x /node_entrypoint.sh
-COPY ./scripts /scripts
 COPY . .
 ENTRYPOINT [ "/node_entrypoint.sh" ]

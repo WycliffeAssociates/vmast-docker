@@ -1,6 +1,7 @@
 #!/bin/sh
 
-/scripts/hosts.sh
+# todo: see if build works without this?
+# /scripts/hosts.sh
 
 #export NODE_EXTRA_CA_CERTS=$SSL_CA && \
 pm2 start server.js --restart-delay=1000 && \

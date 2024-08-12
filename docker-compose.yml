@@ -1,8 +1,8 @@
 services:
   web:
-    image: bibletranslationtools/vmast-web:${VMAST_IMAGE_TAG}
-    # build:
-    #   dockerfile: ./Dockerfile
+    build:
+      dockerfile: ./web/Dockerfile
+      context: .
     platform: linux/amd64
     depends_on:
       - db
@@ -19,12 +19,6 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    # todo: watch or bind mount
-    # volumes:
-    #   - ./htdocs:/var/www/html
-    #   - ./ssl:/etc/nginx/ssl
-    #   - ./web/nginx:/etc/nginx/conf.d
-    #   - ./db/dump:/db_dump
 
   php:
     image: bibletranslationtools/vmast-php:${VMAST_IMAGE_TAG}
@@ -68,52 +62,12 @@ services:
       WACS_CLIENT_SECRET: ${WACS_CLIENT_SECRET}
       DCS_CLIENT_ID: ${DCS_CLIENT_ID}
       DCS_CLIENT_SECRET: ${DCS_CLIENT_SECRET}
-      # todo: watch or bind mount
-    # volumes:
-    #     - ./htdocs:/var/www/html
-    #     - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
-
-  db:
-    image: mariadb:10.5.25
-    # build:
-    # context: ./db
-    # dockerfile: ./Dockerfile
-    platform: linux/amd64
-    env_file:
-      - .env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASS}
-    volumes:
-      - dbdata:/var/lib/mysql
-      - ./db/dump:/docker-entrypoint-initdb.d
-    restart: always
-
-  # phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin
-  #   links:
-  #     - db
-  #   environment:
-  #     PMA_HOST: db
-  #     PMA_PORT: 3306
-  #     PMA_ARBITRARY: 1
-  #     UPLOAD_LIMIT: 512M
-  #   ports:
-  #     - 8081:80
 
   node:
     image: bibletranslationtools/vmast-node:${VMAST_IMAGE_TAG}
     # build:
-    #   context: ./node
+    #   context: ./php
     #   dockerfile: ./Dockerfile
-    # volumes:
-    # watch;
-    # - ./node:/node
-    # - remove these two beneath;
-    # - ./ssl:/etc/nginx/ssl
-    # - ./scripts:/scripts
     env_file:
       - .env
     environment:
@@ -125,9 +79,6 @@ services:
       MAIL_FROM: ${MAIL_FROM}
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
-      SSL_CRT: ${SSL_CRT}
-      SSL_KEY: ${SSL_KEY}
-      SSL_CA: ${SSL_CA}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       REDIS_DB: ${REDIS_DB}
@@ -141,6 +92,21 @@ services:
       - rabbitmq
       - redis
 
+  db:
+    image: mariadb:10.5.25
+    platform: linux/amd64
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    volumes:
+      - dbdata:/var/lib/mysql
+      - .db_dump.sql.gz:/docker-entrypoint-initdb.d
+    restart: always
+
   rabbitmq:
     image: rabbitmq:3.13
     ports:
@@ -152,7 +118,6 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
 
   redis:
-    # todo: valkey?
     # image: redis:7.2
     image: valkey/valkey:7.2.5
 volumes:

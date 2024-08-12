@@ -10,11 +10,10 @@ RUN docker-php-ext-install intl zip sockets
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # config file for php-fpm
-COPY ./www.conf /usr/local/etc/php-fpm.d/www.conf
 WORKDIR /usr/share/nginx/html
-# WORKDIR /var/www/html/webapp/www
-# COPY ./php_start.sh /php_start.sh
 # Install deps
+
+
 COPY ./htdocs/webapp/www/composer.* .
 RUN composer install --no-dev --optimize-autoloader
 # Rest of source code
