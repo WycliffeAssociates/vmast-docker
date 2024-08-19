@@ -41,15 +41,15 @@ class JsonResponse extends SymfonyJsonResponse
      * @param  int   $depth
      * @return mixed
      */
-    public function getData($assoc = false, $depth = 512)
+    public function getData($assoc = false, $depth = 512): mixed
     {
-        return json_decode($this->data, $assoc, $depth);
+        return $this->data ? (array)json_decode($this->data, $assoc, $depth) : [];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setData($data = array())
+    public function setData($data = array()): static
     {
         if ($data instanceof JsonableInterface) {
             $this->data = $data->toJson($this->jsonOptions);

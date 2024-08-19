@@ -138,11 +138,11 @@ class Gump
         {
             if(is_array($v))
             {
-                $data[$k] = filter_var_array($v, FILTER_SANITIZE_STRING);
+                $data[$k] = filter_var_array($v, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             }
             else
             {
-                $data[$k] = filter_var($v, FILTER_SANITIZE_STRING);
+                $data[$k] = filter_var($v, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             }
         }
 
@@ -280,8 +280,6 @@ class Gump
      */
     public static function sanitize(array $input, $fields = NULL, $utf8_encode = true)
     {
-        $magic_quotes = (bool)get_magic_quotes_gpc();
-
         if(is_null($fields))
         {
             $fields = array_keys($input);
@@ -301,12 +299,7 @@ class Gump
 
                 if(is_string($value))
                 {
-                    if($magic_quotes === TRUE)
-                    {
-                        $value = stripslashes($value);
-                    }
-
-                    if(strpos($value, "\r") !== FALSE)
+                    if(str_contains($value, "\r"))
                     {
                         $value = trim($value);
                     }
@@ -320,7 +313,7 @@ class Gump
                         }
                     }
 
-                    $value = filter_var($value, FILTER_SANITIZE_STRING);
+                    $value = filter_var($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
                 }
 
                 $return[$field] = $value;
@@ -698,7 +691,7 @@ class Gump
             "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q={$text}&langpair={$input_lang}|{$output_lang}"
         );
 
-        $json = json_decode($translation, true);
+        $json = $translation ? (array)json_decode($translation, true) : [];
 
         if($json['responseStatus'] != 200)
         {
@@ -723,7 +716,7 @@ class Gump
      */
     protected function filter_sanitize_string($value, $params = NULL)
     {
-        return filter_var($value, FILTER_SANITIZE_STRING);
+        return filter_var($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     }
 
     /**

@@ -88,7 +88,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function start()
+    public function start(): bool
     {
         $this->loadSession();
 
@@ -129,7 +129,7 @@ class Store implements SessionInterface
     /**
      * Initialize a bag in storage if it doesn't exist.
      *
-     * @param  \Symfony\Component\HttpFoundation\Session\SessionBagInterface  $bag
+     * @param SessionBagInterface $bag
      * @return void
      */
     protected function initializeLocalBag($bag)
@@ -140,7 +140,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }
@@ -148,7 +148,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function setId($id)
+    public function setId($id): void
     {
         if (! $this->isValidId($id)) {
             $id = $this->generateSessionId();
@@ -181,7 +181,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -189,7 +189,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -197,7 +197,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function invalidate($lifetime = null)
+    public function invalidate($lifetime = null): bool
     {
         $this->attributes = array();
 
@@ -209,7 +209,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function migrate($destroy = false, $lifetime = null)
+    public function migrate($destroy = false, $lifetime = null): bool
     {
         if ($destroy) $this->handler->destroy($this->getId());
 
@@ -232,7 +232,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function save()
+    public function save(): void
     {
         $this->addBagDataToSession();
 
@@ -275,7 +275,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function has($name)
+    public function has($name): bool
     {
         return ! is_null($this->get($name));
     }
@@ -283,7 +283,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function get($name, $default = null)
+    public function get($name, $default = null): mixed
     {
         return array_get($this->attributes, $name, $default);
     }
@@ -333,7 +333,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function set($name, $value)
+    public function set($name, $value): void
     {
         array_set($this->attributes, $name, $value);
     }
@@ -451,7 +451,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function all()
+    public function all(): array
     {
         return $this->attributes;
     }
@@ -459,7 +459,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function replace(array $attributes)
+    public function replace(array $attributes): void
     {
         foreach ($attributes as $key => $value) {
             $this->put($key, $value);
@@ -469,7 +469,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function remove($name)
+    public function remove($name): mixed
     {
         return array_pull($this->attributes, $name);
     }
@@ -488,7 +488,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function clear()
+    public function clear(): void
     {
         $this->attributes = array();
 
@@ -510,7 +510,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function isStarted()
+    public function isStarted(): bool
     {
         return $this->started;
     }
@@ -518,7 +518,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function registerBag(SessionBagInterface $bag)
+    public function registerBag(SessionBagInterface $bag): void
     {
         $this->bags[$bag->getStorageKey()] = $bag;
     }
@@ -526,7 +526,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function getBag($name)
+    public function getBag($name): SessionBagInterface
     {
         return array_get($this->bags, $name, function()
         {
@@ -537,7 +537,7 @@ class Store implements SessionInterface
     /**
      * {@inheritdoc}
      */
-    public function getMetadataBag()
+    public function getMetadataBag(): MetadataBag
     {
         return $this->metaBag;
     }

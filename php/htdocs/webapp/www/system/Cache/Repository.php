@@ -20,7 +20,7 @@ class Repository implements ArrayAccess
     /**
      * The cache store implementation.
      *
-     * @var \Cache\StoreInterface
+     * @var StoreInterface
      */
     protected $store;
 
@@ -34,7 +34,7 @@ class Repository implements ArrayAccess
     /**
      * Create a new cache repository instance.
      *
-     * @param  \Cache\StoreInterface  $store
+     * @param StoreInterface $store
      */
     public function __construct(StoreInterface $store)
     {
@@ -47,7 +47,7 @@ class Repository implements ArrayAccess
      * @param  string  $key
      * @return bool
      */
-    public function has($key)
+    public function has($key): bool
     {
         return ! is_null($this->get($key));
     }
@@ -59,7 +59,7 @@ class Repository implements ArrayAccess
      * @param  mixed   $default
      * @return mixed
      */
-    public function get($key, $default = null)
+    public function get($key, $default = null): mixed
     {
         $value = $this->store->get($key);
 
@@ -73,7 +73,7 @@ class Repository implements ArrayAccess
      * @param  mixed   $default
      * @return mixed
      */
-    public function pull($key, $default = null)
+    public function pull($key, $default = null): mixed
     {
         $value = $this->get($key, $default);
 
@@ -90,7 +90,7 @@ class Repository implements ArrayAccess
      * @param  \DateTime|int  $minutes
      * @return void
      */
-    public function put($key, $value, $minutes)
+    public function put($key, $value, $minutes): void
     {
         $minutes = $this->getMinutes($minutes);
 
@@ -107,7 +107,7 @@ class Repository implements ArrayAccess
      * @param  \DateTime|int  $minutes
      * @return bool
      */
-    public function add($key, $value, $minutes)
+    public function add($key, $value, $minutes): bool
     {
         if (is_null($this->get($key))) {
             $this->put($key, $value, $minutes); return true;
@@ -124,7 +124,7 @@ class Repository implements ArrayAccess
      * @param  \Closure  $callback
      * @return mixed
      */
-    public function remember($key, $minutes, Closure $callback)
+    public function remember($key, $minutes, Closure $callback): mixed
     {
         // If the item exists in the cache we will just return this immediately
         // otherwise we will execute the given Closure and cache the result
@@ -145,7 +145,7 @@ class Repository implements ArrayAccess
      * @param  \Closure  $callback
      * @return mixed
      */
-    public function sear($key, Closure $callback)
+    public function sear($key, Closure $callback): mixed
     {
         return $this->rememberForever($key, $callback);
     }
@@ -157,7 +157,7 @@ class Repository implements ArrayAccess
      * @param  \Closure  $callback
      * @return mixed
      */
-    public function rememberForever($key, Closure $callback)
+    public function rememberForever($key, Closure $callback): mixed
     {
         // If the item exists in the cache we will just return this immediately
         // otherwise we will execute the given Closure and cache the result
@@ -176,7 +176,7 @@ class Repository implements ArrayAccess
      *
      * @return int
      */
-    public function getDefaultCacheTime()
+    public function getDefaultCacheTime(): int
     {
         return $this->default;
     }
@@ -187,7 +187,7 @@ class Repository implements ArrayAccess
      * @param  int   $minutes
      * @return void
      */
-    public function setDefaultCacheTime($minutes)
+    public function setDefaultCacheTime($minutes): void
     {
         $this->default = $minutes;
     }
@@ -195,9 +195,9 @@ class Repository implements ArrayAccess
     /**
      * Get the cache store implementation.
      *
-     * @return \Cache\StoreInterface
+     * @return StoreInterface
      */
-    public function getStore()
+    public function getStore(): StoreInterface
     {
         return $this->store;
     }
@@ -208,7 +208,7 @@ class Repository implements ArrayAccess
      * @param  string  $key
      * @return bool
      */
-    public function offsetExists($key)
+    public function offsetExists($key): bool
     {
         return $this->has($key);
     }
@@ -219,7 +219,7 @@ class Repository implements ArrayAccess
      * @param  string  $key
      * @return mixed
      */
-    public function offsetGet($key)
+    public function offsetGet($key): mixed
     {
         return $this->get($key);
     }
@@ -231,7 +231,7 @@ class Repository implements ArrayAccess
      * @param  mixed   $value
      * @return void
      */
-    public function offsetSet($key, $value)
+    public function offsetSet($key, $value): void
     {
         $this->put($key, $value, $this->default);
     }
@@ -242,9 +242,9 @@ class Repository implements ArrayAccess
      * @param  string  $key
      * @return void
      */
-    public function offsetUnset($key)
+    public function offsetUnset($key): void
     {
-        return $this->forget($key);
+        $this->forget($key);
     }
 
     /**
@@ -253,7 +253,7 @@ class Repository implements ArrayAccess
      * @param  \DateTime|int  $duration
      * @return int|null
      */
-    protected function getMinutes($duration)
+    protected function getMinutes($duration): ?int
     {
         if ($duration instanceof DateTime) {
             $fromNow = Carbon::instance($duration)->diffInMinutes();
@@ -277,7 +277,7 @@ class Repository implements ArrayAccess
             return $this->macroCall($method, $parameters);
         }
 
-        return call_user_func_array(array($this->store, $method), $parameters);
+        return call_user_func_array(array($this->store, $method), array_values($parameters));
     }
 
 }

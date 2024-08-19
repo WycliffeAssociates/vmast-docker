@@ -1,6 +1,8 @@
 <?php namespace Log;
 
+use BadMethodCallException;
 use Events\Dispatcher;
+use Monolog\Level;
 use Support\Contracts\JsonableInterface;
 use Support\Contracts\ArrayableInterface;
 
@@ -76,7 +78,7 @@ class Writer
             $parameters[0] = json_encode($parameters[0]);
         }
 
-        return call_user_func_array(array($this->monolog, $method), $parameters);
+        return call_user_func_array(array($this->monolog, $method), array_values($parameters));
     }
 
     /**
@@ -142,7 +144,7 @@ class Writer
      * Parse the string level into a Monolog constant.
      *
      * @param  string  $level
-     * @return int
+     * @return Level
      *
      * @throws \InvalidArgumentException
      */
@@ -150,28 +152,28 @@ class Writer
     {
         switch ($level) {
             case 'debug':
-                return MonologLogger::DEBUG;
+                return Level::Debug;
 
             case 'info':
-                return MonologLogger::INFO;
+                return Level::Info;
 
             case 'notice':
-                return MonologLogger::NOTICE;
+                return Level::Notice;
 
             case 'warning':
-                return MonologLogger::WARNING;
+                return Level::Warning;
 
             case 'error':
-                return MonologLogger::ERROR;
+                return Level::Error;
 
             case 'critical':
-                return MonologLogger::CRITICAL;
+                return Level::Critical;
 
             case 'alert':
-                return MonologLogger::ALERT;
+                return Level::Alert;
 
             case 'emergency':
-                return MonologLogger::EMERGENCY;
+                return Level::Emergency;
 
             default:
                 throw new \InvalidArgumentException("Invalid log level.");
@@ -255,7 +257,7 @@ class Writer
     {
         $level = head(func_get_args());
 
-        return call_user_func_array(array($this, $level), array_slice(func_get_args(), 1));
+        return call_user_func_array(array($this, $level), array_slice(array_values(func_get_args()), 1));
     }
 
     /**
@@ -265,7 +267,7 @@ class Writer
      * @param  mixed   $parameters
      * @return mixed
      *
-     * @throws \BadMethodCallException
+     * @throws BadMethodCallException
      */
     public function __call($method, $parameters)
     {
@@ -275,12 +277,10 @@ class Writer
 
             call_user_func_array(array($this, 'fireLogEvent'), array_merge(array($method), $parameters));
 
-            $method = 'add'.ucfirst($method);
-
             return $this->callMonolog($method, $parameters);
         }
 
-        throw new \BadMethodCallException("Method [$method] does not exist.");
+        throw new BadMethodCallException("Method [$method] does not exist.");
     }
 
     /**

@@ -25,7 +25,7 @@ class ScriptureProgress
         foreach ($event->chapters as $chapter) {
             $tmp["trID"] = $chapter->trID;
             $tmp["memberID"] = $chapter->memberID;
-            $tmp["chunks"] = json_decode($chapter->chunks, true);
+            $tmp["chunks"] = $chapter->chunks ? (array)json_decode($chapter->chunks, true) : [];
             $tmp["done"] = $chapter->done;
 
             $data["chapters"][$chapter->chapter] = $tmp;
@@ -69,11 +69,11 @@ class ScriptureProgress
             $data["chapters"][$key]["progress"] = 0;
 
             $currentChapter = $memberSteps[$chapter["memberID"]]["currentChapter"];
-            $verbCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["verbCheck"], true);
-            $peerCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true);
-            $kwCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["kwCheck"], true);
-            $crCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["crCheck"], true);
-            $otherCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["otherCheck"], true);
+            $verbCheck = $memberSteps[$chapter["memberID"]]["verbCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["verbCheck"], true) : [];
+            $peerCheck = $memberSteps[$chapter["memberID"]]["peerCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true) : [];
+            $kwCheck = $memberSteps[$chapter["memberID"]]["kwCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["kwCheck"], true) : [];
+            $crCheck = $memberSteps[$chapter["memberID"]]["crCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["crCheck"], true) : [];
+            $otherCheck = $memberSteps[$chapter["memberID"]]["otherCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["otherCheck"], true) : [];
 
             // Set default values
             $data["chapters"][$key]["multiDraft"]["state"] = StepsStates::NOT_STARTED;

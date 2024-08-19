@@ -1,6 +1,4 @@
-FROM php:7.2-fpm-buster
-
-# FROM php:8.3-fpm-bookworm
+FROM php:8.3-fpm-bookworm
 
 
 RUN apt-get update && apt-get install -y libzip-dev libicu-dev g++ git sudo

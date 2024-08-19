@@ -596,6 +596,6 @@ class Paginator implements ArrayableInterface, ArrayAccess, Countable, IteratorA
     {
         $collection = $this->getCollection();
 
-        return call_user_func_array(array($collection, $method), $arguments);
+        return call_user_func_array(array($collection, $method), array_values($arguments));
     }
 }

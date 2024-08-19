@@ -40,7 +40,7 @@ class FileSessionHandler implements \SessionHandlerInterface
     /**
      * {@inheritDoc}
      */
-    public function open($savePath, $sessionName)
+    public function open($savePath, $sessionName): bool
     {
         return true;
     }
@@ -48,7 +48,7 @@ class FileSessionHandler implements \SessionHandlerInterface
     /**
      * {@inheritDoc}
      */
-    public function close()
+    public function close(): bool
     {
         return true;
     }
@@ -56,7 +56,7 @@ class FileSessionHandler implements \SessionHandlerInterface
     /**
      * {@inheritDoc}
      */
-    public function read($sessionId)
+    public function read($sessionId): string
     {
         if ($this->files->exists($path = $this->path .DS .$sessionId)) {
             return $this->files->get($path);
@@ -68,23 +68,23 @@ class FileSessionHandler implements \SessionHandlerInterface
     /**
      * {@inheritDoc}
      */
-    public function write($sessionId, $data)
+    public function write($sessionId, $data): bool
     {
-        $this->files->put($this->path .DS .$sessionId, $data, true);
+        return $this->files->put($this->path .DS .$sessionId, $data, true);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function destroy($sessionId)
+    public function destroy($sessionId): bool
     {
-        $this->files->delete($this->path .DS .$sessionId);
+        return $this->files->delete($this->path .DS .$sessionId);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function gc($lifetime)
+    public function gc($lifetime): int
     {
         $files = Finder::create()
                     ->in($this->path)
@@ -92,9 +92,15 @@ class FileSessionHandler implements \SessionHandlerInterface
                     ->ignoreDotFiles(true)
                     ->date('<= now - ' .$lifetime .' seconds');
 
+        $deleted = 0;
+
         foreach ($files as $file) {
-            $this->files->delete($file->getRealPath());
+            if ($this->files->delete($file->getRealPath())) {
+                $deleted++;
+            }
         }
+
+        return $deleted;
     }
 
 }

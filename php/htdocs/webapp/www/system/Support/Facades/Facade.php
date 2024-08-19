@@ -108,7 +108,7 @@ abstract class Facade
 
         $instance = static::resolveFacadeInstance($accessor);
 
-        return call_user_func_array(array($instance, $method), $args);
+        return call_user_func_array(array($instance, $method), array_values($args));
     }
 
 }

@@ -2828,12 +2828,12 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     public function __call($method, $parameters)
     {
         if (in_array($method, array('increment', 'decrement'))) {
-            return call_user_func_array(array($this, $method), $parameters);
+            return call_user_func_array(array($this, $method), array_values($parameters));
         }
 
         $query = $this->newQuery();
 
-        return call_user_func_array(array($query, $method), $parameters);
+        return call_user_func_array(array($query, $method), array_values($parameters));
     }
 
     /**
@@ -2847,7 +2847,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     {
         $instance = new static;
 
-        return call_user_func_array(array($instance, $method), $parameters);
+        return call_user_func_array(array($instance, $method), array_values($parameters));
     }
 
     /**

@@ -301,6 +301,6 @@ class Database
     {
         $instance = $this->getPdo();
 
-        return call_user_func_array(array($instance, $method), $params);
+        return call_user_func_array(array($instance, $method), array_values($params));
     }
 }

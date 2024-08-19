@@ -46,7 +46,7 @@ class View extends Facade
             case 'addHeader':
             case 'addHeaders':
                 // Add the Header(s) using the legacy method.
-                return call_user_func_array(array(static::class, 'addHeaders'), $params);
+                return call_user_func_array(array(static::class, 'addHeaders'), array_values($params));
 
             case 'sendHeaders':
                 // The Headers should not be sent from there; go out.
@@ -70,11 +70,11 @@ class View extends Facade
 
         if (! str_starts_with($method, 'render')) {
             // Call the non-static method from the View Factory instance.
-            return call_user_func_array(array($instance, $method), $params);
+            return call_user_func_array(array($instance, $method), array_values($params));
         }
 
         // Create a View instance calling the Factory.
-        $view = call_user_func_array(array($instance, 'make'), $params);
+        $view = call_user_func_array(array($instance, 'make'), array_values($params));
 
         // Push the View instance to (legacy) items.
         array_push(static::$items, $view);

@@ -31,33 +31,35 @@ class ModelCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->modelName = $input->getArgument('modelName');
         $this->methods = $input->getArgument('methods');
 
-        $error = null;
+        $error = 0;
         if (in_array($this->modelName, ReservedWords::getList())) {
             $output->writeln("<error>Model name cannot be a reserved word</>");
-            $error = true;
+            $error = 1;
         }
 
         if (is_array($this->methods)) {
             foreach ($this->methods as $method) {
                 if (in_array($method, ReservedWords::getList())) {
                     $output->writeln("<error>Method name ($method) cannot be a reserved word</>");
-                    $error = true;
+                    $error = 1;
                 }
             }
         }
 
-        if ($error == true) {
+        if ($error == 1) {
             exit;
         }
 
         $this->makeModel();
 
         $output->writeln("<info>Model ".$this->modelName." created with ".count($this->methods)." methods</>");
+
+        return $error;
     }
 
     public function makeModel()

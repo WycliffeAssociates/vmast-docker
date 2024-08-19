@@ -237,7 +237,7 @@ abstract class Controller
         $this->setupLayout();
 
         // Execute the requested Method with the given arguments.
-        $response = call_user_func_array(array($this, $method), $parameters);
+        $response = call_user_func_array(array($this, $method), array_values($parameters));
 
         // If no response is returned from the controller action and a layout is being
         // used we will assume we want to just return the Layout view as any nested

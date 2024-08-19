@@ -43,7 +43,7 @@ foreach ($data["chapters"] as $key => $chapter):?>
                 <div class="section_translator">
                     <div class="section_translator_name">
                         <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                        <span><b><?php echo $data["members"][$chapter["l3memberID"]]["name"] ?></b></span>
+                        <span><b><?php echo $data["members"][$chapter["l3memberID"]]["name"] ?? "" ?></b></span>
                     </div>
                 </div>
                 <div class="section_steps">
@@ -58,7 +58,7 @@ foreach ($data["chapters"] as $key => $chapter):?>
                         <?php if($chapter["peerChk"]["checkerID"] != "na"): ?>
                             <div class="step_checker">
                                 <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?? "" ?></div>
                                 <?php if($chapter["peerReview"]["state"] == StepsStates::CHECKED || $chapter["peerReview"]["state"] == StepsStates::FINISHED): ?>
                                     <span class="glyphicon glyphicon-ok checked"></span>
                                 <?php endif; ?>
@@ -79,7 +79,7 @@ foreach ($data["chapters"] as $key => $chapter):?>
                         <?php if($chapter["peerChk"]["checkerID"] != "na"): ?>
                             <div class="step_checker">
                                 <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?? "" ?></div>
                                 <?php if($chapter["peerEdit"]["state"] == StepsStates::CHECKED || $chapter["peerEdit"]["state"] == StepsStates::FINISHED): ?>
                                     <span class="glyphicon glyphicon-ok checked"></span>
                                 <?php endif; ?>

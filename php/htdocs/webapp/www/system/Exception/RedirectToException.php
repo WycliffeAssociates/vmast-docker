@@ -22,7 +22,7 @@ class RedirectToException extends \RuntimeException
         $this->statusCode = $statusCode;
         $this->url = $url;
 
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message ?? "", $code, $previous);
     }
 
     public function getStatusCode()

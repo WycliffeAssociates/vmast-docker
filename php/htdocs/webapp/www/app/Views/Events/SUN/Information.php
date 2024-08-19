@@ -70,18 +70,18 @@ if(!isset($error)):
                             <div class="section_translator">
                                 <div class="section_translator_name tnleft sun">
                                     <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                    <span><b><?php echo $data["members"][$chapter["memberID"]]["name"] ?></b></span>
+                                    <span><b><?php echo $data["members"][$chapter["memberID"]]["name"] ?? "" ?></b></span>
                                 </div>
                                 <?php if(isset($chapter["theoChk"]["checkerID"]) && $chapter["theoChk"]["checkerID"] != "na"): ?>
                                 <div class="section_translator_name tnleft sun" style="margin-left: 520px">
                                     <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                    <span><b><?php echo $data["members"][$chapter["theoChk"]["checkerID"]]["name"] ?></b></span>
+                                    <span><b><?php echo $data["members"][$chapter["theoChk"]["checkerID"]]["name"] ?? "" ?></b></span>
                                 </div>
                                 <?php endif; ?>
                                 <?php if(isset($chapter["crc"]["checkerID"]) && $chapter["crc"]["checkerID"] != "na"): ?>
                                 <div class="section_translator_name tnleft sun" style="margin-left: 30px">
                                     <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                    <span><b><?php echo $data["members"][$chapter["crc"]["checkerID"]]["name"] ?></b></span>
+                                    <span><b><?php echo $data["members"][$chapter["crc"]["checkerID"]]["name"] ?? "" ?></b></span>
                                 </div>
                                 <?php endif; ?>
                                 <div class="clear"></div>

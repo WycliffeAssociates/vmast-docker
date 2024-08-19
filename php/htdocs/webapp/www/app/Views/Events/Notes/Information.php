@@ -75,12 +75,12 @@ if(!isset($error)):
                             <div class="section_translator">
                                 <div class="section_translator_name tnleft">
                                     <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                    <span><b><?php echo $data["members"][$chapter["memberID"]]["name"] ?></b></span>
+                                    <span><b><?php echo $data["members"][$chapter["memberID"]]["name"] ?? "" ?></b></span>
                                 </div>
                                 <?php if(isset($chapter["checkerID"])): ?>
                                 <div class="section_translator_name tnright">
                                     <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                    <span><b><?php echo $data["members"][$chapter["checkerID"]]["name"] ?></b></span>
+                                    <span><b><?php echo $data["members"][$chapter["checkerID"]]["name"] ?? "" ?></b></span>
                                 </div>
                                 <?php endif; ?>
                                 <div class="clear"></div>
@@ -158,8 +158,8 @@ if(!isset($error)):
                                                     ? $chunk[0]." - ".$chunk[sizeof($chunk)-1] 
                                                     : __("intro")); ?>
                                                 <?php if(array_key_exists($index, (array)$chapter["chunksData"])) : ?>
-                                                    <?php $verses = (array)json_decode($chapter["chunksData"][$index]->translatedVerses); ?>
-                                                    <?php if(isset($verses["checker"]) && !empty($verses["checker"]->verses)) :?>
+                                                    <?php $verses = $chapter["chunksData"][$index]->translatedVerses ? json_decode($chapter["chunksData"][$index]->translatedVerses) : null; ?>
+                                                    <?php if($verses && isset($verses->checker) && !empty($verses->checker->verses)) :?>
                                                         &nbsp;&nbsp;<span class="finished_msg glyphicon glyphicon-ok"></span>
                                                     <?php endif; ?>
                                                 <?php endif; ?>
@@ -191,7 +191,7 @@ if(!isset($error)):
                                         <div class="step_checker">
                                             <div>
                                                 <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?></div>
+                                                <div><?php echo $data["members"][$chapter["peerChk"]["checkerID"]]["name"] ?? "" ?></div>
                                             </div>
                                             <?php if($chapter["peerChk"]["state"] == StepsStates::CHECKED || $chapter["peerChk"]["state"] == StepsStates::FINISHED): ?>
                                                 <span class="glyphicon glyphicon-ok checked"></span>

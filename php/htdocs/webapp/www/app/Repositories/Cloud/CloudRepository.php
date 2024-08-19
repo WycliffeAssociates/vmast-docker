@@ -47,7 +47,7 @@ class CloudRepository implements ICloudRepository {
         }
 
         return "$this->authUrl/login/oauth/authorize?client_id=$clientID"
-            ."&redirect_uri=${_ENV["APP_URL"]}members/oauth/$this->server"
+            ."&redirect_uri={$_ENV["APP_URL"]}members/oauth/$this->server"
             ."&response_type=code&state=$state";
     }
 
@@ -75,12 +75,12 @@ class CloudRepository implements ICloudRepository {
             "client_secret" => $clientSecret,
             "code" => $code,
             "grant_type" => "authorization_code",
-            "redirect_uri" => "${_ENV["APP_URL"]}members/oauth/$this->server",
+            "redirect_uri" => "{$_ENV["APP_URL"]}members/oauth/$this->server",
         ];
         $response = $this->authRequest("/login/oauth/access_token", $post);
-        $json = json_decode($response);
+        $json = $response ? json_decode($response) : null;
 
-        if (!isset($json->error)) {
+        if ($json && !isset($json->error)) {
             Session::set($this->server, [
                 "access_token" => $json->access_token,
                 "token_type" => $json->token_type,
@@ -104,8 +104,13 @@ class CloudRepository implements ICloudRepository {
 
             $repo = $this->getRepo($repoName);
 
-            if(empty($repo) || !isset($repo->clone_url)) {
+            if(!$repo || !isset($repo->clone_url)) {
                 $repo = $this->createEmptyRepo($repoName);
+            }
+
+            if (!$repo) {
+                $result->message = __("unknown_error");
+                return $result;
             }
 
             $uniqid = uniqid();
@@ -123,7 +128,7 @@ class CloudRepository implements ICloudRepository {
 
             $gitRepo->add();
             $gitRepo->commit("Updated");
-            $gitRepo->push();
+            $gitRepo->push(branch: $repo->default_branch);
 
             $result->success = true;
             $result->repo = $repo;
@@ -148,17 +153,17 @@ class CloudRepository implements ICloudRepository {
 
     private function getUsername($server) {
         $data = $this->request("/user");
-        $user = json_decode($data);
-        return !isset($user->error) ? $user->login : "unknown";
+        $user = $data ? json_decode($data) : null;
+        return $user && !isset($user->error) ? $user->login : "unknown";
     }
 
     private function getRepo($repoName) {
         $data = $this->request("/repos/{$this->username}/{$repoName}");
-        return json_decode($data);
+        return $data ? json_decode($data) : null;
     }
 
     private function createEmptyRepo($repoName) {
         $data = $this->request("/user/repos", ["name" => $repoName]);
-        return json_decode($data);
+        return $data ? json_decode($data) : null;
     }
 }

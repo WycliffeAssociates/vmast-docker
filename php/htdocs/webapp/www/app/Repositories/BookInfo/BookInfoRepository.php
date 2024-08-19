@@ -41,6 +41,6 @@ class BookInfoRepository implements IBookInfoRepository
 
     public function __call($method, $args)
     {
-        return call_user_func_array([$this->bookInfo, $method], $args);
+        return call_user_func_array([$this->bookInfo, $method], array_values($args));
     }
 }

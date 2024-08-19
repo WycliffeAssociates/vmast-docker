@@ -30,7 +30,7 @@ class MembersModel extends Model {
         foreach ($where as $item) {
             if(is_array($item))
             {
-                call_user_func_array(array($builder, "where"), $item);
+                call_user_func_array(array($builder, "where"), array_values($item));
             }
             else
             {

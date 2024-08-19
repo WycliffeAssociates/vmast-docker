@@ -24,7 +24,7 @@ class RadioProgress
         foreach ($event->chapters as $chapter) {
             $tmp["trID"] = $chapter->trID;
             $tmp["memberID"] = $chapter->memberID;
-            $tmp["chunks"] = json_decode($chapter->chunks, true);
+            $tmp["chunks"] = $chapter->chunks ? (array)json_decode($chapter->chunks, true) : [];
             $tmp["done"] = $chapter->done;
 
             $data["chapters"][$chapter->chapter] = $tmp;
@@ -61,7 +61,7 @@ class RadioProgress
             $data["chapters"][$key]["progress"] = 0;
 
             $currentChapter = $memberSteps[$chapter["memberID"]]["currentChapter"];
-            $peerCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true);
+            $peerCheck = $memberSteps[$chapter["memberID"]]["peerCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true) : [];
 
             // Set default values
             $data["chapters"][$key]["consume"]["state"] = StepsStates::NOT_STARTED;

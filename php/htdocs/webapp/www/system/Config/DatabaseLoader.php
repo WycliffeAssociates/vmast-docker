@@ -60,7 +60,7 @@ class DatabaseLoader implements LoaderInterface
             $key = $result['item'];
 
             // Process the (optional) JSON encoding.
-            $value = json_decode($result['value'], true);
+            $value = $result['value'] ? (array)json_decode($result['value'], true) : [];
 
             if (json_last_error() === JSON_ERROR_NONE) {
                 // A valid JSON data there.

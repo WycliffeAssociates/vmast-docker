@@ -2,6 +2,7 @@
 
 namespace Html;
 
+use DateTime;
 use Routing\UrlGenerator;
 use Session\Store as Session;
 use Support\Traits\MacroableTrait;
@@ -472,7 +473,7 @@ class FormBuilder
      */
     public function selectYear()
     {
-        return call_user_func_array(array($this, 'selectRange'), func_get_args());
+        return call_user_func_array(array($this, 'selectRange'), array_values(func_get_args()));
     }
 
     /**
@@ -490,7 +491,9 @@ class FormBuilder
 
         foreach (range(1, 12) as $month)
         {
-            $months[$month] = strftime($format, mktime(0, 0, 0, $month, 1));
+            $timestamp = mktime(0, 0, 0, $month, 1);
+            $datetime = (new DateTime())->setTimestamp($timestamp);
+            $months[$month] = $datetime->format($format);
         }
 
         return $this->select($name, $months, $selected, $options);

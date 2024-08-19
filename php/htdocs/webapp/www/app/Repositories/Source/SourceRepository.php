@@ -55,7 +55,7 @@ class SourceRepository implements ISourceRepository
         })->toArray();
 
         $sourcesToInsert = array_filter($sources, function ($item) use ($ids) {
-            $id = "${item["langID"]}_${item["slug"]}";
+            $id = "{$item["langID"]}_{$item["slug"]}";
             return !in_array($id, $ids);
         });
 
@@ -81,6 +81,6 @@ class SourceRepository implements ISourceRepository
 
     public function __call($method, $args)
     {
-        return call_user_func_array([$this->source, $method], $args);
+        return call_user_func_array([$this->source, $method], array_values($args));
     }
 }

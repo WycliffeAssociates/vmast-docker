@@ -190,7 +190,7 @@ class Dispatcher
         $this->firing[] = $event;
 
         foreach ($this->getListeners($event) as $listener) {
-            $response = call_user_func_array($listener, $payload);
+            $response = call_user_func_array($listener, array_values($payload));
 
             if (! is_null($response) && $halt) {
                 array_pop($this->firing);
@@ -255,7 +255,7 @@ class Dispatcher
         if (isset($this->listeners[$eventName])) {
             krsort($this->listeners[$eventName]);
 
-            $this->sorted[$eventName] = call_user_func_array('array_merge', $this->listeners[$eventName]);
+            $this->sorted[$eventName] = call_user_func_array('array_merge', array_values($this->listeners[$eventName]));
         }
     }
 
@@ -295,7 +295,7 @@ class Dispatcher
             //
             $data = func_get_args();
 
-            return call_user_func_array($callable, $data);
+            return call_user_func_array($callable, array_values($data));
         };
     }
 

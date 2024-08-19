@@ -85,4 +85,10 @@ class LogTransport implements Swift_Transport
         //
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function ping()
+    {
+    }
 }

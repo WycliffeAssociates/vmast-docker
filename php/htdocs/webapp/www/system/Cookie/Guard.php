@@ -5,6 +5,7 @@ namespace Cookie;
 use Encryption\Encrypter;
 use Encryption\DecryptException;
 
+use Exception;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 class Guard implements HttpKernelInterface
 {
     /**
-     * The wrapped kernel implementation.
+     * The wrapped Kernel implementation.
      *
      * @var \Symfony\Component\HttpKernel\HttpKernelInterface
      */
@@ -44,12 +45,13 @@ class Guard implements HttpKernelInterface
      *
      * @implements HttpKernelInterface::handle
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  int   $type
-     * @param  bool  $catch
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     * @param int $type
+     * @param bool $catch
+     * @return Response
+     * @throws Exception
      */
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): Response
     {
         $response = $this->app->handle($this->decrypt($request), $type, $catch);
 
@@ -59,8 +61,8 @@ class Guard implements HttpKernelInterface
     /**
      * Decrypt the cookies on the request.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @return \Symfony\Component\HttpFoundation\Request
+     * @param Request $request
+     * @return Request
      */
     protected function decrypt(Request $request)
     {
@@ -118,8 +120,8 @@ class Guard implements HttpKernelInterface
     /**
      * Encrypt the cookies on an outgoing response.
      *
-     * @param  \Symfony\Component\HttpFoundation\Response  $response
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Response $response
+     * @return Response
      */
     protected function encrypt(Response $response)
     {

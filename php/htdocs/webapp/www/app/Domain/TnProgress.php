@@ -24,7 +24,7 @@ class TnProgress
         foreach ($event->chapters as $chapter) {
             $tmp["trID"] = $chapter->trID;
             $tmp["memberID"] = $chapter->memberID;
-            $tmp["chunks"] = json_decode($chapter->chunks, true);
+            $tmp["chunks"] = $chapter->chunks ? (array)json_decode($chapter->chunks, true) : [];
             $tmp["done"] = $chapter->done;
 
             $data["chapters"][$chapter->chapter] = $tmp;
@@ -62,8 +62,8 @@ class TnProgress
             $data["chapters"][$key]["progress"] = 0;
 
             $currentChapter = $memberSteps[$chapter["memberID"]]["currentChapter"];
-            $otherCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["otherCheck"], true);
-            $peerCheck = (array)json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true);
+            $otherCheck = $memberSteps[$chapter["memberID"]]["otherCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["otherCheck"], true) : [];
+            $peerCheck = $memberSteps[$chapter["memberID"]]["peerCheck"] ? (array)json_decode($memberSteps[$chapter["memberID"]]["peerCheck"], true) : [];
 
             // Set default values
             $data["chapters"][$key]["consume"]["state"] = StepsStates::NOT_STARTED;
@@ -192,7 +192,7 @@ class TnProgress
             if (!empty($data["chapters"][$key]["chunksData"])) {
                 $arr = [];
                 foreach ($data["chapters"][$key]["chunksData"] as $chunkData) {
-                    $verses = (array)json_decode($chunkData->translatedVerses);
+                    $verses = $chunkData->translatedVerses ? (array)json_decode($chunkData->translatedVerses, true) : [];
                     if (isset($verses["checker"]) && !empty($verses["checker"]->verses))
                         $arr[] = "";
                 }

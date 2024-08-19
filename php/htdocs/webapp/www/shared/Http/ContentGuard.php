@@ -20,24 +20,24 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class ContentGuard implements HttpKernelInterface
 {
     /**
-     * The wrapped kernel implementation.
+     * The wrapped Kernel implementation.
      *
-     * @var \Symfony\Component\HttpKernel\HttpKernelInterface
+     * @var \HttpKernelInterface
      */
-    protected $app;
+    protected HttpKernelInterface $app;
 
     /**
      * The debug flag.
      *
      * @var bool
      */
-    protected $debug;
+    protected bool $debug;
 
 
     /**
      * Create a new FrameGuard instance.
      *
-     * @param  \Symfony\Component\HttpKernel\HttpKernelInterface  $app
+     * @param  HttpKernelInterface  $app
      * @return void
      */
     public function __construct(HttpKernelInterface $app, $debug)
@@ -52,12 +52,13 @@ class ContentGuard implements HttpKernelInterface
      *
      * @implements HttpKernelInterface::handle
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  int   $type
-     * @param  bool  $catch
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param SymfonyRequest $request
+     * @param int $type
+     * @param bool $catch
+     * @return Response
+     * @throws \Exception
      */
-    public function handle(SymfonyRequest $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(SymfonyRequest $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): SymfonyResponse
     {
         $response = $this->app->handle($request, $type, $catch);
 
@@ -67,10 +68,10 @@ class ContentGuard implements HttpKernelInterface
     /**
      * Minify the Response instance Content.
      *
-     * @param  \Symfony\Component\HttpFoundation\Response $response
-     * @return void
+     * @param  SymfonyResponse $response
+     * @return SymfonyResponse
      */
-    protected function processResponseContent(SymfonyResponse $response)
+    protected function processResponseContent(SymfonyResponse $response): SymfonyResponse
     {
         $contentType = $response->headers->get('Content-Type');
 
@@ -92,8 +93,8 @@ class ContentGuard implements HttpKernelInterface
         } else {
             // Minify the Response's Content.
             $search = array(
-                '/\>[^\S ]+/s', // Strip whitespaces after tags, except space.
-                '/[^\S ]+\</s', // Strip whitespaces before tags, except space.
+                '/>[^\S ]+/s', // Strip whitespaces after tags, except space.
+                '/[^\S ]+</s', // Strip whitespaces before tags, except space.
                 '/(\s)+/s'      // Shorten multiple whitespace sequences.
             );
 

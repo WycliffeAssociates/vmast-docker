@@ -45,6 +45,6 @@ class ProjectRepository implements IProjectRepository
 
     public function __call($method, $args)
     {
-        return call_user_func_array([$this->project, $method], $args);
+        return call_user_func_array([$this->project, $method], array_values($args));
     }
 }

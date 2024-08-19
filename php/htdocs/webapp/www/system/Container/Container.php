@@ -5,6 +5,7 @@ namespace Container;
 use Closure;
 use ArrayAccess;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionParameter;
 
 
@@ -488,11 +489,12 @@ class Container implements ArrayAccess
     /**
      * Instantiate a concrete instance of the given type.
      *
-     * @param  string  $concrete
-     * @param  array   $parameters
+     * @param string $concrete
+     * @param array $parameters
      * @return mixed
      *
      * @throws BindingResolutionException
+     * @throws ReflectionException
      */
     public function build($concrete, $parameters = array())
     {
@@ -555,16 +557,16 @@ class Container implements ArrayAccess
 
         foreach ($parameters as $parameter)
         {
-            $dependency = $parameter->getClass();
+            $dependency = $parameter->getType();
 
             // If the class is null, it means the dependency is a string or some other
             // primitive type which we can not resolve since it is not a class and
             // we will just bomb out with an error since we have no-where to go.
-            if (array_key_exists($parameter->name, $primitives))
+            if (array_key_exists($dependency->getName(), $primitives))
             {
-                $dependencies[] = $primitives[$parameter->name];
+                $dependencies[] = $primitives[$dependency->getName()];
             }
-            elseif (is_null($dependency))
+            elseif ($dependency->isBuiltin())
             {
                 $dependencies[] = $this->resolveNonClass($parameter);
             }
@@ -609,7 +611,7 @@ class Container implements ArrayAccess
     {
         try
         {
-            return $this->make($parameter->getClass()->name);
+            return $this->make($parameter->getType()->getName());
         }
 
         // If we can not resolve the class instance, we will check to see if the value
@@ -641,7 +643,7 @@ class Container implements ArrayAccess
             {
                 unset($parameters[$key]);
 
-                $parameters[$dependencies[$key]->name] = $value;
+                $parameters[$dependencies[$key]->getName()] = $value;
             }
         }
 
@@ -742,7 +744,7 @@ class Container implements ArrayAccess
      */
     protected function getAlias($abstract)
     {
-        return isset($this->aliases[$abstract]) ? $this->aliases[$abstract] : $abstract;
+        return $this->aliases[$abstract] ?? $abstract;
     }
 
     /**
@@ -793,7 +795,7 @@ class Container implements ArrayAccess
      * @param  string  $key
      * @return bool
      */
-    public function offsetExists($key):bool
+    public function offsetExists($key): bool
     {
         return isset($this->bindings[$key]);
     }
@@ -804,7 +806,7 @@ class Container implements ArrayAccess
      * @param  string  $key
      * @return mixed
      */
-    public function offsetGet($key)
+    public function offsetGet($key): mixed
     {
         return $this->make($key);
     }

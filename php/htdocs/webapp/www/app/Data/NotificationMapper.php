@@ -32,7 +32,8 @@ class NotificationMapper {
         if ($project->bookProject == "bca") {
             $data->word = $notificationModel->word->word;
         } elseif ($project->bookProject == "tw") {
-            $words = json_decode($notificationModel->wordGroup->words, true);
+            $words = $notificationModel->wordGroup->words ?
+                (array)json_decode($notificationModel->wordGroup->words, true) : [];
             $first = $words[0];
             $last = $words[sizeof($words)-1];
             $data->group = "$first...$last";;

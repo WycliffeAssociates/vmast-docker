@@ -57,7 +57,7 @@ class ParseResource
         $hasTitle = preg_match($regex, $line, $matches);
         if ($hasTitle && isset($matches[1]) && isset($matches[2])) {
             $type = ParseResource::headingType($matches[1]);
-            return new ResourceChunk($type, $matches[2], "${matches[1]} {}");
+            return new ResourceChunk($type, $matches[2], "{$matches[1]} {}");
         }
         return null;
     }
@@ -102,7 +102,7 @@ class ParseResource
         $regex = "/^(\d+\.|-|\*)\s(.*)$/";
         $hasListItem = preg_match($regex, $line, $matches);
         if ($hasListItem && isset($matches[1]) && isset($matches[2])) {
-            return new ResourceChunk(ResourceChunkType::LIST_ITEM, $matches[2], "${matches[1]} {}");
+            return new ResourceChunk(ResourceChunkType::LIST_ITEM, $matches[2], "{$matches[1]} {}");
         }
         return null;
     }

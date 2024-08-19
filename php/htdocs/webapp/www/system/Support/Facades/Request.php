@@ -42,7 +42,7 @@ class Request extends Facade
 
             if ($reflection->isStatic()) {
                 // The requested Method is static.
-                return call_user_func_array(array(HttpRequest::class, $method), $params);
+                return call_user_func_array(array(HttpRequest::class, $method), array_values($params));
             }
         } catch (ReflectionException $e) {
             // Method not found; do nothing.
@@ -57,7 +57,7 @@ class Request extends Facade
         }
 
         // Call the non-static method from the Request instance.
-        return call_user_func_array(array($instance, $method), $params);
+        return call_user_func_array(array($instance, $method), array_values($params));
     }
 
     /**

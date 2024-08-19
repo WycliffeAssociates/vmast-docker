@@ -17,11 +17,12 @@ use Helpers\Manifest\MediaData;
 use Helpers\Manifest\MediaFormat;
 use Helpers\Arrays;
 use Helpers\Parsedown;
-use Helpers\UsfmParser;
+use Helpers\Tools;
 use SplFileObject;
 use Support\Collection;
 use Cache;
 use Support\Str;
+use USFM\USFMParser\USFMParser;
 use ZipArchive;
 
 class ResourcesRepository implements IResourcesRepository {
@@ -69,7 +70,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($obs_cache_key)) {
             $obsSource = Cache::get($obs_cache_key);
-            $data = json_decode($obsSource, true);
+            $data = $obsSource ? (array)json_decode($obsSource, true) : [];
             $obs = ResourceMapper::toResource($data);
         } else {
             $obs = $this->parseObs($lang);
@@ -99,7 +100,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($scripture_cache_key)) {
             $source = Cache::get($scripture_cache_key);
-            $book = json_decode($source, true);
+            $book = $source ? (array)json_decode($source, true) : [];
         } else {
             $book = $this->parseScripture($lang, $resource, $bookSlug, $bookNum);
             if ($book && !empty($book["chapters"])) {
@@ -120,7 +121,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($resource_cache_key)) {
             $source = Cache::get($resource_cache_key);
-            $book = json_decode($source, true);
+            $book = $source ? (array)json_decode($source, true) : [];
         } else {
             $book = $this->parseMdResource($lang, $resource, $bookSlug, $toHtml);
             if (!empty($book)) {
@@ -141,7 +142,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($resource_cache_key)) {
             $source = Cache::get($resource_cache_key);
-            $book = json_decode($source, true);
+            $book = $source ? (array)json_decode($source, true) : [];
         } else {
             $book = $this->parseBc($lang, $bookSlug, $toHtml);
             if (!empty($book)) {
@@ -173,7 +174,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($bc_cache_key)) {
             $bcSource = Cache::get($bc_cache_key);
-            $data = json_decode($bcSource, true);
+            $data = $bcSource ? (array)json_decode($bcSource, true) : [];
             $bc = ResourceMapper::toResource($data);
         } else {
             $bc = $this->parseBcSource($lang, $bookSlug, $bookNum);
@@ -203,7 +204,7 @@ class ResourcesRepository implements IResourcesRepository {
         $resource_cache_key = $lang . "_bca_tr";
         if (Cache::has($resource_cache_key)) {
             $source = Cache::get($resource_cache_key);
-            $data = json_decode($source, true);
+            $data = $source ? (array)json_decode($source, true) : [];
             $bca = ResourceMapper::toResource($data);
         } else {
             $bca = $this->parseBcArticlesSource($lang);
@@ -227,7 +228,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($resource_cache_key)) {
             $source = Cache::get($resource_cache_key);
-            $book = json_decode($source, true);
+            $book = $source ? (array)json_decode($source, true) : [];
         } else {
             $book = $this->parseTw($lang, $category, $toHtml);
             if (!empty($book)) {
@@ -242,7 +243,7 @@ class ResourcesRepository implements IResourcesRepository {
             })->first();
 
             if ($group) {
-                $group_words = (array)json_decode($group->words, true);
+                $group_words = $group->words ? (array)json_decode($group->words, true) : [];
                 $words = array_values(array_filter($book, function ($e) use ($group_words) {
                     return in_array($e["word"], $group_words);
                 }));
@@ -262,7 +263,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($qaguide_cache_key)) {
             $source = Cache::get($qaguide_cache_key);
-            $qaGuide = json_decode($source);
+            $qaGuide = $source ? json_decode($source) : null;
         } else {
             $qaGuide = $this->parseQaGuide($lang);
             if ($qaGuide) {
@@ -278,7 +279,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if (Cache::has($resource_cache_key)) {
             $source = Cache::get($resource_cache_key);
-            $book = json_decode($source, true);
+            $book = $source ? (array)json_decode($source, true) : [];
         } else {
             $book = $this->parseJsonResource($lang, $resource, $bookSlug);
             if ($book) {
@@ -371,11 +372,11 @@ class ResourcesRepository implements IResourcesRepository {
         $dcsSources = $this->getCatalogSources($dcsCatalog);
 
         $ids = array_map(function ($item) {
-            return "${item["langID"]}_${item["slug"]}";
+            return "{$item["langID"]}_{$item["slug"]}";
         }, $wacsSources);
 
         $newSources = array_filter($dcsSources, function($item) use($ids) {
-            $id = "${item["langID"]}_${item["slug"]}";
+            $id = "{$item["langID"]}_{$item["slug"]}";
             return !in_array($id, $ids);
         });
 
@@ -398,7 +399,7 @@ class ResourcesRepository implements IResourcesRepository {
         }
 
         $langFile = File::get($this->languagesPath);
-        $languages = json_decode($langFile);
+        $languages = $langFile ? (array)json_decode($langFile) : [];
         $response["success"] = true;
         $response["languages"] = $languages;
 
@@ -407,6 +408,8 @@ class ResourcesRepository implements IResourcesRepository {
 
     private function getCatalogSources($catalog) {
         $sources = [];
+
+        if ($catalog == null) return [];
 
         foreach($catalog->languages as $language) {
             foreach($language->resources as $resource) {
@@ -451,7 +454,8 @@ class ResourcesRepository implements IResourcesRepository {
      * @param string $url
      * @return mixed
      */
-    private function getCatalog($path, $url) {
+    private function getCatalog($path, $url): mixed
+    {
         $filepath = $path;
         if(!File::exists($filepath)) {
             $catalog = $this->downloadCatalog($url);
@@ -464,7 +468,7 @@ class ResourcesRepository implements IResourcesRepository {
             $catalog = File::get($filepath);
         }
 
-        return json_decode($catalog);
+        return $catalog ? json_decode($catalog) : null;
     }
 
     /**
@@ -506,7 +510,7 @@ class ResourcesRepository implements IResourcesRepository {
             curl_close($ch);
 
             // Try to decode response to check if it is valid json string
-            json_decode($response);
+            $response ? (array)json_decode($response) : [];
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new Exception("Invalid json file");
             }
@@ -604,9 +608,11 @@ class ResourcesRepository implements IResourcesRepository {
             if (!File::exists($filePath)) return [];
 
             $source = File::get($filePath);
-            $usfm = UsfmParser::parse($source);
+            $parser = new USFMParser(ignoreUnknownMarkers: true);
+            $usfmDocument = $parser->parseFromString($source);
+            $usfm = Tools::USFMDocumentToBook($usfmDocument);
 
-            if ($usfm && isset($usfm["chapters"])) {
+            if ($usfm && !empty($usfm["chapters"])) {
                 $book["id"] = $usfm["id"] ?? "";
                 $book["ide"] = $usfm["ide"] ?? "";
                 $book["h"] = $usfm["h"] ?? $bookSlug;
@@ -1000,17 +1006,16 @@ class ResourcesRepository implements IResourcesRepository {
     }
 
     private function parseQaGuide($lang) {
-        $qaGuide = [];
         $url = $this->qaGuideUrl . $lang;
 
         $folderPath = $this->downloadResource($lang, "rubric", $url);
-        if (!$folderPath) return $qaGuide;
+        if (!$folderPath) return null;
 
         $filePath = $folderPath . "/rubric.json";
 
         $source = File::get($filePath);
 
-        return json_decode($source);
+        return $source ? json_decode($source) : null;
 
     }
 
@@ -1028,7 +1033,7 @@ class ResourcesRepository implements IResourcesRepository {
 
         if(File::exists($filePath)) {
             $sourceData = File::get($filePath);
-            $source = (array)json_decode($sourceData, true);
+            $source = $sourceData ? (array)json_decode($sourceData, true) : [];
             $chapters = [];
 
             if(!empty($source) && isset($source["root"])) {
@@ -1097,6 +1102,8 @@ class ResourcesRepository implements IResourcesRepository {
 
     private function getResourceUrl($catalog, $lang, $res) {
         $url = "";
+
+        if ($catalog == null) return "";
 
         foreach($catalog->languages as $language) {
             if($language->identifier == $lang) {
@@ -1183,7 +1190,7 @@ class ResourcesRepository implements IResourcesRepository {
     }
 
     private function jsonToMarkdown($json) {
-        $data = (array)json_decode($json);
+        $data = $json ? (array)json_decode($json) : [];
         $md = "";
         foreach ($data as $item) {
             $md .= "# ".$item->title."  \n\n";

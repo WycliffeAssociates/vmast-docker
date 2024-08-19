@@ -504,7 +504,7 @@ class Request extends SymfonyRequest
     {
         if (! isset($this->json))
         {
-            $this->json = new ParameterBag((array) json_decode($this->getContent(), true));
+            $this->json = new ParameterBag($this->getContent() ? (array)json_decode($this->getContent(), true) : []);
         }
 
         if (is_null($key)) return $this->json;

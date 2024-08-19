@@ -75,7 +75,7 @@ if(!isset($error)):
                             <div class="section_translator">
                                 <div class="section_translator_name tnleft">
                                     <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                    <span><b><?php echo $data["members"][$chapter["l2memberID"]]["name"] ?></b></span>
+                                    <span><b><?php echo $data["members"][$chapter["l2memberID"]]["name"] ?? "" ?></b></span>
                                 </div>
                                 <div class="clear"></div>
                             </div>
@@ -106,7 +106,7 @@ if(!isset($error)):
                                         <div class="step_checker">
                                             <div>
                                                 <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                                <div><?php echo $data["members"][$chapter["peer"]["checkerID"]]["name"] ?></div>
+                                                <div><?php echo $data["members"][$chapter["peer"]["checkerID"]]["name"] ?? "" ?></div>
                                             </div>
                                             <?php if($chapter["peer"]["state"] == StepsStates::CHECKED || $chapter["peer"]["state"] == StepsStates::FINISHED): ?>
                                                 <span class="glyphicon glyphicon-ok checked"></span>
@@ -128,7 +128,7 @@ if(!isset($error)):
                                         <div class="step_checker">
                                             <div>
                                                 <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                                <div><?php echo $data["members"][$chapter["kwc"]["checkerID"]]["name"] ?></div>
+                                                <div><?php echo $data["members"][$chapter["kwc"]["checkerID"]]["name"] ?? "" ?></div>
                                             </div>
                                             <?php if($chapter["kwc"]["state"] == StepsStates::CHECKED || $chapter["kwc"]["state"] == StepsStates::FINISHED): ?>
                                                 <span class="glyphicon glyphicon-ok checked"></span>
@@ -152,7 +152,7 @@ if(!isset($error)):
                                         <div class="step_checker">
                                             <div>
                                                 <img width="50" src="<?php echo template_url("img/avatars/n1.png") ?>">
-                                                <div><?php echo $data["members"][$chapter["crc"]["checkerID"]]["name"] ?></div>
+                                                <div><?php echo $data["members"][$chapter["crc"]["checkerID"]]["name"] ?? "" ?></div>
                                             </div>
                                             <?php if($chapter["crc"]["state"] == StepsStates::CHECKED || $chapter["crc"]["state"] == StepsStates::FINISHED): ?>
                                                 <span class="glyphicon glyphicon-ok checked"></span>

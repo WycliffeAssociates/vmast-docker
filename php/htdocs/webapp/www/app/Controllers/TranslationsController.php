@@ -12,15 +12,17 @@ use App\Repositories\Cloud\ICloudRepository;
 use App\Repositories\Event\IEventRepository;
 use App\Repositories\Member\IMemberRepository;
 use App\Repositories\Project\IProjectRepository;
+use Exception;
 use Helpers\Constants\EventMembers;
 use Helpers\Constants\EventStates;
 use Helpers\Constants\OdbSections;
 use Helpers\Constants\RadioSections;
+use Helpers\Git;
 use Helpers\Manifest\Normal\Project;
 use Helpers\ProjectFile;
 use Helpers\Spyc;
 use Helpers\Tools;
-use Shared\Legacy\Error;
+use Helpers\ZipStream\Exception\OverflowException;
 use View;
 use Config\Config;
 use Helpers\Session;
@@ -155,13 +157,13 @@ class TranslationsController extends Controller
 
                 if (!in_array($bookProject, ["tn","tq","tw","obs","bc","bca"])) {
                     if (!$bookTitleRendered && $chapterNumber == 1) {
-                        $verses = json_decode($chap[0]->translatedVerses);
+                        $verses = $chap[0]->translatedVerses ? json_decode($chap[0]->translatedVerses) : null;
                         $data["data"]->bookTitle = $this->getVerseContent($verses);
                         $bookTitleRendered = true;
                     }
 
                     $titleChunk = $chapterNumber == 1 ? $chap[1] : $chap[0];
-                    $verses = json_decode($titleChunk->translatedVerses);
+                    $verses = $titleChunk->translatedVerses ? json_decode($titleChunk->translatedVerses) : null;
                     $chapterTitle = $this->getVerseContent($verses);
                 }
 
@@ -182,10 +184,10 @@ class TranslationsController extends Controller
                 }
 
                 foreach ($chap as $chunk) {
-                    $verses = json_decode($chunk->translatedVerses);
-                    $chunks = (array)json_decode($chapter["chunks"], true);
+                    $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
+                    $chunks = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
 
-                    if($verses == null) continue;
+                    if(!$verses) continue;
 
                     // Start of chunk
                     $data['book'] .= '<div>';
@@ -378,6 +380,8 @@ class TranslationsController extends Controller
     }
 
     private function getVerseContent($verses) {
+        if (!$verses) return "";
+
         if (!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
             $title = $verses->{EventMembers::L3_CHECKER}->verses[0];
         } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
@@ -414,7 +418,9 @@ class TranslationsController extends Controller
             if(!empty($book) && isset($book[0])) {
                 $root = $book[0]->targetLang."_".$book[0]->bookCode."_text_".$book[0]->bookProject;
                 $projectFiles = $this->getTsProjectFiles($book);
+                $tmpDir = $this->addGitInitFiles($projectFiles);
                 $this->_model->generateZip($root . ".tstudio", $projectFiles, true);
+                if ($tmpDir) File::deleteDirectory($tmpDir);
             } else {
                 echo "There is no such book translation.";
             }
@@ -471,7 +477,7 @@ class TranslationsController extends Controller
                 $projectFiles = $this->getResourceProjectFiles($books);
                 switch ($resource) {
                     case "bc":
-                        $resourceName = "${bookCode}_bc";
+                        $resourceName = "{$bookCode}_bc";
                         break;
                     case "bca":
                         $resourceName = "bc";
@@ -480,7 +486,7 @@ class TranslationsController extends Controller
                         $resourceName = $resource;
                 }
 
-                $filename = "${lang}_$resourceName.zip";
+                $filename = "{$lang}_$resourceName.zip";
                 $this->_model->generateZip($filename, $projectFiles, true);
             }
         }
@@ -607,7 +613,12 @@ class TranslationsController extends Controller
                 $lastChapter = 0;
             }
 
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
+
+            if (!$verses) {
+                $lastCode = $code;
+                continue;
+            }
 
             if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
                 $chunkVerses = $verses->{EventMembers::L3_CHECKER}->verses;
@@ -696,8 +707,12 @@ class TranslationsController extends Controller
         return $projectFiles;
     }
 
-
-    private function getTsProjectFiles($book) {
+    /**
+     * @param array $book
+     * @return ProjectFile[]
+     */
+    private function getTsProjectFiles(array $book): array
+    {
         $projectFiles = [];
 
         switch ($book[0]->state) {
@@ -751,14 +766,16 @@ class TranslationsController extends Controller
         $lastChapter = -1;
 
         foreach ($book as $chunk) {
-            $verses = json_decode($chunk->translatedVerses, true);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
 
-            if(!empty($verses[EventMembers::L3_CHECKER]["verses"])) {
-                $chunkVerses = $verses[EventMembers::L3_CHECKER]["verses"];
-            } elseif (!empty($verses[EventMembers::L2_CHECKER]["verses"])) {
-                $chunkVerses = $verses[EventMembers::L2_CHECKER]["verses"];
+            if (!$verses) continue;
+
+            if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
+                $chunkVerses = $verses->{EventMembers::L3_CHECKER}->verses;
+            } elseif (!empty($verses->{EventMembers::L2_CHECKER}->verses)) {
+                $chunkVerses = $verses->{EventMembers::L2_CHECKER}->verses;
             } else {
-                $chunkVerses = $verses[EventMembers::TRANSLATOR]["verses"];
+                $chunkVerses = $verses->{EventMembers::TRANSLATOR}->verses;
             }
 
             foreach ($chunkVerses as $vNum => $vText) {
@@ -824,15 +841,6 @@ class TranslationsController extends Controller
                     $manifest->addFinishedChunk($chapPath."-".$chunkPath);
                 }
             }
-        }
-
-        // Add git initial files
-        $tmpDir = "/tmp";
-        if(Tools::unzip("../app/Templates/Default/Assets/.git.zip", $tmpDir)) {
-            foreach (Tools::iterateDir($tmpDir . "/.git/") as $file) {
-                $projectFiles[] = ProjectFile::withFile($root . "/.git/" . $file["rel"], $file["abs"]);
-            }
-            File::delete($tmpDir . "/.git");
         }
 
         // Add license file
@@ -903,11 +911,16 @@ class TranslationsController extends Controller
                 }
             }
 
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
 
             if($chunk->chapter != $lastChapter) {
                 $lastChapter = $chunk->chapter;
                 $json_books[$code]["root"][$lastChapter-1] = [];
+            }
+
+            if (!$verses) {
+                $lastCode = $code;
+                continue;
             }
 
             if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
@@ -1001,7 +1014,7 @@ class TranslationsController extends Controller
         $root = !$upload ? $books[0]->targetLang."_".$books[0]->bookProject . "/" : "";
 
         foreach ($books as $chunk) {
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
 
             if($chunk->chapter != $lastChapter) {
                 $lastChapter = $chunk->chapter;
@@ -1014,7 +1027,7 @@ class TranslationsController extends Controller
                 $chapter = $chapters[0];
             }
 
-            $chunks = (array)json_decode($chapter["chunks"], true);
+            $chunks = $chapter["chunks"] ? (array)json_decode($chapter["chunks"], true) : [];
             $currChunk = $chunks[$chunk->chunk] ?? 1;
 
             $bookPath = $chunk->bookCode;
@@ -1022,6 +1035,8 @@ class TranslationsController extends Controller
             $chapPath = $chunk->chapter > 0 ? sprintf($format, $chunk->chapter) : "front";
             $chunkPath = $currChunk[0] > 0 ? sprintf($format, $currChunk[0]) : "intro";
             $filePath = $root . $bookPath . "/" . $chapPath . "/" . $chunkPath . ".md";
+
+            if (!$verses) continue;
 
             if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
                 $text = $verses->{EventMembers::L3_CHECKER}->verses;
@@ -1113,8 +1128,8 @@ class TranslationsController extends Controller
         $root = !$upload ? $books[0]->targetLang."_tw/" : "";
 
         foreach ($books as $chunk) {
-            $verses = json_decode($chunk->translatedVerses);
-            $words = (array) json_decode($chunk->words, true);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
+            $words = (array) $chunk->words ? (array)json_decode($chunk->words, true) : [];
 
             $currWord = $words[$chunk->chunk] ?? null;
 
@@ -1123,6 +1138,8 @@ class TranslationsController extends Controller
             $bookPath = $chunk->bookName;
             $chunkPath = $currWord;
             $filePath = $root. "bible/" . $bookPath ."/". $chunkPath.".md";
+
+            if (!$verses) continue;
 
             if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
                 $text = $verses->{EventMembers::L3_CHECKER}->verses;
@@ -1184,12 +1201,14 @@ class TranslationsController extends Controller
         $words = [];
 
         foreach ($books as $chunk) {
-            $verses = json_decode($chunk->translatedVerses);
+            $verses = $chunk->translatedVerses ? json_decode($chunk->translatedVerses) : null;
 
             if($chunk->chapter != $lastChapter) {
                 $lastChapter = $chunk->chapter;
                 $chapters[$lastChapter] = "";
             }
+
+            if (!$verses) continue;
 
             if(!empty($verses->{EventMembers::L3_CHECKER}->verses)) {
                 $resource = $verses->{EventMembers::L3_CHECKER}->verses;
@@ -1326,8 +1345,10 @@ class TranslationsController extends Controller
 
     private function sortBcaBook(&$book) {
         usort($book, function($a, $b) {
-            $aVerses = json_decode($a[0]->translatedVerses);
-            $bVerses = json_decode($b[0]->translatedVerses);
+            $aVerses = $a[0]->translatedVerses ? json_decode($a[0]->translatedVerses) : null;
+            $bVerses = $b[0]->translatedVerses ? json_decode($b[0]->translatedVerses) : null;
+
+            if (!$aVerses || !$bVerses) return 0;
 
             if (!empty($aVerses->{EventMembers::CHECKER}->verses)) {
                 $aVerse = $aVerses->{EventMembers::CHECKER}->verses->text;
@@ -1353,8 +1374,10 @@ class TranslationsController extends Controller
         $book = $combined;
 
         usort($book[0], function($a, $b) {
-            $aVerses = json_decode($a->translatedVerses);
-            $bVerses = json_decode($b->translatedVerses);
+            $aVerses = $a->translatedVerses ? json_decode($a->translatedVerses) : null;
+            $bVerses = $b->translatedVerses ? json_decode($b->translatedVerses) : null;
+
+            if (!$aVerses || !$bVerses) return 0;
 
             if (!empty($aVerses->{EventMembers::CHECKER}->verses)) {
                 $aVerse = $aVerses->{EventMembers::CHECKER}->verses;
@@ -1373,5 +1396,33 @@ class TranslationsController extends Controller
 
             return strcasecmp($aVerse, $bVerse);
         });
+    }
+
+    /**
+     * @param ProjectFile[] $projectFiles
+     * @return string|null
+     */
+    private function addGitInitFiles(array &$projectFiles): string|null
+    {
+        $tmpDir = null;
+        preg_match("/^\/?(.*?)\//", $projectFiles[0]->relPath(), $matches);
+        $root = sizeof($matches) > 1 ? $matches[1] : null;
+
+        if (!$root) return null;
+
+        try {
+            // Initialize git
+            $tmpDir = "/tmp/" . uniqid();
+            $repoDir = "{$tmpDir}/{$root}";
+            File::makeDirectory($repoDir, 0755, true);
+            Git::create($repoDir);
+
+            foreach (Tools::iterateDir($tmpDir) as $file) {
+                $projectFiles[] = ProjectFile::withFile($file["rel"], $file["abs"]);
+            }
+        } catch (Exception $e) {
+        }
+
+        return $tmpDir;
     }
 }

@@ -2470,11 +2470,11 @@ class Validator implements MessageProviderInterface
 
         if ($callback instanceof Closure)
         {
-            return call_user_func_array($callback, $parameters);
+            return call_user_func_array($callback, array_values($parameters));
         }
         elseif (is_string($callback))
         {
-            return $this->callClassBasedExtension($callback, $parameters);
+            return $this->callClassBasedExtension($callback, array_values($parameters));
         }
     }
 
@@ -2489,7 +2489,7 @@ class Validator implements MessageProviderInterface
     {
         list($class, $method) = explode('@', $callback);
 
-        return call_user_func_array(array($this->container->make($class), $method), $parameters);
+        return call_user_func_array(array($this->container->make($class), $method), array_values($parameters));
     }
 
     /**
@@ -2507,7 +2507,7 @@ class Validator implements MessageProviderInterface
 
         if ($callback instanceof Closure)
         {
-            return call_user_func_array($callback, func_get_args());
+            return call_user_func_array($callback, array_values(func_get_args()));
         }
         elseif (is_string($callback))
         {
@@ -2529,7 +2529,7 @@ class Validator implements MessageProviderInterface
     {
         list($class, $method) = explode('@', $callback);
 
-        return call_user_func_array(array($this->container->make($class), $method), array_slice(func_get_args(), 1));
+        return call_user_func_array(array($this->container->make($class), $method), array_slice(array_values(func_get_args()), 1));
     }
 
     /**

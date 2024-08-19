@@ -2,30 +2,32 @@
 
 namespace Cookie;
 
+use Exception;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class Queue implements HttpKernelInterface
 {
     /**
-     * The wrapped kernel implementation.
+     * The wrapped Kernel implementation.
      *
-     * @var \Symfony\Component\HttpKernel\HttpKernelInterface
+     * @var HttpKernelInterface
      */
-    protected $app;
+    protected HttpKernelInterface $app;
 
     /**
      * The cookie jar instance.
      *
-     * @var \Cookie\CookieJar
+     * @var CookieJar
      */
-    protected $cookies;
+    protected CookieJar $cookies;
 
     /**
      * Create a new CookieQueue instance.
      *
-     * @param  \Symfony\Component\HttpKernel\HttpKernelInterface  $app
-     * @param  \Cookie\CookieJar  $cookies
+     * @param HttpKernelInterface $app
+     * @param CookieJar $cookies
      * @return void
      */
     public function __construct(HttpKernelInterface $app, CookieJar $cookies)
@@ -39,12 +41,13 @@ class Queue implements HttpKernelInterface
      *
      * @implements HttpKernelInterface::handle
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  int   $type
-     * @param  bool  $catch
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     * @param int $type
+     * @param bool $catch
+     * @return Response
+     * @throws Exception
      */
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): Response
     {
         $response = $this->app->handle($request, $type, $catch);
 

@@ -34,7 +34,6 @@ class ApiModel extends Model
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
         $response = curl_exec($ch);
 
@@ -51,11 +50,11 @@ class ApiModel extends Model
     public function getPredefinedChunks($book, $lang = "en", $project = "ulb") {
         try {
             $json = $this->downloadPredefinedChunks($book, $lang, $project);
-            $chunks = json_decode($json, true);
+            $chunks = $json ? (array)json_decode($json, true) : [];
 
             if($chunks == null) {
                 $json = $this->downloadPredefinedChunks($book);
-                $chunks = json_decode($json, true);
+                $chunks = $json ? (array)json_decode($json, true) : [];
             }
 
             $book = [];

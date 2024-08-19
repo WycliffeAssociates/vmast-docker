@@ -85,7 +85,7 @@
                                 <td>
                                     <?php $projects = array_map(function ($elm) {
                                         return __($elm);
-                                    }, (array)json_decode($member->projects, true)) ?>
+                                    }, $member->projects ? (array)json_decode($member->projects, true) : []) ?>
                                     <?php echo join(", ", $projects) ?>
                                 </td>
                                 <td>
@@ -142,7 +142,7 @@
                                 <td>
                                     <?php $projects = array_map(function ($elm) {
                                         return __($elm);
-                                    }, (array)json_decode($member->projects, true)) ?>
+                                    }, $member->projects ? (array)json_decode($member->projects, true) : []) ?>
                                     <?php echo join(", ", $projects) ?>
                                 </td>
                                 <td>
@@ -193,7 +193,7 @@
                     foreach($book["chapters"] as $chapter => $chapData)
                     {
                         $chapters .= "<span style=\"font-weight:bold; color:".($chapData["done"] ? "green" : "red")."\">";
-                        $chapters .= !$chapData["words"] ? $chapter : join(", ", json_decode($chapData["words"], true));
+                        $chapters .= !$chapData["words"] ? $chapter : join(", ", (array)json_decode($chapData["words"], true));
                         $chapters .= "</span>, ";
                     }
                     $chapters = preg_replace("/, $/", "", $chapters);

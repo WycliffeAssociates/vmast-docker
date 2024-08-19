@@ -9,6 +9,7 @@ namespace Shared\Log;
 
 use Foundation\Application;
 
+use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Handler\SwiftMailerHandler;
 use Monolog\Formatter\HtmlFormatter;
@@ -18,7 +19,7 @@ use Swift_Message;
 
 class Mailer
 {
-    public static function initHandler(Application $app, $logLevel = Logger::ERROR)
+    public static function initHandler(Application $app, $logLevel = Level::Error)
     {
         // Retrieve the Config from Application.
         $config = $app['config']['mail.from'];

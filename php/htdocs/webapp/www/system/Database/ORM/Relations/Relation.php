@@ -281,7 +281,7 @@ abstract class Relation
      */
     public function __call($method, $parameters)
     {
-        $result = call_user_func_array(array($this->query, $method), $parameters);
+        $result = call_user_func_array(array($this->query, $method), array_values($parameters));
 
         if ($result === $this->query) return $this;
 

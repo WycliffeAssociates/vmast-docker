@@ -2,6 +2,7 @@
 
 namespace Session;
 
+use Exception;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,32 +16,32 @@ use Closure;
 class Middleware implements HttpKernelInterface
 {
     /**
-     * The wrapped kernel implementation.
+     * The wrapped Kernel implementation.
      *
-     * @var \Symfony\Component\HttpKernel\HttpKernelInterface
+     * @var HttpKernelInterface
      */
-    protected $app;
+    protected HttpKernelInterface $app;
 
     /**
      * The session manager.
      *
-     * @var \Session\SessionManager
+     * @var SessionManager
      */
-    protected $manager;
+    protected SessionManager $manager;
 
     /**
      * The callback to determine to use session arrays.
      *
-     * @var \Closure|null
+     * @var Closure|null
      */
-    protected $reject;
+    protected ?Closure $reject;
 
     /**
      * Create a new session middleware.
      *
-     * @param  \Symfony\Component\HttpKernel\HttpKernelInterface  $app
-     * @param  \Session\SessionManager  $manager
-     * @param  \Closure|null  $reject
+     * @param HttpKernelInterface $app
+     * @param SessionManager $manager
+     * @param Closure|null  $reject
      * @return void
      */
     public function __construct(HttpKernelInterface $app, SessionManager $manager, Closure $reject = null)
@@ -56,12 +57,13 @@ class Middleware implements HttpKernelInterface
      *
      * @implements HttpKernelInterface::handle
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @param  int   $type
-     * @param  bool  $catch
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     * @param int $type
+     * @param bool $catch
+     * @return Response
+     * @throws Exception
      */
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, int $type = HttpKernelInterface::MAIN_REQUEST, bool $catch = true): Response
     {
         $this->checkRequestForArraySessions($request);
 
@@ -91,7 +93,7 @@ class Middleware implements HttpKernelInterface
     /**
      * Check the request and reject callback for array sessions.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param Request $request
      * @return void
      */
     public function checkRequestForArraySessions(Request $request)
@@ -106,10 +108,10 @@ class Middleware implements HttpKernelInterface
     /**
      * Start the session for the given request.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @return \Session\SessionInterface
+     * @param Request $request
+     * @return SessionInterface
      */
-    protected function startSession(Request $request)
+    protected function startSession(Request $request): SessionInterface
     {
         with($session = $this->getSession($request))->setRequestOnHandler($request);
 
@@ -121,7 +123,7 @@ class Middleware implements HttpKernelInterface
     /**
      * Close the session handling for the request.
      *
-     * @param  \Session\SessionInterface  $session
+     * @param SessionInterface $session
      * @return void
      */
     protected function closeSession(SessionInterface $session)
@@ -134,10 +136,10 @@ class Middleware implements HttpKernelInterface
     /**
      * Get the full URL for the request.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
+     * @param Request $request
      * @return string
      */
-    protected function getUrl(Request $request)
+    protected function getUrl(Request $request): string
     {
         $url = rtrim(preg_replace('/\?.*/', '', $request->getUri()), '/');
 
@@ -147,7 +149,7 @@ class Middleware implements HttpKernelInterface
     /**
      * Remove the garbage from the session if necessary.
      *
-     * @param  \Session\SessionInterface  $session
+     * @param SessionInterface $session
      * @return void
      */
     protected function collectGarbage(SessionInterface $session)
@@ -168,7 +170,7 @@ class Middleware implements HttpKernelInterface
      * @param  array  $config
      * @return bool
      */
-    protected function configHitsLottery(array $config)
+    protected function configHitsLottery(array $config): bool
     {
         return mt_rand(1, $config['lottery'][1]) <= $config['lottery'][0];
     }
@@ -176,8 +178,8 @@ class Middleware implements HttpKernelInterface
     /**
      * Add the session cookie to the application response.
      *
-     * @param  \Symfony\Component\HttpFoundation\Response  $response
-     * @param  \Symfony\Component\HttpFoundation\Session\SessionInterface  $session
+     * @param Response $response
+     * @param SessionInterface $session
      * @return void
      */
     protected function addCookieToResponse(Response $response, SessionInterface $session)
@@ -201,7 +203,7 @@ class Middleware implements HttpKernelInterface
      *
      *
      */
-    protected function getLifetimeSeconds()
+    protected function getLifetimeSeconds(): float|int
     {
         return array_get($this->manager->getSessionConfig(), 'lifetime') * 60;
     }
@@ -209,9 +211,9 @@ class Middleware implements HttpKernelInterface
     /**
      * Get the cookie lifetime in seconds.
      *
-     * @return int
+     * @return Carbon|int
      */
-    protected function getCookieLifetime()
+    protected function getCookieLifetime(): Carbon|int
     {
         $config = $this->manager->getSessionConfig();
 
@@ -223,7 +225,7 @@ class Middleware implements HttpKernelInterface
      *
      * @return bool
      */
-    protected function sessionConfigured()
+    protected function sessionConfigured(): bool
     {
         return ! is_null(array_get($this->manager->getSessionConfig(), 'driver'));
     }
@@ -234,7 +236,7 @@ class Middleware implements HttpKernelInterface
      * @param  array|null  $config
      * @return bool
      */
-    protected function sessionIsPersistent(array $config = null)
+    protected function sessionIsPersistent(array $config = null): bool
     {
         // Some session drivers are not persistent, such as the test array driver or even
         // when the developer don't have a session driver configured at all, which the
@@ -247,10 +249,10 @@ class Middleware implements HttpKernelInterface
     /**
      * Get the session implementation from the manager.
      *
-     * @param  \Symfony\Component\HttpFoundation\Request  $request
-     * @return \Session\SessionInterface
+     * @param Request $request
+     * @return SessionInterface
      */
-    public function getSession(Request $request)
+    public function getSession(Request $request): SessionInterface
     {
         $session = $this->manager->driver();
 
