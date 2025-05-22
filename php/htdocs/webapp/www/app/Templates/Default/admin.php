@@ -121,7 +121,7 @@ Assets::js([
     ($languageFull != "en-US" ? template_url('js/i18n/summernote-'.$languageFull.'.js', 'Default') : ""),
     template_url('js/main.js?v=141', 'Default'),
     template_url('js/facilitator.js?v=42', 'Default'),
-    template_url('js/admin.js?v=69', 'Default'),
+    template_url('js/admin.js?v=70', 'Default'),
 ]);
 
 echo $js ?? ''; // Place to pass data / pluggable hook zone

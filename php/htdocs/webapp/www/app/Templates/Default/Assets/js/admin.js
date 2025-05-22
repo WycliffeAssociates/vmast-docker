@@ -2149,27 +2149,26 @@ function setEventMenuLinks(event, level) {
                 $(".event_links_l2").hide();
                 $(".event_links_l3").hide();
 
-                switch (level) {
-                    case 2:
-                        $(".event_links_l2").show();
-                        $(".event_links_l2 .event_progress a")
-                            .attr(
-                                "href",
-                                "/events/information" + (mode === "sun" ? "-sun" : "") + "-revision/" + event.eventID
-                            );
-                        $(".event_links_l2 .event_manage a")
-                            .attr("href", "/events/manage-revision/" + event.eventID);
-                        break;
-                    case 3:
-                        $(".event_links_l3").show();
-                        $(".event_links_l3 .event_progress a")
-                            .attr(
-                                "href",
-                                "/events/information" + (mode === "sun" ? "-sun" : "") + "-review/" + event.eventID
-                            );
-                        $(".event_links_l3 .event_manage a")
-                            .attr("href", "/events/manage-review/" + event.eventID);
-                        break;
+                if (level >= 2) {
+                    $(".event_links_l2").show();
+                    $(".event_links_l2 .event_progress a")
+                        .attr(
+                            "href",
+                            "/events/information" + (mode === "sun" ? "-sun" : "") + "-revision/" + event.eventID
+                        );
+                    $(".event_links_l2 .event_manage a")
+                        .attr("href", "/events/manage-revision/" + event.eventID);
+                }
+
+                if (level === 3) {
+                    $(".event_links_l3").show();
+                    $(".event_links_l3 .event_progress a")
+                        .attr(
+                            "href",
+                            "/events/information" + (mode === "sun" ? "-sun" : "") + "-review/" + event.eventID
+                        );
+                    $(".event_links_l3 .event_manage a")
+                        .attr("href", "/events/manage-review/" + event.eventID);
                 }
             }
             break;

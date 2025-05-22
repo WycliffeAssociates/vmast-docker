@@ -392,11 +392,11 @@ class ManageController extends Controller {
                 Url::redirect("events");
             }
 
-            if ($event->state != EventStates::L2_RECRUIT &&
-                $event->state != EventStates::L2_CHECK &&
-                $event->state != EventStates::L2_CHECKED) {
-                Url::redirect("events");
-            }
+//            if ($event->state != EventStates::L2_RECRUIT &&
+//                $event->state != EventStates::L2_CHECK &&
+//                $event->state != EventStates::L2_CHECKED) {
+//                Url::redirect("events");
+//            }
 
             $tmpChapters = [];
             for ($i = 1; $i <= $event->bookInfo->chaptersNum; $i++) {
