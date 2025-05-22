@@ -1,5 +1,3 @@
-version: "3.1"
-
 services:
   web:
     build:
@@ -20,12 +18,18 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    # todo: watch or bind mount
-    # volumes:
-    #   - ./htdocs:/var/www/html
-    #   - ./ssl:/etc/nginx/ssl
-    #   - ./web/nginx:/etc/nginx/conf.d
-    #   - ./db/dump:/db_dump
+    volumes:
+      - ./web/certbot/conf:/etc/letsencrypt
+      - ./web/certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./web/certbot/conf:/etc/letsencrypt
+      - ./web/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   php:
     build:
@@ -68,10 +72,6 @@ services:
       WACS_CLIENT_SECRET: ${WACS_CLIENT_SECRET}
       DCS_CLIENT_ID: ${DCS_CLIENT_ID}
       DCS_CLIENT_SECRET: ${DCS_CLIENT_SECRET}
-      # todo: watch or bind mount
-    # volumes:
-    #     - ./htdocs:/var/www/html
-    #     - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
 
   db:
     build:
@@ -87,33 +87,24 @@ services:
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
       - dbdata:/var/lib/mysql
-      # - todo: maybe bind mount?
-      # - ./db/conf:/etc/mysql/mysql.conf.d
-      - ./db/backup:/backup
     restart: always
 
-#  phpmyadmin:
-#     image: phpmyadmin/phpmyadmin
-#     links:
-#       - db
-#     environment:
-#       PMA_HOST: db
-#       PMA_PORT: 3306
-#       PMA_ARBITRARY: 1
-#       UPLOAD_LIMIT: 512M
-#     ports:
-#       - "8081:80"
+  phpmyadmin:
+     image: phpmyadmin/phpmyadmin
+     links:
+       - db
+     environment:
+       PMA_HOST: db
+       PMA_PORT: 3306
+       PMA_ARBITRARY: 1
+       UPLOAD_LIMIT: 512M
+     ports:
+       - "8081:80"
 
   node:
     build:
       context: ./node
       dockerfile: ./Dockerfile
-    # volumes:
-    # watch;
-    # - ./node:/node
-    # - remove these two beneath;
-    # - ./ssl:/etc/nginx/ssl
-    # - ./scripts:/scripts
     env_file:
       - .env
     environment:
@@ -152,8 +143,6 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
 
   redis:
-    # todo: valkey?
-    # image: redis:7.2
     image: valkey/valkey:7.2.5
 volumes:
   dbdata:

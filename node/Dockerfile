@@ -1,8 +1,5 @@
-# FROM node:14-alpine
-# -alpine has yarn installed already
 FROM node:22-alpine3.20
 
-# RUN apk update && apk add nano procps
 RUN yarn global add pm2
 
 WORKDIR /node
@@ -13,6 +10,3 @@ COPY ./node_entrypoint.sh /node_entrypoint.sh
 RUN chmod +x /node_entrypoint.sh
 COPY . .
 ENTRYPOINT [ "/node_entrypoint.sh" ]
-
-# COPY ./node_start.sh /node_start.sh
-# ENTRYPOINT ["/node_start.sh"]

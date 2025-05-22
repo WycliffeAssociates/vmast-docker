@@ -1,6 +1,5 @@
 FROM php:8.3-fpm-bookworm
 
-
 RUN apt-get update && apt-get install -y libzip-dev libicu-dev g++ git sudo
 RUN docker-php-ext-configure intl
 RUN docker-php-ext-install pdo pdo_mysql
@@ -10,8 +9,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # config file for php-fpm
 COPY ./www.conf /usr/local/etc/php-fpm.d/www.conf
 WORKDIR /usr/share/nginx/html
-# WORKDIR /var/www/html/webapp/www
-# COPY ./php_start.sh /php_start.sh
+
 # Install deps
 COPY ./htdocs/webapp/www/composer.* .
 RUN composer install --no-dev --optimize-autoloader
@@ -19,4 +17,3 @@ RUN composer install --no-dev --optimize-autoloader
 # Set permissions for all files
 COPY --chmod=0777 ./htdocs/webapp/www .
 CMD php-fpm
-# ENTRYPOINT ["/php_start.sh"]

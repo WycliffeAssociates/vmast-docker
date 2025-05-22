@@ -1,16 +1,11 @@
-/*
-https = require('https'),
-    server = http.createServer({
+const app = require('express')(),
+    fs = require('fs'),
+    https = require('https'),
+    server = https.createServer({
         key:    fs.readFileSync(process.env.SSL_KEY),
         cert:   fs.readFileSync(process.env.SSL_CRT),
         ca:     fs.readFileSync(process.env.SSL_CA)
     }, app).listen(process.env.SOCKET_PORT),
- */
-
-const app = require('express')(),
-    fs = require('fs'),
-    http = require('http'),
-    server = http.createServer(app).listen(process.env.SOCKET_PORT),
     io = require('socket.io')(server),
     redis = require("redis"),
     util = require("util"),
@@ -34,11 +29,7 @@ clientRedis.on("connect", function() {
 });
 
 io.on('connection', function(socket) {
-    //inspect('a user connected: %s', socket.id);
-
     socket.on('disconnect', function() {
-        //inspect('user disconnected: %s', this.id);
-
         const member = getMemberBySocketId(this.id);
 
         if(member) {
@@ -464,7 +455,7 @@ function registerNewMemberEvent(data, sct, member) {
         }
     };
 
-    xhr.open("GET", `http://web/members/rpc/auth/${data.memberID}/${data.eventID}/${data.aT}`);
+    xhr.open("GET", `https://web/members/rpc/auth/${data.memberID}/${data.eventID}/${data.aT}`);
     xhr.send();
 }
 
