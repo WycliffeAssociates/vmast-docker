@@ -9,8 +9,8 @@ services:
       - db
       - php
     ports:
-      - 80:80
-      - 443:443
+      - "80:80"
+      - "443:443"
     env_file:
       - .env
     environment:
@@ -92,17 +92,17 @@ services:
       - ./db/backup:/backup
     restart: always
 
-  # phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin
-  #   links:
-  #     - db
-  #   environment:
-  #     PMA_HOST: db
-  #     PMA_PORT: 3306
-  #     PMA_ARBITRARY: 1
-  #     UPLOAD_LIMIT: 512M
-  #   ports:
-  #     - 8081:80
+#  phpmyadmin:
+#     image: phpmyadmin/phpmyadmin
+#     links:
+#       - db
+#     environment:
+#       PMA_HOST: db
+#       PMA_PORT: 3306
+#       PMA_ARBITRARY: 1
+#       UPLOAD_LIMIT: 512M
+#     ports:
+#       - "8081:80"
 
   node:
     build:
@@ -136,7 +136,7 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
     ports:
-      - 8001:8001
+      - "8001:8001"
     depends_on:
       - rabbitmq
       - redis
@@ -144,7 +144,7 @@ services:
   rabbitmq:
     image: rabbitmq:3.13
     ports:
-      - 15672:15672
+      - "15672:15672"
     env_file:
       - .env
     environment:
