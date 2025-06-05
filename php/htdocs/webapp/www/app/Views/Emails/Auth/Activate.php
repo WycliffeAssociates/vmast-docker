@@ -9,7 +9,8 @@
         <div>
             <h3><?php echo __("thank_you_join"); ?></h3>
             <br />
-            <?php echo __("activation_link_message", ["link" => site_url('members/activate/' .$member->memberID."/".$member->token)]); ?>
+            <?php $link = site_url('members/activate/' .$member->memberID."/".$member->token) ?>
+            <?php echo __("activation_link_message", ["link" => "<a href='$link'>$link</a>"]); ?>
             <br/>
             <?php echo __("url_use_problem_hint"); ?>
         </div>

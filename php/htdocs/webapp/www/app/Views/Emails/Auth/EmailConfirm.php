@@ -9,7 +9,8 @@
 <div>
     <h3><?php echo __("email_change_request") ?></h3>
     <br />
-    <?php echo __("confirm_email_link_message", ["link" => site_url('members/confirm_email/' .$member->memberID."/".$member->token)]); ?>
+    <?php $link = site_url('members/confirm_email/' .$member->memberID."/".$member->token) ?>
+    <?php echo __("confirm_email_link_message", ["link" => "<a href='$link'>$link</a>"]); ?>
     <br/>
     <?php echo __("url_use_problem_hint"); ?>
 </div>
