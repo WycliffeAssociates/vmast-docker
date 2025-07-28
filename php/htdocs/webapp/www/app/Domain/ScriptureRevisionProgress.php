@@ -21,6 +21,8 @@ class ScriptureRevisionProgress
         $fullIncrement = $event->revisionMode == RevisionMode::MAJOR ? 20 : 25;
         $halfIncrement = $event->revisionMode == RevisionMode::MAJOR ? 10 : 12.5;
 
+        $eventChunks = $event->chunks;
+
         foreach ($event->chapters as $chapter) {
             $tmp["l2chID"] = $chapter->l2chID;
             $tmp["l2memberID"] = $chapter->l2memberID;
@@ -35,6 +37,20 @@ class ScriptureRevisionProgress
             }
 
             $data["chapters"][$chapter->chapter] = $tmp;
+
+            $chapterChunks = $eventChunks->filter(function ($c) use ($chapter) {
+                return $c->chapter == $chapter->chapter;
+            });
+
+            foreach ($chapterChunks as $chunk) {
+                if (!isset($data["chapters"][$chunk->chapter]["lastEdit"])) {
+                    $data["chapters"][$chunk->chapter]["lastEdit"] = $chunk->dateUpdate;
+                } else {
+                    $prevDate = strtotime($data["chapters"][$chunk->chapter]["lastEdit"]);
+                    if ($prevDate < strtotime($chunk->dateUpdate))
+                        $data["chapters"][$chunk->chapter]["lastEdit"] = $chunk->dateUpdate;
+                }
+            }
         }
 
         $overallProgress = 0;

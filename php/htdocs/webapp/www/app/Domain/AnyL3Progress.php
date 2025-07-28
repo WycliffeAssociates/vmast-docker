@@ -18,6 +18,8 @@ class AnyL3Progress
             $data["chapters"][$i] = [];
         }
 
+        $eventChunks = $event->chunks;
+
         foreach ($event->chapters as $chapter) {
             $tmp["l3chID"] = $chapter->l3chID;
             $tmp["l3memberID"] = $chapter->l3memberID;
@@ -31,6 +33,20 @@ class AnyL3Progress
             }
 
             $data["chapters"][$chapter->chapter] = $tmp;
+
+            $chapterChunks = $eventChunks->filter(function ($c) use ($chapter) {
+                return $c->chapter == $chapter->chapter;
+            });
+
+            foreach ($chapterChunks as $chunk) {
+                if (!isset($data["chapters"][$chunk->chapter]["lastEdit"])) {
+                    $data["chapters"][$chunk->chapter]["lastEdit"] = $chunk->dateUpdate;
+                } else {
+                    $prevDate = strtotime($data["chapters"][$chunk->chapter]["lastEdit"]);
+                    if ($prevDate < strtotime($chunk->dateUpdate))
+                        $data["chapters"][$chunk->chapter]["lastEdit"] = $chunk->dateUpdate;
+                }
+            }
         }
 
         $overallProgress = 0;

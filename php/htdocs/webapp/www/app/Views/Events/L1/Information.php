@@ -64,7 +64,7 @@ if(!isset($error)):
                             <div>
                                 <?php if(isset($chapter["lastEdit"])): ?>
                                 <span style="font-weight: bold;"><?php echo __("last_edit") .": " ?></span>
-                                <span class="datetime" data="<?php echo isset($chapter["lastEdit"]) ? date(DATE_RFC2822, strtotime($chapter["lastEdit"])) : "" ?>">
+                                <span class="datetime" data="<?php echo date(DATE_RFC2822, strtotime($chapter["lastEdit"])) ?>">
                                     <?php echo $chapter["lastEdit"] ?>
                                 </span>
                                 <?php endif; ?>

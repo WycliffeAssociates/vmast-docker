@@ -17,6 +17,8 @@ class SunRevisionProgress
             $data["chapters"][$i] = [];
         }
 
+        $eventChunks = $event->chunks;
+
         foreach ($event->chapters as $chapter) {
             $tmp["l2chID"] = $chapter->l2chID;
             $tmp["l2memberID"] = $chapter->l2memberID;
@@ -25,10 +27,26 @@ class SunRevisionProgress
             if ($chapter->checkerL2) {
                 $tmp["currentChapter"] = $chapter->checkerL2->currentChapter;
                 $tmp["step"] = $chapter->checkerL2->step;
-                $tmp["peerCheck"] = $chapter->checkerL2->peerCheck ? (array)json_decode($chapter->checkerL2->peerCheck, true) : [];
+                $tmp["peerCheck"] = $chapter->checkerL2->peerCheck
+                    ? (array)json_decode($chapter->checkerL2->peerCheck, true)
+                    : [];
             }
 
             $data["chapters"][$chapter->chapter] = $tmp;
+
+            $chapterChunks = $eventChunks->filter(function ($c) use ($chapter) {
+                return $c->chapter == $chapter->chapter;
+            });
+
+            foreach ($chapterChunks as $chunk) {
+                if (!isset($data["chapters"][$chunk->chapter]["lastEdit"])) {
+                    $data["chapters"][$chunk->chapter]["lastEdit"] = $chunk->dateUpdate;
+                } else {
+                    $prevDate = strtotime($data["chapters"][$chunk->chapter]["lastEdit"]);
+                    if ($prevDate < strtotime($chunk->dateUpdate))
+                        $data["chapters"][$chunk->chapter]["lastEdit"] = $chunk->dateUpdate;
+                }
+            }
         }
 
         $overallProgress = 0;
