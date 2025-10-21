@@ -1,18 +1,17 @@
 {
   "name": "socket-chat",
-  "version": "0.0.1",
-  "description": "V-MAST chat",
+  "version": "0.0.2",
+  "description": "V-MAST Chat",
   "dependencies": {
-    "amqplib": "^0.10.3",
-    "express": "^4.10.2",
-    "fs": "^0.0.1-security",
-    "https": "^1.0.0",
-    "jquery": "^2.2.0",
-    "nodemailer": "^6.8.0",
-    "redis": "^2.8.0",
-    "socket.io": "^4.0.0",
-    "underscore": "^1.8.3",
-    "util": "^0.12.4",
-    "xmlhttprequest-ssl": "^1.6.3"
+    "amqplib": "0.10.3",
+    "express": "5.0.0",
+    "https": "1.0.0",
+    "jquery": "3.5.0",
+    "nodemailer": "6.8.0",
+    "redis": "3.1.1",
+    "socket.io": "4.8.1",
+    "underscore": "1.13.7",
+    "util": "0.12.4",
+    "xmlhttprequest-ssl": "^4.0.0"
   }
 }
