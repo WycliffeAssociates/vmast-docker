@@ -1,89 +1,154 @@
 #!/bin/bash
 #
-# Physical backup of the whole MariaDB instance with mariadb-backup, run in a
-# container that has the data directory mounted.
+# Hourly physical backup with mariadb-backup: a full base once a day, an
+# incremental every other hour.
 #
-# The backup is prepared immediately, so what lands on disk is ready to restore
-# with no further work, then compressed - 1.5GB of data files becomes about
-# 110MB. Keeps the most recent BACKUP_KEEP sets.
+#   /backup/current/          the set being built, kept raw
+#     base/                   full backup
+#     inc1/ .. inc23/         hourly increments
+#     .stamp .counter         set identity and position
+#   /backup/set-<stamp>.tar.gz   completed sets, compressed
 #
-# Rotation happens only after a new backup has been prepared and compressed, so
-# a failing run can never reduce what you already have.
+# The active set stays uncompressed and UNPREPARED because both are required
+# to extend it: --prepare is destructive, and --incremental-basedir reads the
+# previous directory's files. Preparation happens at restore time instead.
 #
-# For a portable, version-independent backup of just the application schema,
-# use db_dump.sh instead; mariadb-backup output can only be restored into the
-# same MariaDB major version it came from.
+# A set is sealed - compressed and replaced by a tarball - when the next base
+# is due, which keeps only one 1.4GB set on disk at a time.
 #
 set -euo pipefail
 
 DIR="${BACKUP_DIR:-/backup}"
 KEEP="${BACKUP_KEEP:-7}"
 DATADIR="${BACKUP_DATADIR:-/var/lib/mysql}"
+BASE_HOUR="${BACKUP_HOUR:-2}"
 
 DB_HOST="${DB_HOST:-db}"
 DB_PORT="${DB_PORT:-3306}"
 
-STAMP=$(date +%Y-%m-%d_%H-%M-%S)
-WORK="$DIR/.work-$STAMP"
-TARGET="$DIR/mariabackup-${STAMP}.tar.gz"
+CURRENT="$DIR/current"
 
 say() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"; }
 die() { printf '%s  error: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >&2; exit 1; }
-
-cleanup() { rm -rf "$WORK"; }
-trap cleanup EXIT INT TERM
 
 mkdir -p "$DIR"
 
 [[ -n "${MYSQL_ROOT_PASSWORD:-}" ]] || die "MYSQL_ROOT_PASSWORD is not set."
 [[ -d "$DATADIR" ]] || die "No data directory at $DATADIR - is the dbdata volume mounted?"
 
-# Keeps the password out of the process list.
 export MYSQL_PWD="$MYSQL_ROOT_PASSWORD"
 
-say "Backing up $DATADIR to $(basename "$TARGET")"
+# --host spelt out: mariadb-backup inherits -h from xtrabackup, where it means
+# --datadir, so the short form silently does the wrong thing.
+backup_to() {
+    local target="$1"; shift
 
-# --host is spelt out: mariadb-backup inherits -h from xtrabackup, where it
-# means --datadir, so the short form silently does the wrong thing.
-mariadb-backup --backup \
-    --target-dir="$WORK" \
-    --datadir="$DATADIR" \
-    --host="$DB_HOST" \
-    --port="$DB_PORT" \
-    --user=root \
-    2>&1 | tail -3 \
-    || die "mariadb-backup --backup failed."
+    mariadb-backup --backup \
+        --target-dir="$target" \
+        --datadir="$DATADIR" \
+        --host="$DB_HOST" \
+        --port="$DB_PORT" \
+        --user=root \
+        "$@" 2>&1 | tail -2
 
-[[ -f "$WORK/xtrabackup_checkpoints" ]] \
-    || die "The backup is missing xtrabackup_checkpoints - it did not complete."
+    [[ -f "$target/xtrabackup_checkpoints" ]] \
+        || { rm -rf "$target"; die "Backup to $(basename "$target") did not complete."; }
+}
 
-say "Preparing the backup so it can be restored as-is"
+seal_current() {
+    local stamp
+    stamp=$(cat "$CURRENT/.stamp")
 
-mariadb-backup --prepare --target-dir="$WORK" 2>&1 | tail -2 \
-    || die "mariadb-backup --prepare failed."
+    local archive="$DIR/set-${stamp}.tar.gz"
 
-# --prepare rewrites this marker. MariaDB writes "log-applied"; Percona
-# XtraBackup writes "full-prepared". Anything else means the prepare died part
-# way and the set is not restorable.
-grep -qE "backup_type = (log-applied|full-prepared)" "$WORK/xtrabackup_checkpoints" \
-    || die "The backup was not prepared successfully. Nothing was rotated."
+    say "Sealing the previous set as $(basename "$archive")"
 
-say "Compressing"
+    tar -czf "$archive.partial" -C "$CURRENT" . \
+        || { rm -f "$archive.partial"; die "Could not compress the finished set."; }
 
-tar -czf "$TARGET.partial" -C "$WORK" . || { rm -f "$TARGET.partial"; die "Compression failed."; }
-mv "$TARGET.partial" "$TARGET"
+    mv "$archive.partial" "$archive"
+    rm -rf "$CURRENT"
 
-say "Wrote $(basename "$TARGET") ($(du -h "$TARGET" | cut -f1))"
+    say "Sealed $(basename "$archive") ($(du -h "$archive" | cut -f1))"
+}
 
-# Sorted by name, not mtime: the timestamp in the filename is zero-padded so it
-# sorts chronologically, and it survives a copy or an rsync without -t.
-mapfile -t backups < <(ls -1 "$DIR"/mariabackup-*.tar.gz 2>/dev/null | sort -r || true)
+rotate() {
+    # By name: the stamp is zero-padded so it sorts chronologically, and unlike
+    # mtime it survives a copy or an rsync without -t.
+    mapfile -t sets < <(ls -1 "$DIR"/set-*.tar.gz 2>/dev/null | sort -r || true)
 
-if (( ${#backups[@]} > KEEP )); then
-    for old in "${backups[@]:KEEP}"; do
-        say "Removing old backup $(basename "$old")"
-        rm -f "$old"
-    done
+    if (( ${#sets[@]} > KEEP )); then
+        for old in "${sets[@]:KEEP}"; do
+            say "Removing old set $(basename "$old")"
+            rm -f "$old"
+        done
+    fi
+
+    say "$(( ${#sets[@]} > KEEP ? KEEP : ${#sets[@]} )) sealed set(s) plus the active one"
+}
+
+start_new_set() {
+    local stamp
+    stamp=$(date +%Y-%m-%d_%H-%M-%S)
+
+    say "Starting a new set with a full base"
+
+    mkdir -p "$CURRENT"
+    backup_to "$CURRENT/base"
+
+    printf '%s' "$stamp" > "$CURRENT/.stamp"
+    printf '0' > "$CURRENT/.counter"
+
+    say "Base written for set $stamp ($(du -sh "$CURRENT/base" | cut -f1))"
+}
+
+add_increment() {
+    local counter previous
+    counter=$(( $(cat "$CURRENT/.counter") + 1 ))
+
+    if (( counter == 1 )); then
+        previous="$CURRENT/base"
+    else
+        previous="$CURRENT/inc$(( counter - 1 ))"
+    fi
+
+    [[ -d "$previous" ]] || die "The set is missing $(basename "$previous"); cannot extend it."
+
+    say "Adding increment $counter on top of $(basename "$previous")"
+
+    backup_to "$CURRENT/inc$counter" --incremental-basedir="$previous"
+
+    # An increment taken while InnoDB has not checkpointed since the previous
+    # backup spans no LSN range. mariadb-backup still writes an .ibd.meta for
+    # every tablespace, and --prepare reads meta-without-delta as "this
+    # tablespace is gone" and DELETES it - applying such an increment empties
+    # the database. Discard it instead of keeping a destructive increment.
+    local deltas
+    deltas=$(find "$CURRENT/inc$counter" -name '*.delta' | wc -l | tr -d ' ')
+
+    if (( deltas == 0 )); then
+        say "Increment $counter contains no changed pages; discarding it."
+        say "Nothing has changed on disk since the previous backup."
+
+        rm -rf "$CURRENT/inc$counter"
+
+        return 0
+    fi
+
+    printf '%s' "$counter" > "$CURRENT/.counter"
+
+    say "Increment $counter written, $deltas changed tablespace(s) ($(du -sh "$CURRENT/inc$counter" | cut -f1))"
+}
+
+# A new base is due when there is no set at all, or when the clock reaches the
+# hour reserved for it.
+if [[ ! -d "$CURRENT" ]]; then
+    start_new_set
+elif [[ "$(date +%-H)" == "$BASE_HOUR" ]]; then
+    seal_current
+    start_new_set
+else
+    add_increment
 fi
 
-say "$(( ${#backups[@]} > KEEP ? KEEP : ${#backups[@]} )) backup(s) retained in $DIR"
+rotate

@@ -1,19 +1,21 @@
 #!/bin/bash
 #
-# Runs db_backup.sh once a day at BACKUP_HOUR, then sleeps until the next one.
+# Runs db_backup.sh every hour. db_backup.sh decides what that means: a full
+# base at BACKUP_HOUR, an incremental otherwise.
 #
 # A loop rather than cron: the mariadb image has no cron daemon, and adding one
-# to the db container would mean running a second process beside mysqld. This
-# sleeps to the next occurrence of the hour rather than sleeping 24h from
-# start-up, so the time stays put across restarts.
+# to the db container would mean running a second process beside mysqld.
 #
 set -euo pipefail
 
-HOUR="${BACKUP_HOUR:-2}"
+BASE_HOUR="${BACKUP_HOUR:-2}"
+DUMP_HOUR="${DUMP_HOUR:-3}"
 
 say() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"; }
 
-say "Backup scheduler started; daily at ${HOUR}:00 UTC, keeping ${BACKUP_KEEP:-7}"
+say "Backup scheduler started; keeping ${BACKUP_KEEP:-7} of each"
+say "  hourly  physical backup, full base at ${BASE_HOUR}:00 UTC"
+say "  daily   logical dump at ${DUMP_HOUR}:00 UTC"
 
 # Let the database finish starting before the first run.
 until mariadb-admin ping -h "${DB_HOST:-db}" -u root --silent 2>/dev/null; do
@@ -22,17 +24,24 @@ done
 
 while true; do
     now=$(date +%s)
-    next=$(date -d "today ${HOUR}:00" +%s 2>/dev/null)
 
-    # Already past today's slot, so aim at tomorrow's.
-    if (( next <= now )); then
-        next=$(date -d "tomorrow ${HOUR}:00" +%s)
-    fi
+    # Top of the next hour, so runs stay on the clock across restarts rather
+    # than drifting an hour from whenever the container started.
+    next=$(( now - now % 3600 + 3600 ))
 
-    say "Next backup at $(date -d "@$next" '+%Y-%m-%d %H:%M:%S')"
+    say "Next run at $(date -d "@$next" '+%Y-%m-%d %H:%M:%S')"
     sleep $(( next - now ))
 
-    # A failed backup must not kill the scheduler - log it and wait for the
-    # next slot.
-    db_backup.sh || say "Backup failed; will try again at the next slot."
+    # A failed run must not kill the scheduler - log it and wait for the next
+    # hour.
+    db_backup.sh || say "Physical backup failed; will try again next hour."
+
+    # The logical dump runs once a day alongside the physical backups. It is
+    # the only copy that survives a MariaDB major version change, since a
+    # mariadb-backup set can only be restored into the version it came from.
+    # Its failure is independent of the physical one, so it is reported
+    # separately rather than skipped.
+    if [[ "$(date +%-H)" == "$DUMP_HOUR" ]]; then
+        db_dump.sh || say "Logical dump failed; will try again tomorrow."
+    fi
 done

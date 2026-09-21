@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
 # The backup scripts live on PATH, not in /backup: that path is a volume, and
 # a named volume starts empty, so anything placed there in the image would be
 # invisible the moment it is mounted.
-COPY --chmod=0755 ./backup/db_backup.sh ./backup/db_restore.sh ./backup/scheduler.sh /usr/local/bin/
+COPY --chmod=0755 ./backup/*.sh /usr/local/bin/
 
 # todo: remove
 COPY ./dump/ /docker-entrypoint-initdb.d

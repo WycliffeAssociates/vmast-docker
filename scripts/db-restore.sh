@@ -8,9 +8,15 @@
 # container holding both volumes, and starts the service again.
 #
 #   ./scripts/db-restore.sh --list
-#   ./scripts/db-restore.sh                    # newest set
-#   ./scripts/db-restore.sh mariabackup-2026-09-21_02-00-00.tar.gz
+#   ./scripts/db-restore.sh                    # active set, latest increment
+#   ./scripts/db-restore.sh --hour 5           # active set, up to increment 5
+#   ./scripts/db-restore.sh --set set-2026-09-20_02-00-00.tar.gz --hour 0
+#   ./scripts/db-restore.sh --from-dump            # newest logical dump
+#   ./scripts/db-restore.sh --from-dump vmast-2026-09-21_03-00-00.sql.gz
 #   ./scripts/db-restore.sh --prod -y
+#
+# A physical restore replaces the data directory and needs the server stopped.
+# --from-dump is SQL into a running server: no downtime, no stop and start.
 #
 set -euo pipefail
 
@@ -18,7 +24,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 PROD_ONLY=0
 ASSUME_YES=0
+FROM_DUMP=0
 BACKUP=""
+SET=""
+HOUR=""
 LIST=0
 
 say()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
@@ -29,7 +38,10 @@ usage() { sed -n '2,/^set -euo/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//; $d'
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --list)    LIST=1 ;;
+        --list)      LIST=1 ;;
+        --from-dump) FROM_DUMP=1 ;;
+        --set)     SET="${2:?--set needs a name}"; shift ;;
+        --hour)    HOUR="${2:?--hour needs a number}"; shift ;;
         --prod)    PROD_ONLY=1 ;;
         -y|--yes)  ASSUME_YES=1 ;;
         -h|--help) usage ;;
@@ -76,14 +88,13 @@ resolve_volume() {
 DBDATA="$(resolve_volume dbdata)"
 docker volume inspect "$DBDATA" >/dev/null 2>&1 || die "No volume $DBDATA - has the stack ever run?"
 
-# In development the backups are a bind mount, in production a named volume.
-if [[ $PROD_ONLY -eq 0 && -d "$ROOT/db/backup" ]]; then
-    BACKUP_MOUNT="$ROOT/db/backup"
-else
-    BACKUP_MOUNT="$(resolve_volume db_backups)"
-    docker volume inspect "$BACKUP_MOUNT" >/dev/null 2>&1 \
-        || die "No volume $BACKUP_MOUNT - nothing has been backed up yet."
-fi
+# A named volume in both environments: on macOS a bind mount crosses into the
+# Docker VM's filesystem, and a restore copies a 1.4GB base through it before
+# it can prepare anything.
+BACKUP_MOUNT="$(resolve_volume db_backups)"
+
+docker volume inspect "$BACKUP_MOUNT" >/dev/null 2>&1 \
+    || die "No volume $BACKUP_MOUNT - nothing has been backed up yet."
 
 run_in_sidecar() {
     local script="$1"; shift
@@ -96,14 +107,45 @@ run_in_sidecar() {
         "$IMAGE" "$@"
 }
 
+run_in_container() {
+    compose exec -T db-backup "$@"
+}
+
 if [[ $LIST -eq 1 ]]; then
-    run_in_sidecar db_restore.sh --list
+    printf '\033[1mPhysical sets\033[0m (point-in-time, needs a restart)\n'
+    run_in_sidecar db_restore.sh --list || true
+
+    printf '\033[1mLogical dumps\033[0m (--from-dump, no downtime)\n'
+    run_in_container db_dump_restore.sh --list || true
+
+    exit 0
+fi
+
+# A logical restore goes into the running server, so it runs in the live
+# db-backup container rather than a sidecar, and nothing is stopped.
+if [[ $FROM_DUMP -eq 1 ]]; then
+    # Confirmed here rather than in the container: compose exec -T has no
+    # terminal, so a prompt inside would have nothing to read from.
+    if [[ $ASSUME_YES -eq 0 ]]; then
+        printf '\033[1;33mThis DROPS the database and replaces it with %s.\033[0m\n' \
+            "${BACKUP:-the newest dump}"
+        read -r -p 'Type ERASE to continue: ' reply
+        [[ "$reply" == "ERASE" ]] || die "Aborted."
+    fi
+
+    say "Restoring from a logical dump; the database stays up"
+
+    dump_args=(-y)
+    [[ -n "$BACKUP" ]] && dump_args+=("$BACKUP")
+
+    run_in_container db_dump_restore.sh "${dump_args[@]}"
+
     exit 0
 fi
 
 if [[ $ASSUME_YES -eq 0 ]]; then
     printf '\033[1;33mThis stops the database, ERASES its data directory, and restores %s.\033[0m\n' \
-        "${BACKUP:-the newest backup}"
+        "${SET:-the active set}${HOUR:+ up to increment $HOUR}"
     read -r -p 'Type ERASE to continue: ' reply
     [[ "$reply" == "ERASE" ]] || die "Aborted."
 fi
@@ -116,7 +158,7 @@ compose stop db
 # worse than an outage.
 say "Restoring inside a throwaway container"
 
-if run_in_sidecar db_restore.sh -y ${BACKUP:+"$BACKUP"}; then
+if run_in_sidecar db_restore.sh -y ${SET:+--set "$SET"} ${HOUR:+--hour "$HOUR"} ${BACKUP:+"$BACKUP"}; then
     say "Starting the db service"
     compose start db
     say "Done. Give the server a few seconds, then check: compose logs db"

@@ -91,12 +91,6 @@ services:
   #   - rabbitmq
   #   - redis
 
-  # Backups land in the working tree in development, so they can be inspected
-  # without going through the volume.
-  db-backup:
-    volumes:
-      - ./db/backup:/backup
-
   rabbitmq:
     image: rabbitmq:3-management
 
