@@ -1,0 +1,11 @@
+# dump/ is COPYed into /docker-entrypoint-initdb.d, where MariaDB executes
+# every *.sql and *.sql.gz on first initialisation. Only the small tracked
+# sample belongs in the image: a production dump here would bake real user
+# data into a distributable image and import it automatically.
+dump/*
+!dump/dump.sql.gz
+
+backup/*/
+backup/counter
+backup/dater
+*.gpg

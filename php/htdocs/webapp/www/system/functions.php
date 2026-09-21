@@ -39,7 +39,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * @param string|null $module
      * @return string
      */
-    function resource_url(string $path, string $module = null): string
+    function resource_url(string $path, ?string $module = null): string
     {
         return Url::resourcePath($module) .ltrim($path, '/');
     }
@@ -117,7 +117,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * @param string|null $make
      * @return mixed
      */
-    function app(string $make = null): mixed
+    function app(?string $make = null): mixed
     {
         if (! is_null($make)) {
             return app()->make($make);
@@ -135,7 +135,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
      * @param Route|null $route
      * @return string
      */
-    function route(string $name, array $parameters = array(), bool $absolute = true, Route $route = null): string
+    function route(string $name, array $parameters = array(), bool $absolute = true, ?Route $route = null): string
     {
         return app('url')->route($name, $parameters, $absolute, $route);
     }
@@ -419,7 +419,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
          * @param string|null $key
          * @return array
          */
-        function array_pluck(array $array, string $value, string $key = null): array
+        function array_pluck(array $array, string $value, ?string $key = null): array
         {
             $results = array();
 
@@ -528,11 +528,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
          * Determine if a given string matches a given pattern.
          *
          * @param string $pattern
-         * @param string $value
+         * @param string|null $value
          * @return bool
          */
-        function str_is(string $pattern, string $value): bool
+        function str_is(string $pattern, ?string $value): bool
         {
+            // Nullable because the callers pass values that are legitimately
+            // absent - a Content-Type header on a response that has none, a
+            // guessed MIME type, the current route name before one is matched.
+            // Str::is() already treats null as an empty string; under PHP 8 it
+            // was only this signature that turned that into a TypeError.
             return Str::is($pattern, $value);
         }
     }
@@ -616,12 +621,16 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         /**
          * Escape HTML entities in a string.
          *
-         * @param string $value
+         * @param string|null $value
          * @return string
          */
-        function e(string $value): string
+        function e(?string $value): string
         {
-            return htmlentities($value, ENT_QUOTES, 'UTF-8', false);
+            // Nullable because callers escape values straight out of arrays and
+            // database rows - FormBuilder::option() and HtmlBuilder::listing()
+            // both do - where a null is ordinary rather than a programming
+            // error. Escaping nothing yields the empty string.
+            return htmlentities((string) $value, ENT_QUOTES, 'UTF-8', false);
         }
     }
 

@@ -29,11 +29,3 @@
 # fonts beside it are untouched.
 **/app/Templates/Default/Assets/fonts/uploads/*
 !**/app/Templates/Default/Assets/fonts/uploads/.gitkeep
-
-# This context builds the web image, which copies only php/htdocs/webapp/www,
-# ssl/ and web/nginx/. Everything else is dead weight - db/dump alone carries
-# the production dump.
-db/
-node/
-scripts/
-composer.phar

@@ -37,3 +37,16 @@ db/backup/*/
 create1p.js
 withRefs.js
 noteTemplate.json
+# Production sync credentials
+scripts/.env.sync
+
+# Dumps and archives the sync script produces. dump.sql.gz is the tracked
+# sample the db image seeds from; everything else here is pulled from
+# production and must never be committed.
+db/dump/*
+!db/dump/dump.sql.gz
+
+# User resources imported from WACS/DCS at run time. Volume-backed in
+# production, bind mounted in development, and never in the repository - the
+# directory is recreated by the sync script or by the application itself.
+php/htdocs/webapp/www/app/Storage/Resources/

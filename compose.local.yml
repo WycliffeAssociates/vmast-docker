@@ -20,8 +20,18 @@ services:
           target: /usr/share/nginx/html
           ignore:
             - vendor/
+            # Bind mounted below, so the container already sees these live and
+            # syncing them would copy a gigabyte for nothing.
+            - app/Storage/
+            - app/Templates/Default/Assets/fonts/uploads/
         - action: rebuild
           path: ./php/htdocs/webapp/www/composer.json
+    volumes:
+      # Same mount points as docker-compose.yml, backed by the working tree
+      # instead of named volumes: what the sync script unpacks on the host is
+      # visible in the container immediately, with nothing to copy.
+      - ./php/htdocs/webapp/www/app/Storage:/usr/share/nginx/html/app/Storage
+      - ./php/htdocs/webapp/www/app/Templates/Default/Assets/fonts/uploads:/usr/share/nginx/html/app/Templates/Default/Assets/fonts/uploads
     # volumes:
     # - ./php/htdocs:/var/www/html
     # - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
@@ -86,3 +96,5 @@ services:
 
 volumes:
   dbdata:
+  app_storage:
+  fonts_uploads:

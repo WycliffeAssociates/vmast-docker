@@ -213,7 +213,7 @@ class ApiModel extends Model
 
     public function processResource($path, $lang, $slug) {
         try {
-            $target = "../app/Templates/Default/Assets/source/" . $lang . "_" . $slug;
+            $target = storage_path() .'Resources' .DS . $lang ."_". $slug;
 
             if(!File::isDirectory($target)) {
                 File::makeDirectory($target, 0755, true);

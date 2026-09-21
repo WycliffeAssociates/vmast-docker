@@ -10,12 +10,12 @@
 
 @font-face {
     font-family: "SUN";
-    src: url("../fonts/SUN.woff?2") format("woff");
+    src: url("../fonts/uploads/SUN.woff?2") format("woff");
 }
 
 @font-face {
     font-family: "BACKSUN";
-    src: url("../fonts/BackSUN.woff?2") format("woff");
+    src: url("../fonts/uploads/BackSUN.woff?2") format("woff");
 }
 
 .sun_content, .font_sgn-US-symbunot {

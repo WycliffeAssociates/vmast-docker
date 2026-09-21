@@ -26,7 +26,7 @@ use USFM\USFMParser\USFMParser;
 use ZipArchive;
 
 class ResourcesRepository implements IResourcesRepository {
-    private $rootPath = "../app/Templates/Default/Assets/source/";
+    private $rootPath;
 
     private $wacsApiUrl = "https://content.bibletranslationtools.org/api/v1/";
     private $dcsApiUrl = "https://git.door43.org/api/v1/";
@@ -51,6 +51,8 @@ class ResourcesRepository implements IResourcesRepository {
         IEventRepository $eventRepo,
         IPreferenceRepository $prefRepo
     ) {
+        $this->rootPath = storage_path() .'Resources' .DS;
+
         $this->wacsCatalogPath = $this->rootPath . "catalog.json";
         $this->dcsCatalogPath = $this->rootPath . "catalog_dcs.json";
         $this->languagesPath = $this->rootPath . "langnames.json";

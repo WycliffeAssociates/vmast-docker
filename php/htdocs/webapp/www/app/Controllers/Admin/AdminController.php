@@ -2668,7 +2668,9 @@ class AdminController extends Controller {
             if($ext == "woff")
             {
                 $name = $font_file->getClientOriginalName();
-                $destinationPath = "../app/Templates/Default/Assets/fonts/";
+                // Volume-backed, so admin-uploaded fonts survive a container
+                // being replaced; the static fonts stay alongside in the image.
+                $destinationPath = "../app/Templates/Default/Assets/fonts/uploads/";
 
                 if(preg_match("/backsun/i", $name))
                 {
