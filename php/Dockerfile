@@ -15,8 +15,19 @@ WORKDIR /usr/share/nginx/html
 # Install deps
 COPY ./htdocs/webapp/www/composer.* .
 RUN composer install --no-dev --optimize-autoloader
-# Rest of source code
-# Set permissions for all files
-COPY --chmod=0777 ./htdocs/webapp/www .
+# Rest of source code. 0755, not 0777: php-fpm workers run as www-data and
+# only need to read the application. Anything world-writable here turns a file
+# write bug into arbitrary code execution.
+COPY --chmod=0755 ./htdocs/webapp/www .
+
+# The two trees the application writes to at run time. Both are backed by named
+# volumes, and a volume seeds itself from the image on first use - so the mode
+# and ownership set here are what production ends up with. setgid on the
+# directories keeps the group on anything created later.
+RUN set -eux; \
+	writable="app/Storage app/Templates/Default/Assets/fonts/uploads"; \
+	chown -R www-data:www-data $writable; \
+	find $writable -type d -exec chmod 2775 {} +; \
+	find $writable -type f -exec chmod 0664 {} +
 CMD php-fpm
 # ENTRYPOINT ["/php_start.sh"]

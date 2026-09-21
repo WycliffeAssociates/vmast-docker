@@ -1,3 +1,6 @@
+# Development overrides. docker-compose.yml passes no env_file at all, so the
+# five services that read configuration get it back here - locally the values
+# come from a plaintext .env rather than from `op run`.
 services:
   web:
     develop:
@@ -13,6 +16,8 @@ services:
       - ./db/dump:/db_dump
 
   php:
+    env_file:
+      - .env
     develop:
       watch:
         - action: sync
@@ -35,6 +40,18 @@ services:
     # volumes:
     # - ./php/htdocs:/var/www/html
     # - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+
+  db:
+    env_file:
+      - .env
+
+  db-backup:
+    env_file:
+      - .env
+
+  node:
+    env_file:
+      - .env
 
   # db:
   # volumes:
@@ -93,6 +110,8 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    env_file:
+      - .env
 
 volumes:
   dbdata:

@@ -1,3 +1,11 @@
+# Production topology. Secrets reach the containers from the shell environment
+# only - `./run.sh` wraps `docker compose up` in `op run --env-file=.env.deploy`,
+# which resolves the op:// references in that file and exports them. There is
+# deliberately no `env_file:` here: declaring one makes a plaintext .env
+# mandatory on the host (compose refuses to start without it) and hands every
+# key in it to every service that names it. Each service below pins exactly what
+# it reads, so `rabbitmq` gets 2 variables instead of 43. compose.local.yml adds
+# `env_file: .env` back for development.
 services:
   web:
     build:
@@ -9,15 +17,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    env_file:
-      - .env
-    environment:
-      # nginx is serving htdocs, so these are needed there
-      DB_HOST: ${DB_HOST}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    # No env_file and no environment on purpose. nginx forwards every .php to
+    # php:9000 and never interprets PHP itself, and the vhost has no ${} to
+    # substitute - so this container has no use for a single credential.
+    # Passing .env here put DB_PASS, MAIL_PASS, RABBITMQ_PASS, REDIS_PASS and
+    # the WACS/DCS client secrets in a container that only serves static files.
     # todo: watch or bind mount
     # volumes:
     #   - ./htdocs:/var/www/html
@@ -30,8 +34,6 @@ services:
       context: ./php
       dockerfile: ./Dockerfile
     platform: linux/amd64
-    env_file:
-      - .env
     environment:
       APP_URL: ${APP_URL}
       APP_EMAIL: ${APP_EMAIL}
@@ -85,8 +87,6 @@ services:
       context: ./db
       dockerfile: ./Dockerfile
     platform: linux/amd64
-    env_file:
-      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -119,8 +119,6 @@ services:
     platform: linux/amd64
     depends_on:
       - db
-    env_file:
-      - .env
     environment:
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
@@ -148,10 +146,7 @@ services:
     # - remove these two beneath;
     # - ./ssl:/etc/nginx/ssl
     # - ./scripts:/scripts
-    env_file:
-      - .env
     environment:
-      APP_TYPE: ${APP_TYPE}
       MAIN_HOST: ${MAIN_HOST}
       SOCKET_PORT: ${SOCKET_PORT}
       MAIL_HOST: ${MAIL_HOST}
@@ -179,8 +174,6 @@ services:
     image: rabbitmq:3.13
     ports:
       - "15672:15672"
-    env_file:
-      - .env
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}

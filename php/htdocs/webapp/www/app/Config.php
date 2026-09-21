@@ -8,8 +8,33 @@
 
 use Config\Config;
 
-$dotenv = Dotenv\Dotenv::createMutable(__DIR__);
+// Immutable, not mutable: values already present in the environment win. In
+// production the secrets are injected by `op run` into the container
+// environment and must never be silently replaced by a stale app/.env left on
+// the host.
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
+
+// The application reads configuration out of $_ENV. PHP also mirrors the
+// process environment into $_SERVER, and it is that copy which crash
+// reporters (Sentry), profilers and phpinfo(INFO_VARIABLES) serialize. Drop
+// the credentials from the mirror so they cannot ride along in a stack trace.
+// $_ENV itself has to stay - Config/Database.php and friends read it below.
+foreach (array(
+    'DB_PASS',
+    'DB_ROOT_PASSWORD',
+    'MYSQL_ROOT_PASSWORD',
+    'MAIL_PASS',
+    'REDIS_PASS',
+    'RABBITMQ_PASS',
+    'RECAPTCHA_SECRET',
+    'WACS_CLIENT_SECRET',
+    'DCS_CLIENT_SECRET',
+    'SENTRY_DSN',
+    'OP_SERVICE_ACCOUNT_TOKEN',
+) as $secret) {
+    unset($_SERVER[$secret]);
+}
 
 /**
  * PREFER to be used in Database calls or storing Session data, default is 'nova_'
