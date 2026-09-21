@@ -1,0 +1,84 @@
+name: Build vmast Docker Images
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Build every image (no push) so pull requests are validated.
+  Build-Image:
+    name: Build ${{ matrix.image }} image
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: vmast-web
+            context: .
+          - image: vmast-php
+            context: ./php
+          - image: vmast-db
+            context: ./db
+          - image: vmast-node
+            context: ./node
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image with buildx
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile
+          platforms: linux/amd64
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  Push-Image:
+    name: Push ${{ matrix.image }} if this is a branch
+    runs-on: ubuntu-latest
+    needs: [Build-Image]
+    if: ${{ contains(fromJson('["push"]'), github.event_name) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: vmast-web
+            context: .
+          - image: vmast-php
+            context: ./php
+          - image: vmast-db
+            context: ./db
+          - image: vmast-node
+            context: ./node
+    steps:
+      - uses: actions/checkout@v4
+      - uses: FranzDiebold/github-env-vars-action@v2.8.0
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Set docker tags
+        run: |
+          echo "TAG_SHA=wycliffeassociates/${{ matrix.image }}:$GITHUB_SHA" >> $GITHUB_ENV && \
+          echo "TAG_BRANCH=wycliffeassociates/${{ matrix.image }}:$CI_REF_NAME_SLUG" >> $GITHUB_ENV && \
+          echo "TAG_LATEST=wycliffeassociates/${{ matrix.image }}:latest" >> $GITHUB_ENV
+
+      - name: Build and conditional push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.TAG_SHA }}
+            ${{ env.TAG_BRANCH }}
+            ${{ env.TAG_LATEST }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

@@ -11,9 +11,12 @@ services:
     build:
       dockerfile: ./Dockerfile
     platform: linux/amd64
+    restart: unless-stopped
     depends_on:
-      - db
-      - php
+      db:
+        condition: service_healthy
+      php:
+        condition: service_started
     ports:
       - "80:80"
       - "443:443"
@@ -34,6 +37,10 @@ services:
       context: ./php
       dockerfile: ./Dockerfile
     platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       APP_URL: ${APP_URL}
       APP_EMAIL: ${APP_EMAIL}
@@ -97,6 +104,11 @@ services:
       # - todo: maybe bind mount?
       # - ./db/conf:/etc/mysql/mysql.conf.d
     restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+      start_period: 15s
 
 #  phpmyadmin:
 #     image: phpmyadmin/phpmyadmin
@@ -118,7 +130,8 @@ services:
       dockerfile: ./Dockerfile
     platform: linux/amd64
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
@@ -140,6 +153,7 @@ services:
     build:
       context: ./node
       dockerfile: ./Dockerfile
+    restart: unless-stopped
     # volumes:
     # watch;
     # - ./node:/node
@@ -167,21 +181,37 @@ services:
     ports:
       - "8001:8001"
     depends_on:
-      - rabbitmq
-      - redis
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:3.13
+    restart: unless-stopped
     ports:
       - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
 
   redis:
     # todo: valkey?
     # image: redis:7.2
     image: valkey/valkey:7.2.5
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 volumes:
   dbdata:
   db_backups:
