@@ -1,85 +1,93 @@
 #!/bin/bash
+#
+# Restores a mariadb-backup set into the data directory. Runs inside a
+# container that has both the backup directory and the data directory mounted,
+# with the database server STOPPED - mariadb-backup --copy-back requires an
+# empty datadir and refuses to run against a live server.
+#
+# This is the inner half of the restore. Use scripts/db-restore.sh on the host,
+# which stops the db service, invokes this, and starts it again.
+#
+#   db_restore.sh --list
+#   db_restore.sh                                  # newest set
+#   db_restore.sh mariabackup-2026-09-21_02-00-00.tar.gz
+#
+set -euo pipefail
 
-set -ex
+DIR="${BACKUP_DIR:-/backup}"
+DATADIR="${BACKUP_DATADIR:-/var/lib/mysql}"
 
-DIR=/backup
+BACKUP=""
+ASSUME_YES=0
 
-# TODO Rewrite to mariabackup
+say() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
+die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
-#cd $DIR
-#
-## MariaDB ships mariabackup, Percona ships xtrabackup. They take the same
-## arguments, so either will do.
-#BACKUP_TOOL=$(command -v mariabackup || command -v xtrabackup || true)
-#
-#if [ -z "$BACKUP_TOOL" ]
-#then
-#	echo -e "\e[91mNeither mariabackup nor xtrabackup is installed\e[0m"
-#	exit 1
-#fi
-#
-#echo -e "\e[93m\e[4mEnter backup name (Ex. 2017-12-26_16_50_36)\e[0m"
-#read BACKUP
-#
-#if [ ! -d $DIR/$BACKUP ]
-#then
-#	if [ ! -f "$DIR/${BACKUP}.tar.gz.gpg" ]
-#	then
-#		echo -e "\e[91mThere is no backup with this name\e[0m"
-#		exit
-#	else
-#		echo -e "\e[103m\e[91mFound GPG file, decrypting...\e[0m"
-#		gpg --batch --yes --passphrase $MYSQL_ROOT_PASSWORD -d ${BACKUP}.tar.gz.gpg | tar xzvf -
-#	fi
-#fi
-#
-#if [ ! -d $DIR/$BACKUP ]
-#then
-#	echo -e "\e[91mThere is no backup with this name\e[0m"
-#	exit
-#fi
-#
-#if [ ! -d $DIR/$BACKUP/base ]
-#then
-#	echo -e "\e[91mThere is no base folder in this backup\e[0m"
-#	exit
-#fi
-#
-#echo -e "\e[93m\e[4mEnter an hour to restore to (From 1 to 24 or 0 for base restore)\e[0m"
-#read HOUR
-#
-#if [ ! -d $DIR/$BACKUP/incr$HOUR ] && [ "$HOUR" -gt 0 ]
-#then
-#	echo -e "\e[91mThere is no backup for this hour\e[0m"
-#	exit
-#fi
-#
-#trap 'echo "removing /tmp/$BACKUP"; rm -rf "/tmp/$BACKUP"' INT TERM EXIT
-#
-## Copy backup to Tmp folder
-#cp -r $DIR/$BACKUP /tmp/$BACKUP
-#
-## prepare base
-#echo -e "\e[103m\e[91mPreparing base backup...\e[0m"
-#sleep 1
-#$BACKUP_TOOL --prepare --apply-log-only --target-dir=/tmp/$BACKUP/base
-#
-##prepare increment
-#if [ "$HOUR" -gt 0 ]
-#then
-#	for ((i = 1; i <= HOUR; i++))
-#	do
-#		echo -e "\e[103m\e[91mPreparing increment backup #$i...\e[0m"
-#		sleep 1
-#		$BACKUP_TOOL --prepare --apply-log-only --target-dir=/tmp/$BACKUP/base \
-#			--incremental-dir=/tmp/$BACKUP/incr$i
-#	done
-#fi
-#
-#rm -rf /var/lib/mysql/*
-#echo -e "\e[103m\e[91mCopying backup data to mysql folder...\e[0m"
-#$BACKUP_TOOL --copy-back --target-dir=/tmp/$BACKUP/base --datadir=/var/lib/mysql
-#chown -R mysql:mysql /var/lib/mysql/
-#
-#echo -e "\e[92mRestore complete. Restart the database service to pick up the"
-#echo -e "restored data directory: docker compose restart db\e[0m"
+list_backups() { ls -1 "$DIR"/mariabackup-*.tar.gz 2>/dev/null | sort -r || true; }
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --list)
+            mapfile -t found < <(list_backups)
+            [[ ${#found[@]} -gt 0 ]] || die "No backups in $DIR"
+            for b in "${found[@]}"; do
+                printf '  %-44s %s\n' "$(basename "$b")" "$(du -h "$b" | cut -f1)"
+            done
+            exit 0
+            ;;
+        -y|--yes) ASSUME_YES=1 ;;
+        -*)       die "Unknown option: $1" ;;
+        *)        BACKUP="$1" ;;
+    esac
+    shift
+done
+
+WORK="$DIR/.restore-$$"
+cleanup() { rm -rf "$WORK"; }
+trap cleanup EXIT INT TERM
+
+if [[ -z "$BACKUP" ]]; then
+    BACKUP=$(list_backups | head -1)
+    [[ -n "$BACKUP" ]] || die "No backups in $DIR - run db_backup.sh first."
+    say "Using the newest backup: $(basename "$BACKUP")"
+fi
+
+[[ -f "$BACKUP" ]] || BACKUP="$DIR/$BACKUP"
+[[ -f "$BACKUP" ]] || die "No such backup: $BACKUP"
+
+[[ -d "$DATADIR" ]] || die "No data directory at $DATADIR - is the dbdata volume mounted?"
+
+# If the server is up, its socket or a running mysqld will be visible here.
+# copy-back into a live datadir corrupts it, so refuse rather than risk it.
+if [[ -S "$DATADIR/mysqld.sock" ]] || pgrep -x mariadbd >/dev/null 2>&1 || pgrep -x mysqld >/dev/null 2>&1; then
+    die "The database server appears to be running. Stop it first - use scripts/db-restore.sh on the host."
+fi
+
+if [[ $ASSUME_YES -eq 0 ]]; then
+    printf 'This ERASES %s and replaces it with %s.\n' "$DATADIR" "$(basename "$BACKUP")"
+    read -r -p 'Type ERASE to continue: ' reply
+    [[ "$reply" == "ERASE" ]] || die "Aborted."
+fi
+
+mkdir -p "$WORK"
+
+say "Unpacking $(basename "$BACKUP")"
+
+tar -xzf "$BACKUP" -C "$WORK" || die "Could not unpack the backup."
+
+grep -qE "backup_type = (log-applied|full-prepared)" "$WORK/xtrabackup_checkpoints" 2>/dev/null \
+    || die "This set is not prepared - refusing to restore it."
+
+say "Emptying $DATADIR"
+
+# Dotfiles included; --copy-back refuses to run unless the directory is empty.
+find "$DATADIR" -mindepth 1 -delete
+
+say "Copying the backup into place"
+
+mariadb-backup --copy-back --target-dir="$WORK" --datadir="$DATADIR" 2>&1 | tail -3 \
+    || die "mariadb-backup --copy-back failed. The data directory is now incomplete - restore again before starting the server."
+
+chown -R mysql:mysql "$DATADIR"
+
+say "Restored. Start the db service again to bring the server up."

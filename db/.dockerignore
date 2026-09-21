@@ -5,7 +5,10 @@
 dump/*
 !dump/dump.sql.gz
 
-backup/*/
+# Written backups are data; only the scripts belong in the image.
+# Note: no "backup/*/" here - Docker cleans the trailing slash off ignore
+# patterns, turning it into backup/* and excluding the scripts as well.
+backup/*.sql.gz
+backup/*.gpg
 backup/counter
 backup/dater
-*.gpg

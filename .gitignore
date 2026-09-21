@@ -24,9 +24,6 @@ demos/
 extras/documentation
 
 *.gpg
-db/backup/counter
-db/backup/dater
-db/backup/*/
 
 .env
 
@@ -50,3 +47,9 @@ db/dump/*
 # production, bind mounted in development, and never in the repository - the
 # directory is recreated by the sync script or by the application itself.
 php/htdocs/webapp/www/app/Storage/Resources/
+
+# db/backup holds the backup scripts and, in development, the backups they
+# write. Ignore everything there except the scripts, so no new backup format
+# has to be added here later.
+db/backup/*
+!db/backup/*.sh

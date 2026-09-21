@@ -96,7 +96,6 @@ services:
       - dbdata:/var/lib/mysql
       # - todo: maybe bind mount?
       # - ./db/conf:/etc/mysql/mysql.conf.d
-      - ./db/backup:/backup
     restart: always
 
 #  phpmyadmin:
@@ -110,6 +109,33 @@ services:
 #       UPLOAD_LIMIT: 512M
 #     ports:
 #       - "8081:80"
+
+  # Daily logical backups of the application database. Its own service rather
+  # than cron inside db, where mysqld is PID 1 and there is no cron daemon.
+  db-backup:
+    build:
+      context: ./db
+      dockerfile: ./Dockerfile
+    platform: linux/amd64
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      BACKUP_HOUR: ${BACKUP_HOUR:-2}
+      BACKUP_KEEP: ${BACKUP_KEEP:-7}
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:-}
+    volumes:
+      # mariadb-backup reads the data files directly, so the datadir has to be
+      # here too - read-only, since it only ever reads during --backup.
+      - dbdata:/var/lib/mysql:ro
+      - db_backups:/backup
+    entrypoint: ["scheduler.sh"]
+    restart: unless-stopped
 
   node:
     build:
@@ -164,5 +190,6 @@ services:
     image: valkey/valkey:7.2.5
 volumes:
   dbdata:
+  db_backups:
   app_storage:
   fonts_uploads:
