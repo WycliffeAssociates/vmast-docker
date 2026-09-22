@@ -148,19 +148,18 @@ use Shared\Legacy\Error;
                 <div class="row">
                     <div class="col-md-10 col-md-offset-1">
                         <p>
-                            <strong>Essential Beliefs</strong><br>
-                            We consider Essential beliefs to be those that define us as believers in Jesus Christ. These cannot be disregarded or compromised.
+                            <strong><?php echo __("essential_beliefs") ?></strong><br>
+                            <?php echo __("essential_beliefs_desc") ?>
                         </p>
 
-                        <p>We believe:</p>
-
                         <ul>
-                            <li>The Bible is divinely inspired by God and has final authority.</li>
-                            <li>God is one and exists in three persons: God the Father, God the Son, and God the Holy Spirit.</li>
-                            <li>Because of the fall of man, all humans are sinful, and in need of salvation.</li>
-                            <li>The death of Christ is a substitute for sinners and provides for the cleansing of those who believe.</li>
-                            <li>By God’s grace, through faith, man receives salvation as a free gift because of Jesus’ death and resurrection.</li>
-                            <li>The resurrection of all—the saved to eternal life and the lost to eternal punishment.</li>
+                            <li><?php echo __("statement_of_faith_1") ?></li>
+                            <li><?php echo __("statement_of_faith_2") ?></li>
+                            <li><?php echo __("statement_of_faith_3") ?></li>
+                            <li><?php echo __("statement_of_faith_4") ?></li>
+                            <li><?php echo __("statement_of_faith_5") ?></li>
+                            <li><?php echo __("statement_of_faith_6") ?></li>
+                            <li><?php echo __("statement_of_faith_7") ?></li>
                         </ul>
                         <br />
                     </div>
@@ -180,31 +179,26 @@ use Shared\Legacy\Error;
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h1 class="modal-title">Freedom</h1>
+                <h1 class="modal-title"><?php echo __("tou") ?></h1>
             </div>
             <div class="modal-body">
                 <div class="fl-rich-text">
-                    <p>Except where otherwise noted, content on BibleInEveryLanguage.org is licensed under a&nbsp;<a href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</p>
-                    <h4>Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)</h4>
-                    <p>This is a human-readable summary of (and not a substitute for) the&nbsp;license.</p>
-                    <h4>You are free to:</h4>
-                    <ul>
-                        <li><strong>Share</strong>&nbsp;— copy and redistribute the material in any medium or format</li>
-                        <li><strong>Adapt</strong>&nbsp;— remix, transform, and build upon the material<br> for any purpose, even commercially.</li>
-                    </ul>
-                    <p>The licensor cannot revoke these freedoms as long as you follow the license terms.</p>
-                    <h4>Under the following conditions:</h4>
-                    <ul>
-                        <li><strong>Attribution&nbsp;</strong>— You must attribute the work as follows: “Original work available at https://BibleInEveryLanguage.org.” Attribution statements in derivative works should not in any way suggest that we endorse you or your use of this work.</li>
-                        <li><strong>ShareAlike&nbsp;</strong>— If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.</li>
-                        <li><strong>No additional restrictions</strong>&nbsp;— You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.</li>
-                    </ul>
-                    <h4>Notices:</h4>
-                    <p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation.</p>
-                    <p>No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>
-                    <h4>Attribution of BibleInEveryLanguage.org and Door43 Contributors</h4>
-                    <p>When importing a resource (e.g. a book, Bible study, etc.) into BibleInEveryLanguage.org, the original work must be attributed as specified by the open license under which it is available. For example, the artwork used in Open Bible Stories is available under an open license and is clearly attributed on the project’s&nbsp;main page.</p>
-                    <p>Contributors to projects on BibleInEveryLanguage.org agree that&nbsp;the attribution that occurs automatically in the revision history of every page is sufficient attribution for their work.&nbsp;That is, every contributor to a translation on BibleInEveryLanguage.org into another language may be listed as “the BibleInEveryLanguage.org and&nbsp;Door43 World Missions Community” or something to that effect. The individual contributions of each individual contributor are preserved in the revision history for that translation.</p>
+                    <h2><?php echo __("terms_of_use_1") ?></h2>
+                    <h3><?php echo __("terms_of_use_2") ?></h3>
+                    <p><?php echo __("terms_of_use_3", ["link" => '<a href="https://creativecommons.org/licenses/by-sa/4.0/" title="https://creativecommons.org/licenses/by-sa/4.0/" target="blank">https://creativecommons.org/licenses/by-sa/4.0/</a>']) ?></p>
+                    <h4><?php echo __("terms_of_use_4") ?></h4>
+                    <br/>
+                    <h3><?php echo __("terms_of_use_5") ?></h3>
+                    <br/><?php echo __("terms_of_use_6", ["title" => "<b>&#8226; " . __("terms_of_use_6a") . "</b>"]) ?>
+                    <br/><?php echo __("terms_of_use_7", ["title" => "<b>&#8226; " . __("terms_of_use_7a") . "</b>"]) ?>
+                    <p><?php echo __("terms_of_use_8") ?></p>
+                    <h3><?php echo __("terms_of_use_9") ?></h3>
+                    <br/><?php echo __("terms_of_use_10", ["title" => "<b>&#8226; " . __("terms_of_use_10a") . "</b>"]) ?>
+                    <br/><?php echo __("terms_of_use_11", ["title" => "<b>&#8226; " . __("terms_of_use_11a") . "</b>"]) ?>
+                    <br/><?php echo __("terms_of_use_12", ["title" => "<b>&#8226; " . __("terms_of_use_12a") . "</b>"]) ?>
+                    <h3><?php echo __("terms_of_use_13") ?></h3>
+                    <p><br/><?php echo __("terms_of_use_14") ?></p>
+                    <p><br/><?php echo __("terms_of_use_15") ?></p>
                 </div>
             </div>
             <div class="modal-footer">
