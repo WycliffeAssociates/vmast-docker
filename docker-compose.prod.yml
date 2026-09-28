@@ -1,0 +1,31 @@
+# Production overlay for pull-based deploys (Jenkins).
+#
+# The base docker-compose.yml builds every app image on the host. This overlay
+# points the same services at the images CI built and pushed to Docker Hub, so
+# the deploy host pulls a known-good image instead of compiling one. Layer it
+# explicitly over the base file - it is deliberately NOT named
+# docker-compose.override.yml, so bare `docker compose` (Maxim's run.sh and
+# `make local`) never picks it up and keeps building locally:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# deploy.sh wraps exactly that in `op run` so the same 1password secrets reach
+# the containers. IMAGE_TAG selects which published tag to run (a commit SHA, a
+# branch slug, or latest - whatever the docker-build workflow tagged).
+services:
+  web:
+    image: wycliffeassociates/vmast-web:${IMAGE_TAG}
+
+  php:
+    image: wycliffeassociates/vmast-php:${IMAGE_TAG}
+
+  db:
+    image: wycliffeassociates/vmast-db:${IMAGE_TAG}
+
+  # Shares the db image (both build from ./db), so it runs the same published tag.
+  db-backup:
+    image: wycliffeassociates/vmast-db:${IMAGE_TAG}
+
+  node:
+    image: wycliffeassociates/vmast-node:${IMAGE_TAG}
