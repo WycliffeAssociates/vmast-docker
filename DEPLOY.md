@@ -85,6 +85,25 @@ sshagent(['vmast-deploy-host']) {
 
 ### Image tags
 
-CI currently tags by commit SHA, branch slug, and `latest`. If you want
-environment-named tags (`production`, `staging`) so `IMAGE_TAG=$DEPLOY_ENV`
-lines up, add those tags in the docker-build workflow's "Set docker tags" step.
+CI (`.github/workflows/docker-build.yml`) tags every pushed image with the
+commit SHA, the branch slug, and `latest`, and additionally with an
+**environment name** when the pushed branch is a deploy branch. That env tag is
+what makes `IMAGE_TAG=$DEPLOY_ENV` line up: deploying `production` runs the
+image tagged `production`.
+
+The branch -> environment mapping lives in the workflow's "Set docker tags"
+step:
+
+```sh
+case "$CI_REF_NAME" in
+  main)  ENV_TAG=prod ;;
+  *)     ENV_TAG="$CI_REF_NAME_SLUG" ;;
+esac
+```
+
+`main` publishes `wycliffeassociates/vmast-*:prod`, and every other branch
+publishes a tag equal to its own slugified name. So `IMAGE_TAG=prod ./deploy.sh`
+deploys `main`, and `IMAGE_TAG=dev ./deploy.sh` deploys the `dev` branch. The
+slug keeps the tag valid even for branch names containing `/`. Every push also
+gets sha / branch-slug / `latest` tags, so you can always deploy a specific
+commit.

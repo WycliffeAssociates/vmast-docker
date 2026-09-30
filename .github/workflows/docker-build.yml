@@ -65,9 +65,25 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
       - name: Set docker tags
         run: |
-          echo "TAG_SHA=wycliffeassociates/${{ matrix.image }}:$GITHUB_SHA" >> $GITHUB_ENV && \
-          echo "TAG_BRANCH=wycliffeassociates/${{ matrix.image }}:$CI_REF_NAME_SLUG" >> $GITHUB_ENV && \
-          echo "TAG_LATEST=wycliffeassociates/${{ matrix.image }}:latest" >> $GITHUB_ENV
+          IMAGE=wycliffeassociates/${{ matrix.image }}
+          # Map the pushed branch to the deploy env its images serve, so
+          # deploy.sh can run IMAGE_TAG=$DEPLOY_ENV. main serves prod; every
+          # other branch publishes a tag equal to its own (slugified) name, so
+          # deploying that branch's env (IMAGE_TAG=<branch-slug>) pulls the
+          # right image. The slug keeps it a valid Docker tag even for branch
+          # names containing '/'.
+          case "$CI_REF_NAME" in
+            main)  ENV_TAG=prod ;;
+            *)     ENV_TAG="$CI_REF_NAME_SLUG" ;;
+          esac
+          {
+            echo "TAGS<<EOF"
+            echo "$IMAGE:$GITHUB_SHA"
+            echo "$IMAGE:$CI_REF_NAME_SLUG"
+            echo "$IMAGE:latest"
+            [ -n "$ENV_TAG" ] && echo "$IMAGE:$ENV_TAG"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
 
       - name: Build and conditional push image
         uses: docker/build-push-action@v6
@@ -76,9 +92,6 @@ jobs:
           file: ${{ matrix.context }}/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: |
-            ${{ env.TAG_SHA }}
-            ${{ env.TAG_BRANCH }}
-            ${{ env.TAG_LATEST }}
+          tags: ${{ env.TAGS }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
