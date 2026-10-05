@@ -1,29 +1,34 @@
-// Pull-based production deploy for vmast-docker.
+// Pull-based production deploy for vmast-docker, modeled on the WACS_deploy_dev
+// freestyle job (Publish Over SSH -> run deploy.sh on the host).
 //
-// Runs deploy.sh on the Jenkins agent. The agent only needs docker (to run the
-// containerized op CLI and the compose client) - op is NOT installed on the
-// node. Secrets are resolved from 1password into the job's environment and the
-// containers are started on the remote docker host named by DEPLOY_DOCKER_HOST,
-// so that host never receives the 1password token or any env file.
+// Flow: check out the repo on the `docker` node, bind the 1password token to
+// OP_SERVICE_ACCOUNT_TOKEN, then Publish Over SSH copies the compose files,
+// deploy.sh and .env.deploy to the host and runs deploy.sh there. op and docker
+// run on the host; the images are pulled from Docker Hub; secrets are resolved
+// on the host and never written to a file.
 //
-// Wire these to your Jenkins:
-//   - agent label 'docker'                   -> a node that can run containers
-//   - credential 'vmast-op-service-account'  -> Secret text: OP_SERVICE_ACCOUNT_TOKEN
-//   - credential 'vmast-prod-ssh'            -> SSH private key for ssh:// docker
-//   - param DEPLOY_DOCKER_HOST               -> ssh://user@host of the prod daemon
-// If the agent itself is the docker host, drop the sshagent block and leave
-// DEPLOY_DOCKER_HOST empty.
+// Wire to your Jenkins (values below are placeholders - match WACS_deploy_dev):
+//   - agent label 'docker'
+//   - SSH server 'wavmastdev01'            -> Publish Over SSH "SSH Server" name
+//   - REMOTE_DIR '/srv/vmast'              -> deploy dir on that host
+//   - credential 'vmast-op-service-account'-> Secret text: OP_SERVICE_ACCOUNT_TOKEN
+//   - the job's SCM checks out this repo at the branch to deploy
+//
+// The freestyle equivalent is documented in DEPLOY.md.
 
 pipeline {
   agent { label 'docker' }
 
   parameters {
-    string(name: 'DEPLOY_ENV', defaultValue: 'prod',
-           description: '1password section and env image tag (prod, dev, ...)')
+    string(name: 'DEPLOY_ENV', defaultValue: 'dev',
+           description: '1password section and env image tag (dev, prod, ...)')
     string(name: 'IMAGE_TAG', defaultValue: '',
-           description: 'Override image tag to deploy (blank = DEPLOY_ENV)')
-    string(name: 'DEPLOY_DOCKER_HOST', defaultValue: 'ssh://deploy@vmast-prod',
-           description: 'Docker daemon to deploy to (blank = this agent)')
+           description: 'Image tag to deploy (blank = DEPLOY_ENV)')
+  }
+
+  environment {
+    SSH_SERVER = 'wavmastdev01'
+    REMOTE_DIR = '/srv/vmast'
   }
 
   options {
@@ -38,17 +43,33 @@ pipeline {
 
     stage('Deploy') {
       steps {
-        sshagent(['vmast-prod-ssh']) {
+        script {
+          def imageTag = params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : params.DEPLOY_ENV
+          // Runs on the remote host. ${OP_SERVICE_ACCOUNT_TOKEN} is substituted
+          // by Publish Over SSH from the bound credential, so it is escaped here.
+          def remoteCmd = """#!/bin/bash
+cd ${env.REMOTE_DIR}
+export DEPLOY_ENV=${params.DEPLOY_ENV}
+export IMAGE_TAG=${imageTag}
+export OP_SERVICE_ACCOUNT_TOKEN=\${OP_SERVICE_ACCOUNT_TOKEN}
+source deploy.sh"""
+
           withCredentials([string(credentialsId: 'vmast-op-service-account',
                                   variable: 'OP_SERVICE_ACCOUNT_TOKEN')]) {
-            sh '''
-              set -eu
-              export DEPLOY_ENV="${DEPLOY_ENV}"
-              if [ -n "${IMAGE_TAG}" ]; then export IMAGE_TAG="${IMAGE_TAG}"; fi
-              if [ -n "${DEPLOY_DOCKER_HOST}" ]; then export DOCKER_HOST="${DEPLOY_DOCKER_HOST}"; fi
-              chmod +x ./deploy.sh
-              ./deploy.sh
-            '''
+            sshPublisher(publishers: [
+              sshPublisherDesc(
+                configName: env.SSH_SERVER,
+                verbose: true,
+                transfers: [
+                  sshTransfer(
+                    sourceFiles: 'docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy',
+                    remoteDirectory: env.REMOTE_DIR,
+                    execCommand: remoteCmd,
+                    execTimeout: 240000
+                  )
+                ]
+              )
+            ])
           }
         }
       }

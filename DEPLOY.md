@@ -1,18 +1,19 @@
 # Deploying vmast-docker
 
-Two deploy paths. They share the same secret model (1password, resolved at
-deploy time, never written to disk) and the same compose base file. They differ
-only in where the images come from.
+Two deploy paths. They share the same secret model (1password, resolved on the
+host at deploy time, never written to disk) and the same compose base file. They
+differ only in where the images come from.
 
 ## Secrets model (both paths)
 
 `.env.deploy` holds `op://` references, not values, and is the single source of
-truth for which secrets the stack needs. Secrets are resolved from 1password
-through the **containerized** op CLI (`1password/op:2` - nothing is installed on
-the host) straight into the deploy process's environment, and docker compose
-interpolates them into each service's `environment:` block. The production
-`docker-compose.yml` declares no `env_file:`, so no plaintext secrets file is
-ever required or written. Both paths need:
+truth for which secrets the stack needs. On the host, `deploy.sh` resolves each
+reference from 1password through the **containerized** op CLI (`1password/op:2` -
+nothing is installed on the host) straight into the deploy process's
+environment, and docker compose interpolates them into each service's
+`environment:` block. The production `docker-compose.yml` declares no
+`env_file:`, so no plaintext secrets file is ever required or written. Both
+paths need:
 
 - `DEPLOY_ENV` - the 1password section to read and the env image tag (e.g. `prod`).
 - `OP_SERVICE_ACCOUNT_TOKEN` - a 1password service-account token.
@@ -28,62 +29,75 @@ export OP_SERVICE_ACCOUNT_TOKEN=...
 ./run.sh
 ```
 
-## Path 2: pull CI-built images (Jenkins, `deploy.sh`)
+## Path 2: pull CI-built images (Jenkins -> host, `deploy.sh`)
 
-CI (`.github/workflows/docker-build.yml`) builds and pushes
+This mirrors the `WACS_deploy_dev` Jenkins job. CI
+(`.github/workflows/docker-build.yml`) builds and pushes
 `wycliffeassociates/vmast-{web,php,db,node}` to Docker Hub. The production
 overlay `docker-compose.prod.yml` points the services at those images, and
-`deploy.sh` resolves secrets and runs the stack:
+`deploy.sh` (run on the host) resolves secrets and starts the stack:
 
-```sh
-export DEPLOY_ENV=prod
-export OP_SERVICE_ACCOUNT_TOKEN=...
-# optional:
-# export IMAGE_TAG=prod                 # default: $DEPLOY_ENV
-# export DOCKER_HOST=ssh://deploy@prod  # default: local docker
-./deploy.sh
-```
+1. Jenkins checks out this repo on the `docker` node and binds the 1password
+   token to `OP_SERVICE_ACCOUNT_TOKEN`.
+2. Publish Over SSH copies `docker-compose.yml`, `docker-compose.prod.yml`,
+   `deploy.sh` and `.env.deploy` to the deploy host, then runs on that host:
 
-`deploy.sh` (see the file for the exact steps):
+   ```sh
+   cd /srv/vmast
+   export DEPLOY_ENV=dev
+   export IMAGE_TAG=dev            # or a specific tag; blank -> DEPLOY_ENV
+   export OP_SERVICE_ACCOUNT_TOKEN=${OP_SERVICE_ACCOUNT_TOKEN}
+   source deploy.sh
+   ```
+3. `deploy.sh` runs op as the `1password/op:2` container, reads each `op://` ref
+   from `.env.deploy` into its environment, then
+   `docker compose -f docker-compose.yml -f docker-compose.prod.yml pull` and
+   `up -d`.
 
-1. defines `op` as `docker run --rm 1password/op:2 op` - containerized, so the
-   node needs docker but **not** an installed op binary;
-2. reads each `op://` ref from `.env.deploy` into its own environment via
-   `op read` - no file is written;
-3. runs `docker compose -f docker-compose.yml -f docker-compose.prod.yml pull`
-   then `up -d`.
+Only the compose files, `deploy.sh` and `.env.deploy` are copied to the host;
+the build contexts are not, because the images are pulled, not built. No secret
+is ever written to a file or copied. The host needs docker (with the compose
+plugin) and outbound HTTPS to 1password and Docker Hub.
 
-### Deploying to a separate host (the important part)
+### Jenkins: pipeline
 
-Set `DOCKER_HOST=ssh://user@prod-host`. `op` is pinned to the **local** docker,
-so secret resolution stays on the Jenkins agent; `docker compose` then ships the
-resolved values to the remote daemon as container configuration over the Docker
-API. The host that actually runs the containers never receives the 1password
-token and never has a secrets file written to it - it only gets the resolved
-environment as part of each container's config. That is the whole reason this
-path does not materialize an env file and copy it over.
+`Jenkinsfile` implements Path 2 with the `sshPublisher` step. It uses:
 
-If the Jenkins agent is itself the docker host, leave `DOCKER_HOST` unset and it
-all runs locally.
-
-Requirements on the agent: docker (with the compose plugin). Outbound HTTPS to
-1password. For a remote `DOCKER_HOST`, an SSH key to the prod host (its host key
-in `known_hosts`) and docker on that host. The vmast images must be pullable by
-the target daemon (the compose client forwards registry auth, so a
-`docker login` on the agent covers private images; they are public by default).
-
-### Jenkins
-
-`Jenkinsfile` runs Path 2. It uses:
-
-- agent label `docker` - a node that can run containers (for the op container
-  and the compose client);
+- agent label `docker`;
+- a Publish Over SSH "SSH Server" named by `SSH_SERVER` (default `wavmastdev01`);
+- `REMOTE_DIR` (default `/srv/vmast`) as the deploy dir on that host;
 - credential `vmast-op-service-account` (Secret text) -> `OP_SERVICE_ACCOUNT_TOKEN`;
-- credential `vmast-prod-ssh` (SSH private key) -> used by `ssh://` docker;
-- params `DEPLOY_ENV`, `IMAGE_TAG` (blank = `DEPLOY_ENV`), and
-  `DEPLOY_DOCKER_HOST` (the `ssh://` target; blank = deploy on the agent).
+- params `DEPLOY_ENV` and `IMAGE_TAG` (blank = `DEPLOY_ENV`).
 
-Nothing is installed on the agent and nothing is copied to the prod host.
+### Jenkins: freestyle (matching WACS_deploy_dev)
+
+If you configure a freestyle job (as WACS does), clone `WACS_deploy_dev` and
+change:
+
+- **Git**: `git@github.com:WycliffeAssociates/vmast-docker.git`, the deploy
+  branch, same SSH credential.
+- **Restrict to node**: `docker`.
+- **Build Environment -> secret text binding**: your vmast 1password-token
+  credential -> variable `OP_SERVICE_ACCOUNT_TOKEN`.
+- **Send files or execute commands over SSH** (Publish Over SSH):
+  - SSH Server: the vmast host (the WACS job uses `wawacsdev01`).
+  - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy`
+  - Remote directory: e.g. `/srv/vmast`
+  - Exec command:
+
+    ```sh
+    #!/bin/bash
+    cd /srv/vmast
+    export IMAGE_TAG=dev
+    export DEPLOY_ENV=dev
+    export OP_SERVICE_ACCOUNT_TOKEN=${OP_SERVICE_ACCOUNT_TOKEN}
+    source deploy.sh
+    ```
+
+The only differences from the WACS job are the repo, the added
+`docker-compose.prod.yml` in source files, and dropping the WACS-gitea-specific
+`READER_BASE_LINK` / `LINTER_BASE_LINK` / `GREEKROOM_BASE_LINK` exports (vmast
+reads everything it needs from `.env.deploy`).
 
 ## Image tags
 
@@ -99,5 +113,5 @@ esac
 ```
 
 `main` publishes `wycliffeassociates/vmast-*:prod`, every other branch publishes
-its slugified name. So `DEPLOY_ENV=prod` deploys `main`'s images. You can always
-deploy a specific commit with `IMAGE_TAG=<sha>`.
+its slugified name. Set `IMAGE_TAG` in the deploy job to whichever tag you want
+to run (an env name, a branch slug, or a specific SHA).
