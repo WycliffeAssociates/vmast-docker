@@ -1,38 +1,56 @@
 #!/bin/bash
 #
-# Production deploy: pull the CI-built images and start the stack with secrets
-# resolved from 1password. Intended for Jenkins, but runs anywhere that has
-# docker (with the compose plugin) and the 1password CLI `op` on PATH.
+# Production deploy, modeled on WACS/deploy.sh.
 #
-# It keeps Maxim's secret model from run.sh exactly: op:// references in
-# .env.deploy are resolved by `op run` into the environment for the duration of
-# the deploy only, never written to disk, and compose interpolates them into the
-# per-service `environment:` blocks. The only difference from run.sh is that
-# images are PULLED (docker-compose.prod.yml) instead of built on the host.
+# Secrets are resolved from 1password through the containerized op CLI
+# (1password/op:2 - nothing is installed on the node) straight into this
+# process's environment, and docker compose interpolates them into each
+# service's `environment:` block. No secret is ever written to a file or copied
+# to another host.
 #
-# Required environment:
-#   DEPLOY_ENV                selects the op section, e.g. production / staging
+# Where the containers run:
+#   - DOCKER_HOST unset  -> everything runs locally (deploy.sh is run on the
+#                           docker host itself, like Maxim's run.sh).
+#   - DOCKER_HOST set     -> e.g. ssh://deploy@<deploy-host>. op and secret
+#     (recommended for      resolution stay HERE (op is pinned to the local
+#      Jenkins)             docker), and compose ships the resolved values to
+#                           that remote daemon as container config over the
+#                           Docker API. The box running the containers never
+#                           receives the 1password token or any env file.
+#
+# Required env:
+#   DEPLOY_ENV                op section + env image tag (e.g. prod)
 #   OP_SERVICE_ACCOUNT_TOKEN  1password service-account token
-#   IMAGE_TAG                 a tag the docker-build workflow published
-#                             (commit SHA, branch slug, or latest)
-#
-# The deploy host must already be logged in to the registry (docker login) if
-# the vmast images are private; Jenkins does that with its registry credential.
+# Optional:
+#   IMAGE_TAG                 image tag to deploy (default: $DEPLOY_ENV)
+#   DOCKER_HOST               remote docker daemon to target (default: local)
 
 set -euo pipefail
 
-: "${DEPLOY_ENV:?Set DEPLOY_ENV (selects the op section, e.g. production)}"
+: "${DEPLOY_ENV:?Set DEPLOY_ENV (op section + image tag, e.g. prod)}"
 : "${OP_SERVICE_ACCOUNT_TOKEN:?Set OP_SERVICE_ACCOUNT_TOKEN (1password service-account token)}"
-: "${IMAGE_TAG:?Set IMAGE_TAG (a Docker Hub tag CI published, e.g. a commit SHA, branch slug, or latest)}"
+export OP_SERVICE_ACCOUNT_TOKEN
+export IMAGE_TAG="${IMAGE_TAG:-$DEPLOY_ENV}"
 
-command -v op >/dev/null 2>&1 || {
-  echo "Error: the 1password CLI 'op' is not on PATH. Install it on the deploy host/agent."
-  exit 1
-}
+# Containerized op, pinned to the LOCAL docker (DOCKER_HOST="") so secret
+# resolution never runs on the remote deploy host even when DOCKER_HOST points
+# there. Needs outbound HTTPS to 1password from wherever this runs.
+op() { DOCKER_HOST="" docker run --rm -e OP_SERVICE_ACCOUNT_TOKEN 1password/op:2 op "$@"; }
 
-export DEPLOY_ENV OP_SERVICE_ACCOUNT_TOKEN IMAGE_TAG
+# Resolve every op:// reference in .env.deploy into this process's environment.
+# .env.deploy stays the single source of truth, shared with run.sh; only
+# $DEPLOY_ENV is expanded in the reference path.
+while IFS='=' read -r key ref; do
+  case "$key" in ''|'#'*|DEPLOY_ENV) continue ;; esac
+  ref=${ref//\$DEPLOY_ENV/$DEPLOY_ENV}
+  value=$(op read "$ref") || { echo "Error: could not read $ref" >&2; exit 1; }
+  export "$key=$value"
+done < .env.deploy
 
 COMPOSE="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
 
-# Resolve secrets once and run both pull and up inside that environment.
-op run --env-file="./.env.deploy" -- sh -c "${COMPOSE} pull && ${COMPOSE} up -d"
+# Pull the images CI published for this env, then recreate only what changed.
+$COMPOSE pull
+$COMPOSE up -d --remove-orphans
+
+unset OP_SERVICE_ACCOUNT_TOKEN
