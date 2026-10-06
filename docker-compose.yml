@@ -17,9 +17,9 @@ services:
         condition: service_healthy
       php:
         condition: service_started
+    # TLS terminates at Cloudflare, so nginx only serves plain HTTP on 80.
     ports:
       - "80:80"
-      - "443:443"
     # No env_file and no environment on purpose. nginx forwards every .php to
     # php:9000 and never interprets PHP itself, and the vhost has no ${} to
     # substitute - so this container has no use for a single credential.
