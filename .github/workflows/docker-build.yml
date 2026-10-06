@@ -24,6 +24,9 @@ jobs:
             context: ./node
     steps:
       - uses: actions/checkout@v4
+      - name: Seed default nginx vhost for the web image
+        if: matrix.image == 'vmast-web'
+        run: cp web/nginx/localhost.conf.example web/nginx/localhost.conf
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 
@@ -55,6 +58,9 @@ jobs:
             context: ./node
     steps:
       - uses: actions/checkout@v4
+      - name: Seed default nginx vhost for the web image
+        if: matrix.image == 'vmast-web'
+        run: cp web/nginx/localhost.conf.example web/nginx/localhost.conf
       - uses: FranzDiebold/github-env-vars-action@v2.8.0
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
