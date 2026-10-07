@@ -64,10 +64,14 @@ plugin) and outbound HTTPS to 1password and Docker Hub.
 `Jenkinsfile` implements Path 2 with the `sshPublisher` step. It uses:
 
 - agent label `docker`;
-- a Publish Over SSH "SSH Server" named by `SSH_SERVER` (default `<ssh-server-name>`);
-- `REMOTE_DIR` (default `<deploy dir>`) as the deploy dir on that host;
+- `VMAST_SSH_SERVER`: the name of a Publish Over SSH "SSH Server";
+- `VMAST_REMOTE_DIR`: the deploy dir on that host;
 - credential `vmast-op-service-account` (Secret text) -> `OP_SERVICE_ACCOUNT_TOKEN`;
 - params `DEPLOY_ENV` and `IMAGE_TAG` (blank = `DEPLOY_ENV`).
+
+`VMAST_SSH_SERVER` and `VMAST_REMOTE_DIR` are set in Jenkins, not in this repo:
+Manage Jenkins > System > Global properties > Environment variables (or the
+folder's / job's own properties). The pipeline fails fast if either is missing.
 
 ### Jenkins: freestyle (matching WACS_deploy_dev)
 
@@ -82,7 +86,7 @@ change:
 - **Send files or execute commands over SSH** (Publish Over SSH):
   - SSH Server: the vmast deploy host (configured in Jenkins).
   - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy`
-  - Remote directory: e.g. `<deploy dir>`
+  - Remote directory: the deploy dir on that host.
   - Exec command:
 
     ```sh
@@ -98,6 +102,15 @@ The only differences from the WACS job are the repo, the added
 `docker-compose.prod.yml` in source files, and dropping the WACS-gitea-specific
 `READER_BASE_LINK` / `LINTER_BASE_LINK` / `GREEKROOM_BASE_LINK` exports (vmast
 reads everything it needs from `.env.deploy`).
+
+### Keeping the deploy host out of the repo
+
+The deploy host's name and address are not in this repository. Its hostname,
+user and key live in the Publish Over SSH "SSH Server" entry (Manage Jenkins >
+System > Publish over SSH); a freestyle job selects that entry in its own
+config, and the pipeline reads its name from `VMAST_SSH_SERVER`. Keep it that
+way: don't put host names, IPs or deploy paths in this file, the Jenkinsfile, or
+commit messages.
 
 ## Image tags
 
