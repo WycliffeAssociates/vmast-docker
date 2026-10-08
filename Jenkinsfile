@@ -9,13 +9,14 @@
 //
 // Wire to your Jenkins:
 //   - agent label 'docker'
-//   - credential 'vmast-op-service-account' -> Secret text: OP_SERVICE_ACCOUNT_TOKEN
 //   - the job's SCM checks out this repo at the branch to deploy
-//   - VMAST_SSH_SERVER and VMAST_REMOTE_DIR, set in Jenkins and never in this
-//     repo (Manage Jenkins > System > Global properties > Environment
-//     variables, or the folder/job's own properties). VMAST_SSH_SERVER is the
-//     name of a Publish Over SSH "SSH Server"; the actual hostname lives in
-//     that SSH Server's config.
+//   - the job parameters below. Each default is `params.X ?: <repo default>`,
+//     so whatever value the job already has is kept as its default and only a
+//     brand-new job falls back to the repo default. The host, directory and
+//     credential ID default to blank here, so their real values live only in
+//     each Jenkins job, never in this repo. Set them in the job configuration
+//     or with "Build with Parameters"; note that building with parameters
+//     makes the values used the job's new defaults.
 //
 // The freestyle equivalent is documented in DEPLOY.md.
 
@@ -23,10 +24,16 @@ pipeline {
   agent { label 'docker' }
 
   parameters {
-    string(name: 'DEPLOY_ENV', defaultValue: 'dev',
+    string(name: 'DEPLOY_ENV', defaultValue: params.DEPLOY_ENV ?: 'dev',
            description: '1password section and env image tag (dev, prod, ...)')
-    string(name: 'IMAGE_TAG', defaultValue: '',
+    string(name: 'IMAGE_TAG', defaultValue: params.IMAGE_TAG ?: '',
            description: 'Image tag to deploy (blank = DEPLOY_ENV)')
+    string(name: 'VMAST_SSH_SERVER', defaultValue: params.VMAST_SSH_SERVER ?: '',
+           description: 'Name of the Publish Over SSH "SSH Server" to deploy to')
+    string(name: 'VMAST_REMOTE_DIR', defaultValue: params.VMAST_REMOTE_DIR ?: '',
+           description: 'Deploy directory on that host')
+    string(name: 'VMAST_OP_CREDENTIALS_ID', defaultValue: params.VMAST_OP_CREDENTIALS_ID ?: '',
+           description: 'ID of the Secret text credential holding the 1Password service-account token')
   }
 
   options {
@@ -42,24 +49,31 @@ pipeline {
     stage('Deploy') {
       steps {
         script {
-          // The deploy host and directory are deliberately not in this repo.
-          def sshServer = env.VMAST_SSH_SERVER?.trim()
-          def remoteDir = env.VMAST_REMOTE_DIR?.trim()
-          if (!sshServer || !remoteDir) {
-            error('Set VMAST_SSH_SERVER and VMAST_REMOTE_DIR in Jenkins ' +
-                  '(Manage Jenkins > System > Global properties > Environment variables).')
+          // All deploy settings come from the job parameters; the sensitive ones
+          // default to blank in this repo, so stop before touching any host.
+          def missing = []
+          for (name in ['DEPLOY_ENV', 'VMAST_SSH_SERVER', 'VMAST_REMOTE_DIR', 'VMAST_OP_CREDENTIALS_ID']) {
+            if (!params[name]?.toString()?.trim()) { missing << name }
           }
-          def imageTag = params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : params.DEPLOY_ENV
+          if (missing) {
+            error("Missing job parameter(s): ${missing.join(', ')}. " +
+                  "Set them in the job configuration or with 'Build with Parameters'.")
+          }
+          def deployEnv = params.DEPLOY_ENV.trim()
+          def sshServer = params.VMAST_SSH_SERVER.trim()
+          def remoteDir = params.VMAST_REMOTE_DIR.trim()
+          def opCredentialsId = params.VMAST_OP_CREDENTIALS_ID.trim()
+          def imageTag = params.IMAGE_TAG?.toString()?.trim() ?: deployEnv
           // Runs on the remote host. ${OP_SERVICE_ACCOUNT_TOKEN} is substituted
           // by Publish Over SSH from the bound credential, so it is escaped here.
           def remoteCmd = """#!/bin/bash
 cd ${remoteDir}
-export DEPLOY_ENV=${params.DEPLOY_ENV}
+export DEPLOY_ENV=${deployEnv}
 export IMAGE_TAG=${imageTag}
 export OP_SERVICE_ACCOUNT_TOKEN=\${OP_SERVICE_ACCOUNT_TOKEN}
 source deploy.sh"""
 
-          withCredentials([string(credentialsId: 'vmast-op-service-account',
+          withCredentials([string(credentialsId: opCredentialsId,
                                   variable: 'OP_SERVICE_ACCOUNT_TOKEN')]) {
             sshPublisher(publishers: [
               sshPublisherDesc(

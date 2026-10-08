@@ -61,17 +61,32 @@ plugin) and outbound HTTPS to 1password and Docker Hub.
 
 ### Jenkins: pipeline
 
-`Jenkinsfile` implements Path 2 with the `sshPublisher` step. It uses:
+`Jenkinsfile` implements Path 2 with the `sshPublisher` step. It runs on agent
+label `docker` and reads every deploy setting from these job parameters, which
+it registers itself:
 
-- agent label `docker`;
-- `VMAST_SSH_SERVER`: the name of a Publish Over SSH "SSH Server";
-- `VMAST_REMOTE_DIR`: the deploy dir on that host;
-- credential `vmast-op-service-account` (Secret text) -> `OP_SERVICE_ACCOUNT_TOKEN`;
-- params `DEPLOY_ENV` and `IMAGE_TAG` (blank = `DEPLOY_ENV`).
+| Parameter | Repo default | Value |
+|---|---|---|
+| `DEPLOY_ENV` | `dev` | 1Password section and env image tag (`dev`, `prod`, ...) |
+| `IMAGE_TAG` | blank | image tag to deploy; blank = `DEPLOY_ENV` |
+| `VMAST_SSH_SERVER` | blank | name of the Publish Over SSH "SSH Server" for the host |
+| `VMAST_REMOTE_DIR` | blank | deploy dir on that host |
+| `VMAST_OP_CREDENTIALS_ID` | blank | ID of the Secret text credential holding the 1Password service-account token (the one `WACS_deploy_dev` binds); bound to `OP_SERVICE_ACCOUNT_TOKEN` |
 
-`VMAST_SSH_SERVER` and `VMAST_REMOTE_DIR` are set in Jenkins, not in this repo:
-Manage Jenkins > System > Global properties > Environment variables (or the
-folder's / job's own properties). The pipeline fails fast if either is missing.
+Each parameter's default is declared as `params.X ?: <repo default>`, so a value
+already set on the job is kept as its default instead of being reset by the
+Jenkinsfile. The host, directory and credential ID default to blank in the repo,
+so their real values live only in each Jenkins job.
+
+Setting up a job:
+
+1. Run it once. That registers the parameters; with blank defaults the build
+   stops at "Missing job parameter(s)" before touching any host.
+2. Fill in the values in the job configuration (parameter defaults), or enter
+   them with "Build with Parameters".
+
+Building with parameters makes the values used the job's new defaults, so a
+one-off `IMAGE_TAG` sticks for later builds until you change it back.
 
 ### Jenkins: freestyle (matching WACS_deploy_dev)
 
@@ -81,8 +96,8 @@ change:
 - **Git**: `git@github.com:WycliffeAssociates/vmast-docker.git`, the deploy
   branch, same SSH credential.
 - **Restrict to node**: `docker`.
-- **Build Environment -> secret text binding**: your vmast 1password-token
-  credential -> variable `OP_SERVICE_ACCOUNT_TOKEN`.
+- **Build Environment -> secret text binding**: keep the WACS job's binding of
+  the 1Password service-account token -> variable `OP_SERVICE_ACCOUNT_TOKEN`.
 - **Send files or execute commands over SSH** (Publish Over SSH):
   - SSH Server: the vmast deploy host (configured in Jenkins).
   - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy`
@@ -108,9 +123,10 @@ reads everything it needs from `.env.deploy`).
 The deploy host's name and address are not in this repository. Its hostname,
 user and key live in the Publish Over SSH "SSH Server" entry (Manage Jenkins >
 System > Publish over SSH); a freestyle job selects that entry in its own
-config, and the pipeline reads its name from `VMAST_SSH_SERVER`. Keep it that
-way: don't put host names, IPs or deploy paths in this file, the Jenkinsfile, or
-commit messages.
+config, and the pipeline reads its name from the job parameter
+`VMAST_SSH_SERVER`. The same goes for the 1Password credential, whose ID comes
+from the job parameter `VMAST_OP_CREDENTIALS_ID`. Keep it that way: don't put host names, IPs, deploy
+paths or credential IDs in this file, the Jenkinsfile, or commit messages.
 
 ## Image tags
 
