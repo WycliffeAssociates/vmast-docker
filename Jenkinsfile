@@ -64,17 +64,22 @@ pipeline {
           def remoteDir = params.VMAST_REMOTE_DIR.trim()
           def opCredentialsId = params.VMAST_OP_CREDENTIALS_ID.trim()
           def imageTag = params.IMAGE_TAG?.toString()?.trim() ?: deployEnv
-          // Runs on the remote host. ${OP_SERVICE_ACCOUNT_TOKEN} is substituted
-          // by Publish Over SSH from the bound credential, so it is escaped here.
-          def remoteCmd = """#!/bin/bash
+          withCredentials([string(credentialsId: opCredentialsId,
+                                  variable: 'OP_SERVICE_ACCOUNT_TOKEN')]) {
+            // Runs on the remote host. In a pipeline, Publish Over SSH expands
+            // ${...} in execCommand from the build's base environment, which does
+            // not include variables bound by withCredentials - so the token is
+            // put into the command here instead. Jenkins masks it in the console
+            // log and warns about Groovy interpolation of a secret; that is
+            // expected. The token reaches the host inside the SSH command, as in
+            // the WACS_deploy_dev freestyle job, and is never written to a file.
+            def remoteCmd = """#!/bin/bash
 cd ${remoteDir}
 export DEPLOY_ENV=${deployEnv}
 export IMAGE_TAG=${imageTag}
-export OP_SERVICE_ACCOUNT_TOKEN=\${OP_SERVICE_ACCOUNT_TOKEN}
+export OP_SERVICE_ACCOUNT_TOKEN='${env.OP_SERVICE_ACCOUNT_TOKEN}'
 source deploy.sh"""
 
-          withCredentials([string(credentialsId: opCredentialsId,
-                                  variable: 'OP_SERVICE_ACCOUNT_TOKEN')]) {
             sshPublisher(publishers: [
               sshPublisherDesc(
                 configName: sshServer,
