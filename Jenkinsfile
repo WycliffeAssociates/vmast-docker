@@ -80,7 +80,9 @@ export IMAGE_TAG=${imageTag}
 export OP_SERVICE_ACCOUNT_TOKEN='${env.OP_SERVICE_ACCOUNT_TOKEN}'
 source deploy.sh"""
 
-            sshPublisher(publishers: [
+            // failOnError: a failed transfer or exec fails the build instead of
+            // leaving it UNSTABLE, so a broken deploy cannot look green.
+            sshPublisher(failOnError: true, publishers: [
               sshPublisherDesc(
                 configName: sshServer,
                 verbose: true,
