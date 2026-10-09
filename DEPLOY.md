@@ -85,6 +85,24 @@ Setting up a job:
 2. Fill in the values in the job configuration (parameter defaults), or enter
    them with "Build with Parameters".
 
+### Ports
+
+The host ports come from the same 1Password section as the rest of the
+configuration, via `.env.deploy`:
+
+| 1Password field | Typical value | Meaning |
+|---|---|---|
+| `WEB_PORT` | `80` | host port published for the web (nginx) container |
+| `NODE_PORT` | `8001` | host port published for the node (socket) container |
+| `SOCKET_PORT` | `8001` | port node listens on, and the port browsers connect to |
+
+Every section `deploy.sh` or `run.sh` reads (e.g. `dev`, `prod`) must have
+`WEB_PORT` and `NODE_PORT` fields; a missing field fails the deploy. Browsers
+connect to the socket at `MAIN_HOST:SOCKET_PORT` (see `default.php`), so
+`SOCKET_PORT` must be the port clients actually reach: `NODE_PORT` itself when
+they connect to the host directly, or the public port of a reverse proxy in
+front of it. Local dev uses the defaults (`80`, `8001`) from `.env`.
+
 Building with parameters makes the values used the job's new defaults, so a
 one-off `IMAGE_TAG` sticks for later builds until you change it back.
 

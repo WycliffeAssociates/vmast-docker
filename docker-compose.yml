@@ -18,8 +18,10 @@ services:
       php:
         condition: service_started
     # TLS terminates at Cloudflare, so nginx only serves plain HTTP on 80.
+    # Host port comes from WEB_PORT (1Password per environment; default 80) so
+    # shared docker hosts can avoid ports already in use.
     ports:
-      - "80:80"
+      - "${WEB_PORT:-80}:80"
     # No env_file and no environment on purpose. nginx forwards every .php to
     # php:9000 and never interprets PHP itself, and the vhost has no ${} to
     # substitute - so this container has no use for a single credential.
@@ -178,8 +180,12 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+    # Host port comes from NODE_PORT (1Password per environment; default 8001).
+    # The container side follows SOCKET_PORT because server.js listens on it.
+    # Browsers connect to MAIN_HOST:SOCKET_PORT (see default.php), so
+    # SOCKET_PORT must be the port clients actually reach.
     ports:
-      - "8001:8001"
+      - "${NODE_PORT:-8001}:${SOCKET_PORT:-8001}"
     depends_on:
       rabbitmq:
         condition: service_healthy
