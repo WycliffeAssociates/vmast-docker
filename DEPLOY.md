@@ -164,3 +164,19 @@ esac
 `main` publishes `wycliffeassociates/vmast-*:prod`, every other branch publishes
 its slugified name. Set `IMAGE_TAG` in the deploy job to whichever tag you want
 to run (an env name, a branch slug, or a specific SHA).
+
+## CI safeguards
+
+- **Smoke test.** `scripts/smoke-test.sh` boots the whole stack from the commit
+  and checks the home page, login, a redirect, a 404, the socket.io handshake
+  and that `app/Storage/Logs/error.log` stayed empty. `Push-Image` waits for it,
+  so an image that fails is never published. Run it locally from the repo root
+  with `scripts/smoke-test.sh`.
+- **Pinned PHP dependencies.** `composer.lock` fixes the versions that go into
+  the php image. Dependabot opens a grouped PR each week for minor and patch
+  updates, and security-update PRs as soon as an advisory lands (enable
+  Dependabot alerts and security updates in the repo settings). The
+  `Composer security audit` workflow checks the lock daily.
+- **Weekly rebuild.** Every Monday the default branch is rebuilt without the
+  layer cache, so base images and OS packages pick up security patches. That
+  publishes fresh `prod` images; run the deploy job to put them on the host.

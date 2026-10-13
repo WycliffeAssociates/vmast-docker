@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  # Weekly rebuild of the default branch so OS packages and base images
+  # (php, nginx, mariadb, node) pick up security patches even when nothing is
+  # pushed. Scheduled builds skip the layer cache so apt and the base image
+  # tags are re-fetched; composer still installs from composer.lock.
+  schedule:
+    - cron: "41 4 * * 1"
 
 jobs:
   # Build every image (no push) so pull requests are validated.
@@ -36,16 +42,41 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.context }}/Dockerfile
           platforms: linux/amd64
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  # Boot the whole stack from this commit and check that the app really serves
+  # pages (scripts/smoke-test.sh). An image build alone would not have caught a
+  # dependency update that broke routing; this does, and Push-Image waits for
+  # it, so a broken build is never published.
+  Smoke-Test:
+    name: Smoke test the stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Authenticated pulls avoid Docker Hub's anonymous rate limit. Skipped
+      # where Actions secrets are unavailable (Dependabot, forks).
+      - name: Login to Docker Hub
+        if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.fork != true }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Run smoke test
+        env:
+          SMOKE_BUILD_ARGS: ${{ github.event_name == 'schedule' && '--pull --no-cache' || '--pull' }}
+        run: scripts/smoke-test.sh
 
   Push-Image:
     name: Push ${{ matrix.image }} if this is a branch
     runs-on: ubuntu-latest
-    needs: [Build-Image]
-    # Dependabot branches are only built (Build-Image), not published: their
-    # runs get no Actions secrets, so the Docker Hub login would fail anyway.
-    if: ${{ contains(fromJson('["push"]'), github.event_name) && github.actor != 'dependabot[bot]' }}
+    needs: [Build-Image, Smoke-Test]
+    # Branch pushes and the weekly rebuild publish. Dependabot branches are
+    # only built and smoke tested: their runs get no Actions secrets, so the
+    # Docker Hub login would fail anyway.
+    if: ${{ contains(fromJson('["push", "schedule"]'), github.event_name) && github.actor != 'dependabot[bot]' }}
     strategy:
       fail-fast: false
       matrix:
@@ -99,6 +130,8 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.context }}/Dockerfile
           platforms: linux/amd64
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
           push: true
           tags: ${{ env.TAGS }}
           cache-from: type=gha,scope=${{ matrix.image }}
