@@ -12,6 +12,7 @@ RUN yarn install
 COPY ./node_entrypoint.sh /node_entrypoint.sh
 RUN chmod +x /node_entrypoint.sh
 COPY . .
+EXPOSE 8001
 ENTRYPOINT [ "/node_entrypoint.sh" ]
 
 # COPY ./node_start.sh /node_start.sh

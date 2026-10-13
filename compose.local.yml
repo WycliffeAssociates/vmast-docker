@@ -86,7 +86,6 @@ services:
   # environment:
   #   APP_TYPE: ${APP_TYPE}
   #   MAIN_HOST: ${MAIN_HOST}
-  #   SOCKET_PORT: ${SOCKET_PORT}
   #   MAIL_HOST: ${MAIL_HOST}
   #   MAIL_NAME: ${MAIL_NAME}
   #   MAIL_FROM: ${MAIL_FROM}

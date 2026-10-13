@@ -164,7 +164,6 @@ services:
     # - ./scripts:/scripts
     environment:
       MAIN_HOST: ${MAIN_HOST}
-      SOCKET_PORT: ${SOCKET_PORT}
       MAIL_HOST: ${MAIL_HOST}
       MAIL_NAME: ${MAIL_NAME}
       MAIL_FROM: ${MAIL_FROM}
@@ -180,12 +179,12 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
-    # Host port comes from NODE_PORT (1Password per environment; default 8001).
-    # The container side follows SOCKET_PORT because server.js listens on it.
-    # Browsers connect to MAIN_HOST:SOCKET_PORT (see default.php), so
-    # SOCKET_PORT must be the port clients actually reach.
+    # server.js always listens on 8001 inside the container. The host port comes
+    # from NODE_PORT (1Password per environment; default 8001). SOCKET_PORT is
+    # only the port browsers connect to (MAIN_HOST:SOCKET_PORT, see default.php)
+    # and is read by php, not node.
     ports:
-      - "${NODE_PORT:-8001}:${SOCKET_PORT:-8001}"
+      - "${NODE_PORT:-8001}:8001"
     depends_on:
       rabbitmq:
         condition: service_healthy
