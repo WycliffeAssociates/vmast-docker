@@ -173,7 +173,7 @@ class Factory
     {
         $extensions = array_keys($this->extensions);
 
-        return array_first($extensions, function($key, $value) use ($path)
+        return array_first_where($extensions, function($key, $value) use ($path)
         {
             return str_ends_with($path, $value);
         });

@@ -235,7 +235,7 @@ class Route
      */
     public function findClosure(array $action)
     {
-        return array_first($action, function($key, $value)
+        return array_first_where($action, function($key, $value)
         {
             return is_callable($value);
         });

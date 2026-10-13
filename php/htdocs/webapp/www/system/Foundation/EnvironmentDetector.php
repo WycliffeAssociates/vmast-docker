@@ -76,7 +76,7 @@ class EnvironmentDetector
      */
     protected function getEnvironmentArgument(array $args)
     {
-        return array_first($args, function($k, $v)
+        return array_first_where($args, function($k, $v)
         {
             return str_starts_with($v, '--env');
         });

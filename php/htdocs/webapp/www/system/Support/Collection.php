@@ -148,7 +148,7 @@ class Collection implements ArrayAccess, ArrayableInterface, Countable, Iterator
         if (is_null($callback)) {
             return count($this->items) > 0 ? reset($this->items) : null;
         } else {
-            return array_first($this->items, $callback, $default);
+            return array_first_where($this->items, $callback, $default);
         }
     }
 

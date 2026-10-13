@@ -272,7 +272,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    if(!function_exists("array_first")) {
+    if(!function_exists("array_first_where")) {
         /**
          * Return the first element in an array passing a given truth test.
          *
@@ -281,7 +281,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
          * @param mixed|null $default
          * @return mixed
          */
-        function array_first(array $array, Closure $callback, mixed $default = null): mixed
+        function array_first_where(array $array, Closure $callback, mixed $default = null): mixed
         {
             foreach ($array as $key => $value) {
                 if (call_user_func($callback, $key, $value)) return $value;
@@ -291,7 +291,7 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
         }
     }
 
-    if(!function_exists("array_last")) {
+    if(!function_exists("array_last_where")) {
         /**
          * Return the last element in an array passing a given truth test.
          *
@@ -300,9 +300,9 @@ if (! defined('NOVA_SYSTEM_FUNCTIONS')) {
          * @param mixed|null $default
          * @return mixed
          */
-        function array_last(array $array, Closure $callback, mixed $default = null): mixed
+        function array_last_where(array $array, Closure $callback, mixed $default = null): mixed
         {
-            return array_first(array_reverse($array), $callback, $default);
+            return array_first_where(array_reverse($array), $callback, $default);
         }
     }
 

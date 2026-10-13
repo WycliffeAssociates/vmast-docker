@@ -341,7 +341,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
      */
     public static function getGlobalScope($scope): ?ScopeInterface
     {
-        return array_first(static::$globalScopes[get_called_class()], function($key, $value) use ($scope)
+        return array_first_where(static::$globalScopes[get_called_class()], function($key, $value) use ($scope)
         {
             return $scope instanceof $value;
         });
@@ -950,7 +950,7 @@ abstract class Model implements ArrayAccess, ArrayableInterface, JsonableInterfa
     {
         $self = __FUNCTION__;
 
-        $caller = array_first(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), function($key, $trace) use ($self)
+        $caller = array_first_where(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), function($key, $trace) use ($self)
         {
             $caller = $trace['function'];
 

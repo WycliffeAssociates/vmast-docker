@@ -204,7 +204,7 @@ class RouteCollection implements Countable, IteratorAggregate
      */
     protected function check(array $routes, $request, $includingMethod = true)
     {
-        return array_first($routes, function($key, $value) use ($request, $includingMethod)
+        return array_first_where($routes, function($key, $value) use ($request, $includingMethod)
         {
             return $value->matches($request, $includingMethod);
         });
