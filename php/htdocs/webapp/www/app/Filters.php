@@ -55,7 +55,9 @@ Route::filter('referer', function($route, $request) {
     // Check if the visitor come to this Route from another site.
     $referer = $request->header('referer');
 
-    if(! str_starts_with($referer, Config::get('app.url'))) {
+    // A missing Referer (typed URL, privacy settings) is null, which PHP 8
+    // rejects in str_starts_with, so treat it as invalid up front.
+    if(! $referer || ! str_starts_with($referer, Config::get('app.url'))) {
         // When Referrer is invalid, respond with Error 400 Page (Bad Request)
         return Response::error(400);
     }
