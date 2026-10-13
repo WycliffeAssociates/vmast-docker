@@ -1,0 +1,34 @@
+name: Composer security audit
+
+# Checks composer.lock against the Packagist advisory database (GitHub and
+# FriendsOfPHP advisories). The daily run catches advisories published after a
+# lock was committed, even when nothing is pushed. Scheduled runs use the
+# default branch.
+on:
+  push:
+    paths:
+      - php/htdocs/webapp/www/composer.json
+      - php/htdocs/webapp/www/composer.lock
+      - .github/workflows/composer-audit.yml
+  pull_request:
+    paths:
+      - php/htdocs/webapp/www/composer.json
+      - php/htdocs/webapp/www/composer.lock
+      - .github/workflows/composer-audit.yml
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: php/htdocs/webapp/www
+    steps:
+      - uses: actions/checkout@v4
+      # --locked audits composer.lock without installing anything. Abandoned
+      # packages (swiftmailer, patchwork/utf8) are reported but do not fail the
+      # job; only security advisories do.
+      - name: Audit composer.lock
+        run: composer audit --locked --no-dev --abandoned=report

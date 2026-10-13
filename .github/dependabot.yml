@@ -1,0 +1,22 @@
+# composer.lock pins the PHP dependencies so every image is built from versions
+# that were tested together. Dependabot keeps those pins moving:
+#
+#   - Security updates: opened as soon as an advisory affects a locked package.
+#     Turn on "Dependabot alerts" and "Dependabot security updates" under
+#     Settings > Code security; they need no entry in this file.
+#   - Version updates (below): one grouped PR a week with every minor and patch
+#     bump, so non-security fixes keep landing too.
+#
+# Each PR runs the "Build vmast Docker Images" workflow, which installs from the
+# updated lock inside the php image build.
+version: 2
+updates:
+  - package-ecosystem: composer
+    directory: /php/htdocs/webapp/www
+    schedule:
+      interval: weekly
+    groups:
+      php-dependencies:
+        update-types:
+          - minor
+          - patch
