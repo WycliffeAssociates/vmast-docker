@@ -8,12 +8,11 @@ RUN yarn global add pm2
 WORKDIR /node
 COPY ./package.json .
 COPY ./yarn.lock .
-RUN yarn install
-COPY ./node_entrypoint.sh /node_entrypoint.sh
-RUN chmod +x /node_entrypoint.sh
+# Dependencies are installed here, once, from yarn.lock. The container does
+# not reinstall them at start, so it boots without reaching the npm registry.
+RUN yarn install --frozen-lockfile
 COPY . .
-EXPOSE 8001
-ENTRYPOINT [ "/node_entrypoint.sh" ]
 
-# COPY ./node_start.sh /node_start.sh
-# ENTRYPOINT ["/node_start.sh"]
+# pm2-runtime stays in the foreground as PID 1: it streams both processes'
+# logs to stdout and stops them cleanly on `docker stop`.
+CMD ["pm2-runtime", "ecosystem.config.js"]

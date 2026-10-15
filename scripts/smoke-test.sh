@@ -97,8 +97,8 @@ check /members/login   200
 check /events          302
 check /does-not-exist  404
 
-# node_entrypoint.sh runs `yarn install` before starting the server, so the
-# socket can come up well after the web page.
+# node starts independently of web and php, so give the socket a little time
+# after the web page is up.
 for _ in $(seq 1 60); do
   code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$NODE_PORT/socket.io/?EIO=4&transport=polling" || true)
   [ "$code" = 200 ] && break
