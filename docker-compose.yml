@@ -199,8 +199,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    # check_port_connectivity, not ping: ping passes as soon as the Erlang node
+    # is up, before the AMQP listener on 5672 accepts connections, so node's
+    # mailer (which waits on this check) connected too early and crashed.
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
       interval: 10s
       timeout: 10s
       retries: 10

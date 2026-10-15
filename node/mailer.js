@@ -18,6 +18,16 @@ amqp.connect(`amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASS}@$
 
     console.log("AMQP: Connected successfully");
 
+    // Exit if the connection drops (e.g. RabbitMQ restarted) so pm2 restarts
+    // this process and it reconnects, instead of idling without consuming.
+    connection.on("error", function(err) {
+        console.error("AMQP: Connection error", err.message);
+    });
+    connection.on("close", function() {
+        console.error("AMQP: Connection closed, exiting so pm2 restarts the mailer");
+        process.exit(1);
+    });
+
     connection.createChannel(function(error1, channel) {
         if (error1) {
             throw error1;
