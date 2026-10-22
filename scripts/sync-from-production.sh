@@ -541,12 +541,23 @@ restore_fonts() {
     require_vars PROD_FONTS_PATH
 
     # Named explicitly rather than pulling the whole directory: the static
-    # fonts there are tracked and come from the image.
-    local members=""
-    local f
-    for f in "${FONT_FILES[@]}"; do
-        members="$members $(printf '%q' "uploads/$f")"
-    done
+    # fonts there are tracked and come from the image. Older deployments keep
+    # the uploads directly in fonts/, newer ones in fonts/uploads/, so each file
+    # is taken from wherever it exists and archived without a directory. A
+    # font that was never uploaded is simply left out; with none at all an
+    # empty archive is sent, so the unpacking side still gets valid input.
+    local names
+    names="$(printf '%q ' "${FONT_FILES[@]}")"
+
+    local fetch_fonts
+    fetch_fonts="cd $(printf '%q' "$PROD_FONTS_PATH") || exit 1
+        set --
+        for f in $names; do
+            if [ -f \"uploads/\$f\" ]; then set -- \"\$@\" -C \"\$PWD/uploads\" \"\$f\"
+            elif [ -f \"\$f\" ]; then set -- \"\$@\" -C \"\$PWD\" \"\$f\"
+            fi
+        done
+        if [ \$# -gt 0 ]; then tar -czf - \"\$@\"; else tar -czf - -T /dev/null; fi"
 
     if [[ $SEED_VOLUME -eq 1 ]]; then
         local volume
@@ -557,11 +568,9 @@ restore_fonts() {
 
         say "Streaming the uploaded fonts into volume $volume"
 
-        # A font that has never been uploaded is simply absent upstream, so tar
-        # is allowed to report it without failing the run.
-        prod_ssh "cd $(printf '%q' "$PROD_FONTS_PATH") && tar -czf - $members 2>/dev/null || true" \
+        prod_ssh "$fetch_fonts" \
             | docker run --rm -i -v "$volume:/dest" "$SEED_IMAGE" \
-                tar -xzf - -C /dest --strip-components=1 \
+                tar -xzf - -C /dest \
             || die "Could not fetch the fonts. If the error above is from ssh it is
        authentication or connectivity; otherwise check PROD_FONTS_PATH."
 
@@ -575,8 +584,8 @@ restore_fonts() {
 
         say "Fetching the uploaded fonts from $PROD_SSH_HOST"
 
-        prod_ssh "cd $(printf '%q' "$PROD_FONTS_PATH") && tar -czf - $members 2>/dev/null || true" \
-            | tar -xzf - -C "$FONTS_UPLOADS" --strip-components=1 \
+        prod_ssh "$fetch_fonts" \
+            | tar -xzf - -C "$FONTS_UPLOADS" \
             || die "Could not fetch the fonts. If the error above is from ssh it is
        authentication or connectivity; otherwise check PROD_FONTS_PATH."
 
