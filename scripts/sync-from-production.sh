@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Pulls the production database and the user-created assets into the local
-# Docker stack.
+# Copies the production database and the user-created assets into a running
+# vmast stack: a developer's local stack or a deployed one (dev, prod).
 #
 #   Database: mysqldump runs on the production host and the gzip is streamed
 #             back, so only SSH has to be reachable. Production is MySQL 5.5
@@ -9,37 +9,43 @@
 #             a physical xtrabackup set cannot cross that gap.
 #
 #   Assets:   the source directory is tarred on the production host and piped
-#             straight into tar here, so no 100MB+ archive is parked on either
+#             straight into the stack, so no 100MB+ archive is parked on either
 #             side unless --keep-archive asks for one.
 #
-# Configure it with scripts/.env.sync (see .env.sync.example), then:
+# The stack is found by its compose project, and everything is written through
+# its running containers: the database through the db container (with that
+# container's own credentials), the assets to wherever the php container keeps
+# them - a named volume when deployed, the working tree in development. So it
+# needs no .env and no compose files, and runs the same everywhere.
 #
-#   ./scripts/sync-from-production.sh                 # database and assets
+# Configure it with scripts/.env.sync (see .env.sync.example), then, with the
+# stack running:
+#
+#   ./scripts/sync-from-production.sh                 # database, assets, fonts
 #   ./scripts/sync-from-production.sh --db-only
-#   ./scripts/sync-from-production.sh --assets-only --push
 #   ./scripts/sync-from-production.sh --assets-only --archive ~/Desktop/vmast_backups/source.tar.gz
+#
+# On a deploy host the Jenkins job ships this script into the deploy directory,
+# and it is run from there (the copy is not executable):
+#
+#   bash scripts/sync-from-production.sh --ask-pass
 #
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Absolute paths, so the script works from any working directory.
-DB_SERVICE="db"
-
 DUMP_DIR="$ROOT/db/dump"
 DUMP_FILE="$DUMP_DIR/production.sql.gz"
 
-ASSETS_PARENT="$ROOT/php/htdocs/webapp/www/app/Templates/Default/Assets"
-FONTS_UPLOADS="$ASSETS_PARENT/fonts/uploads"
-
-# Production still keeps these under Assets/source; locally they live in the
-# framework's storage directory, so the archive's leading source/ is stripped
-# rather than preserved.
-RESOURCES="$ROOT/php/htdocs/webapp/www/app/Storage/Resources"
+# Where the php container keeps user content. Production still keeps the
+# resources under Assets/source; here they live in the framework's storage
+# directory, so the archive's leading source/ is stripped rather than preserved.
+CT_STORAGE="/usr/share/nginx/html/app/Storage"
+CT_RESOURCES="$CT_STORAGE/Resources"
+CT_FONTS="/usr/share/nginx/html/app/Templates/Default/Assets/fonts/uploads"
 
 # Only these two are user content; everything else in fonts/ ships in the image.
 FONT_FILES=(SUN.woff BackSUN.woff)
-CONTAINER_RESOURCES="/usr/share/nginx/html/app/Storage/Resources"
 
 # Production is MySQL 5.5 and every table is InnoDB utf8, so: --single-transaction
 # for a consistent dump without locking, utf8 to match the tables, and no
@@ -55,16 +61,13 @@ DB_COLLATE="utf8_unicode_ci"
 DO_DB=1
 DO_ASSETS=1
 DO_FONTS=1
-DO_PUSH=0
 KEEP_ARCHIVE=0
+KEEP_DUMP=0
 LOCAL_ARCHIVE=""
 SKIP_DUMP=0
 ASSUME_YES=0
 ASK_PASS=0
-SEED_VOLUME=0
-PROD_ONLY=0
-VOLUME_NAME=""
-SEED_IMAGE="${SEED_IMAGE:-alpine:3}"
+PROJECT="${COMPOSE_PROJECT_NAME:-}"
 
 say()  { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33mwarn:\033[0m %s\n' "$*" >&2; }
@@ -77,18 +80,19 @@ Options:
   --db-only            Only refresh the database
   --assets-only        Only refresh the assets
   --fonts-only         Only refresh the admin-uploaded fonts
+  --no-db              Skip the database
+  --no-assets          Skip the assets
   --no-fonts           Skip the fonts
-  --skip-dump          Import the dump already at db/dump/production.sql.gz
+  --project NAME       Compose project of the target stack. Defaults to
+                       COMPOSE_PROJECT_NAME, else the name compose gives this
+                       directory - right when run from the repo or deploy dir.
+  --skip-dump          Import the dump kept at db/dump/production.sql.gz by an
+                       earlier --keep-dump run instead of fetching a new one
+  --keep-dump          Keep the dump after importing it (it holds production's
+                       user data, so it is deleted by default)
   --archive PATH       Unpack this local source.tar.gz instead of fetching
                        it from production
   --keep-archive       Also save the fetched assets as a .tar.gz next to the dump
-  --push               Copy the assets into the running web and php containers
-                       as well, rather than waiting for a watch sync or rebuild
-  --seed-volume        Unpack into the app_storage and fonts_uploads named
-                       volumes rather than the working tree. For a first
-                       production deploy; the stack may be stopped.
-  --prod               Use only docker-compose.yml, ignoring compose.local.yml
-  --volume-name NAME   Target this volume instead of the resolved one
   --ask-pass           Authenticate interactively instead of requiring a key.
                        The connection is reused, so the password is typed once
                        however many commands the run makes.
@@ -103,15 +107,20 @@ while [[ $# -gt 0 ]]; do
         --db-only)      DO_ASSETS=0; DO_FONTS=0 ;;
         --assets-only)  DO_DB=0; DO_FONTS=0 ;;
         --fonts-only)   DO_DB=0; DO_ASSETS=0 ;;
+        --no-db)        DO_DB=0 ;;
+        --no-assets)    DO_ASSETS=0 ;;
         --no-fonts)     DO_FONTS=0 ;;
+        --project)      PROJECT="${2:?--project needs a name}"; shift ;;
         --skip-dump)    SKIP_DUMP=1 ;;
+        --keep-dump)    KEEP_DUMP=1 ;;
         --archive)      LOCAL_ARCHIVE="${2:?--archive needs a path}"; shift ;;
         --keep-archive) KEEP_ARCHIVE=1 ;;
-        --push)         DO_PUSH=1 ;;
-        --seed-volume)  SEED_VOLUME=1 ;;
-        --prod)         PROD_ONLY=1 ;;
-        --volume-name)  VOLUME_NAME="${2:?--volume-name needs a name}"; shift ;;
         --ask-pass)     ASK_PASS=1 ;;
+        # Earlier versions chose between the working tree, a running container
+        # and the named volumes with these; the target is now read from the
+        # running php container, so they are accepted and ignored.
+        --push|--seed-volume|--prod)
+                        warn "$1 is no longer needed and is ignored." ;;
         -y|--yes)       ASSUME_YES=1 ;;
         -h|--help)      usage ;;
         *)              die "Unknown option: $1 (try --help)" ;;
@@ -119,14 +128,7 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-# compose.local.yml carries the development overrides - bind mounts in place of
-# the named volumes - so production must not load it. Built here rather than
-# above because it depends on --prod having been parsed.
-COMPOSE_FILES=(-f "$ROOT/docker-compose.yml")
-
-if [[ $PROD_ONLY -eq 0 && -f "$ROOT/compose.local.yml" ]]; then
-    COMPOSE_FILES+=(-f "$ROOT/compose.local.yml")
-fi
+[[ $DO_DB -eq 1 || $DO_ASSETS -eq 1 || $DO_FONTS -eq 1 ]] || die "Nothing to do."
 
 # ---------------------------------------------------------------- configuration
 
@@ -136,9 +138,16 @@ fi
 # shellcheck disable=SC1091
 set -a; source "$ROOT/scripts/.env.sync"; set +a
 
-[[ -f "$ROOT/.env" ]] || die "Missing .env - the local database credentials come from it."
-# shellcheck disable=SC1091
-set -a; source "$ROOT/.env"; set +a
+PROD_SSH_PORT="${PROD_SSH_PORT:-22}"
+PROD_DB_HOST="${PROD_DB_HOST:-127.0.0.1}"
+PROD_DB_PORT="${PROD_DB_PORT:-3306}"
+
+# One server can host several vmast sites. PROD_APP_ROOT names the site's app/
+# directory, from which both asset paths follow; either can still be set alone.
+if [[ -n "${PROD_APP_ROOT:-}" ]]; then
+    PROD_ASSETS_PATH="${PROD_ASSETS_PATH:-$PROD_APP_ROOT/Templates/Default/Assets/source}"
+    PROD_FONTS_PATH="${PROD_FONTS_PATH:-$PROD_APP_ROOT/Templates/Default/Assets/fonts}"
+fi
 
 PROD_SSH_PORT="${PROD_SSH_PORT:-22}"
 PROD_DB_HOST="${PROD_DB_HOST:-127.0.0.1}"
@@ -155,10 +164,23 @@ make_runtime_dir() {
     [[ -n "$RUNTIME_DIR" ]] && return 0
 
     RUNTIME_DIR="$(mktemp -d /tmp/vmast.XXXXXX)"
-
-    # Removed on any exit, including an interrupt.
-    trap 'rm -rf "$RUNTIME_DIR"' EXIT INT TERM
 }
+
+# A dump fetched by this run holds production's user data, so unless --keep-dump
+# asked for it, it goes on any exit - including an abort at a confirmation, an
+# error or an interrupt - as does the runtime directory.
+FRESH_DUMP=0
+
+cleanup() {
+    [[ -n "$RUNTIME_DIR" ]] && rm -rf "$RUNTIME_DIR"
+
+    if [[ $FRESH_DUMP -eq 1 && $KEEP_DUMP -eq 0 ]]; then
+        rm -f "$DUMP_FILE" "$DUMP_FILE.partial"
+    fi
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT TERM
 
 if [[ $ASK_PASS -eq 1 ]]; then
     make_runtime_dir
@@ -240,8 +262,6 @@ read_masked() {
 
 command -v docker >/dev/null 2>&1 || die "docker is required but not installed."
 
-compose() { docker compose "${COMPOSE_FILES[@]}" "$@"; }
-
 prod_ssh() {
     command -v ssh >/dev/null 2>&1 || die "ssh is required but not installed."
     require_vars PROD_SSH_HOST PROD_SSH_USER
@@ -301,14 +321,6 @@ ASKPASS
     export SSH_ASKPASS_REQUIRE=force
 }
 
-running_db() {
-    local cid
-    cid=$(compose ps -q "$DB_SERVICE" 2>/dev/null || true)
-
-    [[ -n "$cid" ]] && [[ "$(docker inspect -f '{{.State.Running}}' "$cid" 2>/dev/null)" == "true" ]] \
-        || die "The '$DB_SERVICE' service is not running - start the stack with 'make local' first."
-}
-
 confirm() {
     [[ $ASSUME_YES -eq 1 ]] && return 0
 
@@ -324,6 +336,8 @@ dump_database() {
     mkdir -p "$DUMP_DIR"
 
     local tmp="$DUMP_FILE.partial"
+
+    FRESH_DUMP=1
 
     say "Dumping $PROD_DB_NAME on $PROD_SSH_HOST (gzipped on the server)"
 
@@ -342,34 +356,221 @@ dump_database() {
 
     [[ -s "$tmp" ]] || { rm -f "$tmp"; die "The dump came back empty."; }
 
+    check_dump "$tmp" || { rm -f "$tmp"; exit 1; }
+
     # Only replace a known-good dump once the new one has arrived intact.
     mv "$tmp" "$DUMP_FILE"
 
     say "Wrote $DUMP_FILE ($(du -h "$DUMP_FILE" | cut -f1))"
 }
 
+# ------------------------------------------------------------------ the stack
+
+# The containers are looked up by the labels compose puts on them, so neither
+# the compose files nor their variables are needed - on a deploy host the
+# variables only ever existed in the deploy's environment.
+default_project() {
+    # compose's own rule for naming a project after its directory.
+    basename "$ROOT" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-'
+}
+
+service_container() {
+    docker ps -q \
+        --filter "label=com.docker.compose.project=$PROJECT" \
+        --filter "label=com.docker.compose.service=$1" | head -1
+}
+
+DB_CID=""
+PHP_CID=""
+
+find_stack() {
+    [[ -n "$PROJECT" ]] || PROJECT="$(default_project)"
+
+    local svc cid
+    for svc in db php; do
+        [[ $svc == db && $DO_DB -eq 0 ]] && continue
+        [[ $svc == php && $DO_ASSETS -eq 0 && $DO_FONTS -eq 0 ]] && continue
+
+        cid="$(service_container "$svc")"
+
+        if [[ -z "$cid" ]]; then
+            local running
+            running=$(docker ps --filter label=com.docker.compose.service=db \
+                --format '{{.Label "com.docker.compose.project"}}' | sort -u | tr '\n' ' ')
+
+            die "No running '$svc' container in compose project '$PROJECT'.
+       Start the stack first (deploy it, or 'make local' in development). If it
+       is running under another project name, pass --project NAME.
+       Projects with a running db: ${running:-none}"
+        fi
+
+        [[ $svc == db ]] && DB_CID="$cid" || PHP_CID="$cid"
+    done
+
+    say "Target: compose project '$PROJECT'"
+}
+
+# Runs a command in the db container as root, with the root password taken
+# from that container's own environment - it never passes through here.
+db_root() {
+    docker exec -i "$DB_CID" sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec "$@"' sh "$@"
+}
+
+db_env() {
+    docker exec "$DB_CID" printenv "$1" 2>/dev/null | tr -d '\r'
+}
+
+# "type source" of the php container's mount at a path: "volume <name>" when
+# deployed, "bind <host dir>" in development.
+php_mount() {
+    docker inspect -f \
+        "{{range .Mounts}}{{if eq .Destination \"$1\"}}{{.Type}} {{.Source}}{{end}}{{end}}" \
+        "$PHP_CID"
+}
+
+# Unpacks the tar.gz on stdin into a directory of the php container, which must
+# lie on the mount at $2. A bind mount is written on the host directly, so files
+# stay owned by whoever runs this; a volume is written through the container as
+# www-data, the user that serves and writes them.
+unpack_into() {
+    local dest="$1" mountpoint="$2" type source
+    shift 2
+
+    read -r type source <<< "$(php_mount "$mountpoint")"
+
+    case "$type" in
+        bind)
+            local dir="$source${dest#"$mountpoint"}"
+            mkdir -p "$dir"
+            tar -xzf - -C "$dir" "$@"
+            ;;
+        volume)
+            docker exec -i -u www-data "$PHP_CID" sh -c \
+                'd="$1"; shift; mkdir -p "$d" && exec tar -xzf - -C "$d" "$@"' sh "$dest" "$@"
+            ;;
+        *)
+            die "$mountpoint in the php container is on neither a volume nor a bind
+       mount, so anything unpacked there would vanish when it is recreated."
+            ;;
+    esac
+}
+
+count_entries() {
+    docker exec "$PHP_CID" sh -c 'ls -A "$1" 2>/dev/null | wc -l' sh "$1" | tr -d ' \r'
+}
+
+# ------------------------------------------------------------------ preflight
+
+# One read-only pass over production before anything local is touched, so a
+# wrong path or a missing tool stops the run while the database is still intact.
+preflight() {
+    local check_db=0 assets="" fonts=""
+
+    [[ $DO_DB -eq 1 && $SKIP_DUMP -eq 0 ]] && check_db=1
+    [[ $DO_ASSETS -eq 1 && -z "$LOCAL_ARCHIVE" ]] && { require_vars PROD_ASSETS_PATH; assets="$PROD_ASSETS_PATH"; }
+    [[ $DO_FONTS -eq 1 ]] && { require_vars PROD_FONTS_PATH; fonts="$PROD_FONTS_PATH"; }
+
+    [[ $check_db -eq 1 || -n "$assets" || -n "$fonts" ]] || return 0
+
+    say "Checking $PROD_SSH_HOST"
+
+    local rc=0
+    prod_ssh "sh -s -- $(printf '%q ' "$check_db" "${PROD_APP_ROOT:-}" "${PROD_DB_NAME:-}" \
+        "$assets" "$fonts" "${FONT_FILES[@]}")" <<'PREFLIGHT' || rc=$?
+check_db=$1 app_root=$2 db_name=$3 assets=$4 fonts=$5
+shift 5
+status=0
+
+if [ "$check_db" = 1 ]; then
+    if command -v mysqldump >/dev/null 2>&1; then
+        echo "  ok    mysqldump at $(command -v mysqldump)"
+    else
+        echo "  FAIL  mysqldump is not installed"; status=1
+    fi
+
+    # Cross-check that the site the assets come from uses the database being
+    # dumped; a server hosting several sites makes them easy to mismatch.
+    if [ -n "$app_root" ]; then
+        conf=$(grep -shE "^[[:space:]]*DB_NAME[[:space:]]*=|define\([\"']DB_NAME" \
+            "$app_root/.env" "$app_root/Config.php" 2>/dev/null)
+        if [ -z "$conf" ]; then
+            echo "  info  no DB_NAME setting under $app_root to cross-check"
+        elif printf '%s\n' "$conf" | grep -qw -- "$db_name"; then
+            echo "  ok    the site at $app_root uses database $db_name"
+        else
+            echo "  WARN  the site at $app_root does not appear to use database $db_name:"
+            printf '%s\n' "$conf" | sed 's/^/          /'
+            [ "$status" = 0 ] && status=3
+        fi
+    fi
+fi
+
+if [ -n "$assets" ]; then
+    if [ -d "$assets" ]; then
+        echo "  ok    assets at $assets ($(du -sh "$assets" 2>/dev/null | cut -f1))"
+    else
+        echo "  FAIL  no assets directory at $assets"; status=1
+    fi
+fi
+
+if [ -n "$fonts" ]; then
+    if [ -d "$fonts" ]; then
+        found=""
+        for f in "$@"; do
+            if [ -f "$fonts/uploads/$f" ] || [ -f "$fonts/$f" ]; then found="$found $f"; fi
+        done
+        echo "  ok    fonts at $fonts (uploaded:${found:- none})"
+    else
+        echo "  FAIL  no fonts directory at $fonts"; status=1
+    fi
+fi
+
+exit $status
+PREFLIGHT
+
+    case "$rc" in
+        0) ;;
+        3) confirm "Continue anyway?" || die "Aborted." ;;
+        *) die "Production is not ready for this run; see above. Nothing has been changed." ;;
+    esac
+}
+
 # ----------------------------------------------------------------- the import
 
-db_exec() {
-    compose exec -T -e MYSQL_PWD="$DB_ROOT_PASSWORD" "$DB_SERVICE" "$@"
+# Checks a dump before anything is dropped for it. A fresh dump is checked on
+# arrival and discarded if bad; a kept one (--skip-dump) again before import.
+check_dump() {
+    gzip -t "$1" 2>/dev/null \
+        || { warn "The dump is not a complete gzip file - the transfer was cut off."; return 1; }
+
+    # mysqldump ends a dump it finished with this comment. Without it the
+    # server stopped part way, and importing would leave a partial database.
+    gunzip -c "$1" | tail -n 1 | grep -q 'Dump completed' \
+        || { warn "The dump is incomplete - mysqldump stopped before the end."; return 1; }
 }
 
 import_database() {
-    require_vars DB_NAME DB_USER DB_ROOT_PASSWORD
+    [[ -f "$DUMP_FILE" ]] \
+        || die "No dump at $DUMP_FILE - --skip-dump needs one kept by an earlier --keep-dump run."
 
-    [[ -f "$DUMP_FILE" ]] || die "No dump at $DUMP_FILE - run without --skip-dump."
+    check_dump "$DUMP_FILE" || die "Not importing $DUMP_FILE; nothing has been changed."
 
-    running_db
+    local db_name db_user
+    db_name="$(db_env MYSQL_DATABASE)"
+    db_user="$(db_env MYSQL_USER)"
 
-    confirm "This DROPS the local database \"$DB_NAME\" and replaces it with the dump. Continue?" \
+    [[ -n "$db_name" && -n "$db_user" ]] \
+        || die "The db container has no MYSQL_DATABASE/MYSQL_USER in its environment."
+
+    confirm "This DROPS database \"$db_name\" in project \"$PROJECT\" and replaces it with the dump. Continue?" \
         || die "Aborted."
 
-    say "Recreating $DB_NAME as $DB_CHARSET/$DB_COLLATE"
+    say "Recreating $db_name as $DB_CHARSET/$DB_COLLATE"
 
-    db_exec mysql -u root -e "
-        DROP DATABASE IF EXISTS \`$DB_NAME\`;
-        CREATE DATABASE \`$DB_NAME\` CHARACTER SET $DB_CHARSET COLLATE $DB_COLLATE;
-        GRANT SELECT, INSERT, UPDATE, DELETE ON \`$DB_NAME\`.* TO '$DB_USER'@'%';
+    db_root mysql -u root -e "
+        DROP DATABASE IF EXISTS \`$db_name\`;
+        CREATE DATABASE \`$db_name\` CHARACTER SET $DB_CHARSET COLLATE $DB_COLLATE;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON \`$db_name\`.* TO '$db_user'@'%';
         FLUSH PRIVILEGES;"
 
     say "Importing (MySQL 5.5 dump into MariaDB 10.5)"
@@ -377,137 +578,59 @@ import_database() {
     # sql_mode is cleared for the import only: the 5.5 schema carries a
     # zero-date default that MariaDB's stricter default mode can reject.
     gunzip -c "$DUMP_FILE" \
-        | db_exec mysql -u root \
+        | db_root mysql -u root \
             --default-character-set="$DB_CHARSET" \
             --init-command="SET SESSION sql_mode=''" \
-            "$DB_NAME"
+            "$db_name"
 
     local tables
-    tables=$(db_exec mysql -u root -N -B -e \
-        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$DB_NAME';" \
+    tables=$(db_root mysql -u root -N -B -e \
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$db_name';" \
         | tr -d '\r')
 
-    say "Imported - $DB_NAME now holds $tables tables"
+    say "Imported - $db_name now holds $tables tables"
 
     [[ "$tables" -gt 0 ]] || warn "No tables were created; the dump may not have applied."
+
+    if [[ $FRESH_DUMP -eq 1 && $KEEP_DUMP -eq 0 ]]; then
+        rm -f "$DUMP_FILE"
+        say "Deleted the dump (it holds production's user data; --keep-dump keeps it)"
+    fi
 }
 
 # ----------------------------------------------------------------- the assets
 
-# Production's source/.gitignore is not wanted: locally the equivalent file is
-# Storage/Resources/.gitignore, which is tracked and written by this repository.
+# Production's source/.gitignore is not wanted: in development the equivalent
+# file is Storage/Resources/.gitignore, which is tracked by this repository.
 TAR_EXCLUDES=(
     --exclude='.gitignore'
 )
 
-# Asks compose for the volume's real name rather than assuming the project
-# prefix, falling back to the conventional form if that output ever changes.
-resolve_volume() {
-    local key="$1" name
-
-    if [[ -n "$VOLUME_NAME" ]]; then
-        printf '%s' "$VOLUME_NAME"
-        return 0
-    fi
-
-    name=$(compose config --format json 2>/dev/null \
-        | tr -d ' \n' \
-        | sed -n "s/.*\"$key\":{\"name\":\"\([^\"]*\)\".*/\1/p" \
-        | head -1)
-
-    if [[ -z "$name" ]]; then
-        name="${COMPOSE_PROJECT_NAME:-$(basename "$ROOT")}_$key"
-
-        warn "Could not read the volume name from compose; assuming $name."
-    fi
-
-    printf '%s' "$name"
-}
-
-# Unpacks into the named volume with a throwaway container, so this works with
-# the stack stopped - which is the situation on a first deploy.
-seed_volume() {
-    local volume
-    volume="$(resolve_volume app_storage)"
-
-    docker volume inspect "$volume" >/dev/null 2>&1 \
-        || die "The volume $volume does not exist yet. Bring the stack up once
-       ('docker compose up -d'), which creates it and seeds it from the image,
-       then run this again."
-
-    local existing
-    existing=$(docker run --rm -v "$volume:/dest" "$SEED_IMAGE" \
-        sh -c 'mkdir -p /dest/Resources; ls -A /dest/Resources 2>/dev/null | wc -l' | tr -d ' \r')
-
-    say "Seeding $volume:/Resources (currently holds $existing entries)"
-
-    # A volume freshly seeded from the image holds only Resources/.gitignore,
-    # so anything beyond that means real content is already in there.
-    if [[ "$existing" -gt 1 ]]; then
-        confirm "$volume:/Resources already holds $existing entries. Unpack over them?" \
-            || die "Aborted."
-    fi
-
-    # --strip-components=1 drops the archive's leading source/ directory,
-    # because the volume IS that directory.
-    #
-    # No exclusions here: the git-tracked CSVs are working-tree concerns, and in
-    # a volume the production copies are the ones wanted.
-    if [[ -n "$LOCAL_ARCHIVE" ]]; then
-        [[ -f "$LOCAL_ARCHIVE" ]] || die "No archive at $LOCAL_ARCHIVE"
-
-        say "Unpacking $(du -h "$LOCAL_ARCHIVE" | cut -f1) from $LOCAL_ARCHIVE"
-
-        docker run --rm -i -v "$volume:/dest" "$SEED_IMAGE" \
-            tar -xzf - -C /dest/Resources --strip-components=1 < "$LOCAL_ARCHIVE"
-    else
-        require_vars PROD_ASSETS_PATH
-
-        local parent base
-        parent="$(dirname "$PROD_ASSETS_PATH")"
-        base="$(basename "$PROD_ASSETS_PATH")"
-
-        say "Streaming $base from $PROD_SSH_HOST straight into the volume"
-
-        prod_ssh "tar -czf - -C $(printf '%q' "$parent") $(printf '%q' "$base")" \
-            | docker run --rm -i -v "$volume:/dest" "$SEED_IMAGE" \
-                tar -xzf - -C /dest --strip-components=1
-    fi
-
-    local count
-    count=$(docker run --rm -v "$volume:/dest" "$SEED_IMAGE" \
-        sh -c 'ls -A /dest/Resources | wc -l' | tr -d ' \r')
-
-    say "$volume:/Resources now holds $count entries"
-}
-
 restore_assets() {
-    if [[ $SEED_VOLUME -eq 1 ]]; then
-        seed_volume
-        return 0
-    fi
+    local existing
+    existing="$(count_entries "$CT_RESOURCES")"
 
-    mkdir -p "$RESOURCES"
+    # A fresh stack holds at most Resources/.gitignore, so anything beyond that
+    # means real content is already there.
+    if [[ "$existing" -gt 1 ]]; then
+        confirm "Resources already holds $existing entries. Unpack production's over them?" \
+            || die "Aborted."
+    fi
 
     if [[ -n "$LOCAL_ARCHIVE" ]]; then
         [[ -f "$LOCAL_ARCHIVE" ]] || die "No archive at $LOCAL_ARCHIVE"
 
-        confirm "Unpack $(basename "$LOCAL_ARCHIVE") into the assets directory?" || die "Aborted."
-
         say "Unpacking $(du -h "$LOCAL_ARCHIVE" | cut -f1) from $LOCAL_ARCHIVE"
 
-        tar -xzf "$LOCAL_ARCHIVE" -C "$RESOURCES" --strip-components=1 "${TAR_EXCLUDES[@]}"
+        unpack_into "$CT_RESOURCES" "$CT_STORAGE" --strip-components=1 "${TAR_EXCLUDES[@]}" \
+            < "$LOCAL_ARCHIVE"
     else
-        require_vars PROD_ASSETS_PATH
-
-        confirm "Fetch the assets from production and unpack them, overwriting what is there?" \
-            || die "Aborted."
-
-        local parent base
+        local parent base fetch
         parent="$(dirname "$PROD_ASSETS_PATH")"
         base="$(basename "$PROD_ASSETS_PATH")"
+        fetch="tar -czf - -C $(printf '%q' "$parent") $(printf '%q' "$base")"
 
-        say "Tarring $base on $PROD_SSH_HOST and unpacking it here"
+        say "Streaming $base from $PROD_SSH_HOST into the stack"
 
         if [[ $KEEP_ARCHIVE -eq 1 ]]; then
             local archive="$DUMP_DIR/source.tar.gz"
@@ -515,31 +638,20 @@ restore_assets() {
             mkdir -p "$DUMP_DIR"
 
             # tee keeps a copy for the next run without a second transfer.
-            prod_ssh "tar -czf - -C $(printf '%q' "$parent") $(printf '%q' "$base")" \
-                | tee "$archive" \
-                | tar -xzf - -C "$RESOURCES" --strip-components=1 "${TAR_EXCLUDES[@]}"
+            prod_ssh "$fetch" | tee "$archive" \
+                | unpack_into "$CT_RESOURCES" "$CT_STORAGE" --strip-components=1 "${TAR_EXCLUDES[@]}"
 
             say "Kept the archive at $archive ($(du -h "$archive" | cut -f1))"
         else
-            prod_ssh "tar -czf - -C $(printf '%q' "$parent") $(printf '%q' "$base")" \
-                | tar -xzf - -C "$RESOURCES" --strip-components=1 "${TAR_EXCLUDES[@]}"
+            prod_ssh "$fetch" \
+                | unpack_into "$CT_RESOURCES" "$CT_STORAGE" --strip-components=1 "${TAR_EXCLUDES[@]}"
         fi
     fi
 
-    say "Resources now occupy $(du -sh "$RESOURCES" | cut -f1)"
-
-    if [[ $DO_PUSH -eq 1 ]]; then
-        push_assets
-    else
-        say "In development this path is bind mounted, so the container already"
-        say "sees it. For production use --seed-volume, or --push to copy into"
-        say "a running container built without the mount."
-    fi
+    say "Resources now holds $(count_entries "$CT_RESOURCES") entries"
 }
 
 restore_fonts() {
-    require_vars PROD_FONTS_PATH
-
     # Named explicitly rather than pulling the whole directory: the static
     # fonts there are tracked and come from the image. Older deployments keep
     # the uploads directly in fonts/, newer ones in fonts/uploads/, so each file
@@ -559,68 +671,32 @@ restore_fonts() {
         done
         if [ \$# -gt 0 ]; then tar -czf - \"\$@\"; else tar -czf - -T /dev/null; fi"
 
-    if [[ $SEED_VOLUME -eq 1 ]]; then
-        local volume
-        volume="$(resolve_volume fonts_uploads)"
+    say "Fetching the uploaded fonts from $PROD_SSH_HOST"
 
-        docker volume inspect "$volume" >/dev/null 2>&1 \
-            || die "The volume $volume does not exist yet. Bring the stack up once first."
-
-        say "Streaming the uploaded fonts into volume $volume"
-
-        prod_ssh "$fetch_fonts" \
-            | docker run --rm -i -v "$volume:/dest" "$SEED_IMAGE" \
-                tar -xzf - -C /dest \
-            || die "Could not fetch the fonts. If the error above is from ssh it is
+    prod_ssh "$fetch_fonts" | unpack_into "$CT_FONTS" "$CT_FONTS" \
+        || die "Could not fetch the fonts. If the error above is from ssh it is
        authentication or connectivity; otherwise check PROD_FONTS_PATH."
 
-        local count
-        count=$(docker run --rm -v "$volume:/dest" "$SEED_IMAGE" \
-            sh -c 'ls -A /dest | wc -l' | tr -d ' \r')
-
-        say "Volume $volume now holds $count entries"
-    else
-        mkdir -p "$FONTS_UPLOADS"
-
-        say "Fetching the uploaded fonts from $PROD_SSH_HOST"
-
-        prod_ssh "$fetch_fonts" \
-            | tar -xzf - -C "$FONTS_UPLOADS" \
-            || die "Could not fetch the fonts. If the error above is from ssh it is
-       authentication or connectivity; otherwise check PROD_FONTS_PATH."
-
-        for f in "${FONT_FILES[@]}"; do
-            if [[ -f "$FONTS_UPLOADS/$f" ]]; then
-                say "  $f ($(du -h "$FONTS_UPLOADS/$f" | cut -f1))"
-            else
-                warn "  $f is not present on production - nothing was uploaded there yet."
-            fi
-        done
-    fi
-}
-
-push_assets() {
-    local cid
-    cid=$(compose ps -q php 2>/dev/null || true)
-
-    if [[ -z "$cid" ]] || [[ "$(docker inspect -f '{{.State.Running}}' "$cid" 2>/dev/null)" != "true" ]]; then
-        warn "The php service is not running - nothing to copy into."
-
-        return 0
-    fi
-
-    say "Copying the resources into the php container"
-
-    compose cp "$RESOURCES/." "php:$CONTAINER_RESOURCES/"
+    local f
+    for f in "${FONT_FILES[@]}"; do
+        if docker exec "$PHP_CID" test -f "$CT_FONTS/$f"; then
+            say "  $f"
+        else
+            warn "  $f is not present on production - nothing was uploaded there yet."
+        fi
+    done
 }
 
 # ----------------------------------------------------------------------- main
 
+# The stack is found first, so nothing is typed for a run that cannot proceed.
+find_stack
 collect_credentials
+preflight
 
 if [[ $DO_DB -eq 1 ]]; then
     if [[ $SKIP_DUMP -eq 1 ]]; then
-        say "Reusing the existing dump at $DUMP_FILE"
+        say "Reusing the dump at $DUMP_FILE"
     else
         dump_database
     fi

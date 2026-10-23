@@ -120,7 +120,7 @@ change:
   the 1Password service-account token -> variable `OP_SERVICE_ACCOUNT_TOKEN`.
 - **Send files or execute commands over SSH** (Publish Over SSH):
   - SSH Server: the vmast deploy host (configured in Jenkins).
-  - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy`
+  - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy,scripts/sync-from-production.sh,scripts/.env.sync.example`
   - Remote directory: the deploy dir on that host.
   - Exec command:
 
@@ -147,6 +147,50 @@ config, and the pipeline reads its name from the job parameter
 `VMAST_SSH_SERVER`. The same goes for the 1Password credential, whose ID comes
 from the job parameter `VMAST_OP_CREDENTIALS_ID`. Keep it that way: don't put host names, IPs, deploy
 paths or credential IDs in this file, the Jenkinsfile, or commit messages.
+
+## Copying production data
+
+`scripts/sync-from-production.sh` copies the production database, resources
+and admin-uploaded fonts into a running stack. It finds the stack by its compose
+project and writes through its containers: the database through the db
+container, using that container's own credentials, and the files to wherever
+the php container keeps them (named volumes when deployed, the working tree in
+development). It needs no `.env` and no compose files, so it runs the same on a
+deploy host as on a laptop.
+
+The deploy job ships the script into the deploy directory. On the deploy host:
+
+1. Deploy first, so the stack is running.
+2. Once per host, create the config from the shipped example. It stays on the
+   host; deploys do not overwrite it.
+
+   ```sh
+   cd <deploy dir>
+   cp scripts/.env.sync.example scripts/.env.sync
+   # set PROD_SSH_HOST, PROD_DB_NAME, PROD_DB_USER and PROD_APP_ROOT
+   ```
+3. Run it (`--ask-pass` if you have no SSH key on the production host):
+
+   ```sh
+   bash scripts/sync-from-production.sh --ask-pass
+   ```
+
+It asks for the SSH user (and password), and the production database password.
+Before it changes anything it checks production over SSH: that `mysqldump` is
+there, that the asset and font paths exist, and that the site at
+`PROD_APP_ROOT` really uses `PROD_DB_NAME`. Then it asks once more before
+dropping the database. The dump is verified complete before the drop and
+deleted after the import (`--keep-dump` keeps it). `--db-only`,
+`--assets-only`, `--fonts-only` and `--no-*` re-run single parts; `--help` lists
+the rest.
+
+Run from the deploy directory, the stack's project name is found
+automatically. From anywhere else, pass `--project NAME` (`docker compose ls`
+shows it).
+
+Before copying production data into a non-production stack, point that
+environment's `MAIL_*` settings in 1Password at a mail sink: with real user
+data, password resets and event notifications would otherwise email real users.
 
 ## Image tags
 
