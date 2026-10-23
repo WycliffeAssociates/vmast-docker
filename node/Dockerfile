@@ -5,6 +5,8 @@ FROM node:22-alpine3.20
 # RUN apk update && apk add nano procps
 RUN yarn global add pm2
 
+USER node
+
 WORKDIR /node
 COPY ./package.json .
 COPY ./yarn.lock .

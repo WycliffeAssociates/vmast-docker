@@ -558,7 +558,7 @@ import_database() {
     [[ -n "$db_name" && -n "$db_user" ]] \
         || die "The db container has no MYSQL_DATABASE/MYSQL_USER in its environment."
 
-    confirm "This DROPS database \"$db_name\" in project \"$PROJECT\" and replaces it with the dump. Continue?" \
+    confirm "This DROPS database \"$db_name\" in the \"$PROJECT\" stack on this machine and replaces it with the dump of production's \"$PROD_DB_NAME\". Continue?" \
         || die "Aborted."
 
     say "Recreating $db_name as $DB_CHARSET/$DB_COLLATE"
