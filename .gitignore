@@ -34,7 +34,9 @@ extras/documentation
 create1p.js
 withRefs.js
 noteTemplate.json
-# Production sync credentials
+# Production sync settings from older versions of the sync script, which read
+# them from this file; it now asks for them. Still ignored so a leftover copy
+# (it names the production host) cannot be committed.
 scripts/.env.sync
 
 # Dumps and archives the sync script produces. dump.sql.gz is the tracked

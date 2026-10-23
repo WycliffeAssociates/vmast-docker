@@ -90,9 +90,9 @@ source deploy.sh"""
                   sshTransfer(
                     // The sync script rides along so the copy on the host always
                     // matches the deployed stack (see DEPLOY.md, "Copying
-                    // production data"). Its .env.sync lives only on the host.
+                    // production data").
                     sourceFiles: 'docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy,' +
-                                 'scripts/sync-from-production.sh,scripts/.env.sync.example',
+                                 'scripts/sync-from-production.sh',
                     remoteDirectory: remoteDir,
                     execCommand: remoteCmd,
                     execTimeout: 240000

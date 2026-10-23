@@ -18,8 +18,16 @@
 # them - a named volume when deployed, the working tree in development. So it
 # needs no .env and no compose files, and runs the same everywhere.
 #
-# Configure it with scripts/.env.sync (see .env.sync.example), then, with the
-# stack running:
+# It asks for the production host, users and passwords as it needs them. For an
+# unattended run, or to change a default, set these in the environment instead:
+#
+#   PROD_SSH_HOST, PROD_SSH_USER, PROD_SSH_PASS (with --ask-pass), PROD_DB_USER,
+#   PROD_DB_PASS                  normally asked for
+#   PROD_SSH_PORT (22), PROD_SSH_KEY (agent / default key),
+#   PROD_DB_HOST (127.0.0.1, as seen from the production host), PROD_DB_PORT (3306)
+#   PROD_APP_ROOT, PROD_DB_NAME   the site and database; see below
+#
+# With the stack running:
 #
 #   ./scripts/sync-from-production.sh                 # database, assets, fonts
 #   ./scripts/sync-from-production.sh --db-only
@@ -132,15 +140,9 @@ done
 
 # ---------------------------------------------------------------- configuration
 
-[[ -f "$ROOT/scripts/.env.sync" ]] \
-    || die "Missing scripts/.env.sync - copy scripts/.env.sync.example and fill it in."
-
-# shellcheck disable=SC1091
-set -a; source "$ROOT/scripts/.env.sync"; set +a
-
 # The production server hosts several vmast sites; the one being migrated is
 # v-mast.com, whose database is vmast. Both are fixed here because this runs
-# once per environment; .env.sync can still override them.
+# once per environment; the environment can still override them.
 PROD_APP_ROOT="${PROD_APP_ROOT:-/var/www/v-mast.com/www/app}"
 PROD_DB_NAME="${PROD_DB_NAME:-vmast}"
 PROD_ASSETS_PATH="${PROD_ASSETS_PATH:-$PROD_APP_ROOT/Templates/Default/Assets/source}"
@@ -198,13 +200,12 @@ fi
 
 require_vars() {
     for name in "$@"; do
-        [[ -n "${!name:-}" ]] || die "$name is not set in scripts/.env.sync"
+        [[ -n "${!name:-}" ]] || die "$name is not set"
     done
 }
 
 # Credentials are asked for rather than kept in a file. Anything already set in
-# the environment or in .env.sync is used as-is, so an unattended run can still
-# supply them.
+# the environment is used as-is, so an unattended run can still supply them.
 have_tty() {
     ( printf '' >/dev/tty ) 2>/dev/null
 }
@@ -277,8 +278,7 @@ collect_credentials() {
     [[ $DO_FONTS -eq 1 ]] && needs_ssh=1
 
     if [[ $needs_ssh -eq 1 ]]; then
-        require_vars PROD_SSH_HOST
-
+        prompt_var PROD_SSH_HOST "Enter production host"
         prompt_var PROD_SSH_USER "Enter username"
 
         if [[ $ASK_PASS -eq 1 ]]; then
@@ -289,8 +289,7 @@ collect_credentials() {
     fi
 
     if [[ $DO_DB -eq 1 && $SKIP_DUMP -eq 0 ]]; then
-        require_vars PROD_DB_NAME PROD_DB_USER
-
+        prompt_var PROD_DB_USER "Enter database username"
         read_masked PROD_DB_PASS "Enter database password"
     fi
 }

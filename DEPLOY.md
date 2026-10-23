@@ -120,7 +120,7 @@ change:
   the 1Password service-account token -> variable `OP_SERVICE_ACCOUNT_TOKEN`.
 - **Send files or execute commands over SSH** (Publish Over SSH):
   - SSH Server: the vmast deploy host (configured in Jenkins).
-  - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy,scripts/sync-from-production.sh,scripts/.env.sync.example`
+  - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy,scripts/sync-from-production.sh`
   - Remote directory: the deploy dir on that host.
   - Exec command:
 
@@ -161,22 +161,17 @@ deploy host as on a laptop.
 The deploy job ships the script into the deploy directory. On the deploy host:
 
 1. Deploy first, so the stack is running.
-2. Once per host, create the config from the shipped example. It stays on the
-   host; deploys do not overwrite it.
+2. From the deploy directory, run it (`--ask-pass` if you have no SSH key on
+   the production host):
 
    ```sh
    cd <deploy dir>
-   cp scripts/.env.sync.example scripts/.env.sync
-   # set PROD_SSH_HOST and PROD_DB_USER; the site (v-mast.com) and its
-   # database (vmast) are fixed in the script
-   ```
-3. Run it (`--ask-pass` if you have no SSH key on the production host):
-
-   ```sh
    bash scripts/sync-from-production.sh --ask-pass
    ```
 
-It asks for the SSH user (and password), and the production database password.
+It asks for the production host, the SSH user (and password), and the
+production database user and password. The site (v-mast.com) and its database
+(vmast) are fixed in the script.
 Before it changes anything it checks production over SSH: that `mysqldump` is
 there, that the asset and font paths exist, and that the v-mast.com
 site really uses the `vmast` database. Then it asks once more before
