@@ -138,16 +138,13 @@ done
 # shellcheck disable=SC1091
 set -a; source "$ROOT/scripts/.env.sync"; set +a
 
-PROD_SSH_PORT="${PROD_SSH_PORT:-22}"
-PROD_DB_HOST="${PROD_DB_HOST:-127.0.0.1}"
-PROD_DB_PORT="${PROD_DB_PORT:-3306}"
-
-# One server can host several vmast sites. PROD_APP_ROOT names the site's app/
-# directory, from which both asset paths follow; either can still be set alone.
-if [[ -n "${PROD_APP_ROOT:-}" ]]; then
-    PROD_ASSETS_PATH="${PROD_ASSETS_PATH:-$PROD_APP_ROOT/Templates/Default/Assets/source}"
-    PROD_FONTS_PATH="${PROD_FONTS_PATH:-$PROD_APP_ROOT/Templates/Default/Assets/fonts}"
-fi
+# The production server hosts several vmast sites; the one being migrated is
+# v-mast.com, whose database is vmast. Both are fixed here because this runs
+# once per environment; .env.sync can still override them.
+PROD_APP_ROOT="${PROD_APP_ROOT:-/var/www/v-mast.com/www/app}"
+PROD_DB_NAME="${PROD_DB_NAME:-vmast}"
+PROD_ASSETS_PATH="${PROD_ASSETS_PATH:-$PROD_APP_ROOT/Templates/Default/Assets/source}"
+PROD_FONTS_PATH="${PROD_FONTS_PATH:-$PROD_APP_ROOT/Templates/Default/Assets/fonts}"
 
 PROD_SSH_PORT="${PROD_SSH_PORT:-22}"
 PROD_DB_HOST="${PROD_DB_HOST:-127.0.0.1}"

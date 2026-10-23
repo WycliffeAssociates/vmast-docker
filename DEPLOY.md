@@ -167,7 +167,8 @@ The deploy job ships the script into the deploy directory. On the deploy host:
    ```sh
    cd <deploy dir>
    cp scripts/.env.sync.example scripts/.env.sync
-   # set PROD_SSH_HOST, PROD_DB_NAME, PROD_DB_USER and PROD_APP_ROOT
+   # set PROD_SSH_HOST and PROD_DB_USER; the site (v-mast.com) and its
+   # database (vmast) are fixed in the script
    ```
 3. Run it (`--ask-pass` if you have no SSH key on the production host):
 
@@ -177,8 +178,8 @@ The deploy job ships the script into the deploy directory. On the deploy host:
 
 It asks for the SSH user (and password), and the production database password.
 Before it changes anything it checks production over SSH: that `mysqldump` is
-there, that the asset and font paths exist, and that the site at
-`PROD_APP_ROOT` really uses `PROD_DB_NAME`. Then it asks once more before
+there, that the asset and font paths exist, and that the v-mast.com
+site really uses the `vmast` database. Then it asks once more before
 dropping the database. The dump is verified complete before the drop and
 deleted after the import (`--keep-dump` keeps it). `--db-only`,
 `--assets-only`, `--fonts-only` and `--no-*` re-run single parts; `--help` lists
