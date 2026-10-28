@@ -17,8 +17,10 @@ server {
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
 
-    access_log off;
-    error_log  /var/log/nginx/error.log error;
+    # Both go to the container's log (`docker logs`): the requests to stdout,
+    # in nginx.conf's "main" format, and errors to stderr.
+    access_log /dev/stdout main;
+    error_log  /dev/stderr error;
 
     sendfile off;
 

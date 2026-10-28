@@ -4,7 +4,10 @@
 // Application Error Logger
 //--------------------------------------------------------------------------
 
-Log::useFiles(storage_path() .'Logs' .DS .'error.log');
+// To stderr, which php-fpm forwards to the container's log (`docker logs`),
+// rather than a file inside the container that has to be found, survives only
+// as long as its volume, and fails silently when it cannot be written.
+Log::useFiles('php://stderr');
 
 //--------------------------------------------------------------------------
 // Application Error Handler

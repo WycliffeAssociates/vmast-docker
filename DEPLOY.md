@@ -148,6 +148,25 @@ config, and the pipeline reads its name from the job parameter
 from the job parameter `VMAST_OP_CREDENTIALS_ID`. Keep it that way: don't put host names, IPs, deploy
 paths or credential IDs in this file, the Jenkinsfile, or commit messages.
 
+## Logs
+
+Every container logs to stdout/stderr only, so `docker logs` (or `docker compose
+logs`) is the one place to look; nothing is written to log files inside the
+containers. From the deploy directory:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f web php
+```
+
+- **web**: every request (real URL and status, in nginx's `main` format) and
+  nginx errors.
+- **php**: application errors with their stack traces, and PHP's own errors
+  (fatals the application's handler never sees). Errors are never shown to
+  the visitor.
+- **node**: both pm2 processes (chat server and mailer), including crashes and
+  restarts.
+- **db, db-backup, rabbitmq, redis**: their images' defaults, already stdout.
+
 ## Copying production data
 
 `scripts/sync-from-production.sh` copies the production database, resources
