@@ -20,10 +20,8 @@ services:
   php:
     image: wycliffeassociates/vmast-php:${IMAGE_TAG}
 
-  db:
-    image: wycliffeassociates/vmast-db:${IMAGE_TAG}
-
-  # Shares the db image (both build from ./db), so it runs the same published tag.
+  # db runs the official mariadb image named in docker-compose.yml. The
+  # vmast-db image built from ./db is only the backup tooling on top of it.
   db-backup:
     image: wycliffeassociates/vmast-db:${IMAGE_TAG}
 

@@ -44,6 +44,10 @@ services:
   db:
     env_file:
       - .env
+    # Seeds a new local database with the small tracked sample on its first
+    # start. Deploy hosts start empty; scripts/sync-from-production.sh fills them.
+    volumes:
+      - ./db/dump/dump.sql.gz:/docker-entrypoint-initdb.d/dump.sql.gz:ro
 
   db-backup:
     env_file:

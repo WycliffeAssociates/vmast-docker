@@ -91,11 +91,15 @@ services:
     #     - ./htdocs:/var/www/html
     #     - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
 
+  # The official image, unmodified: nothing here needs building. The custom
+  # ./db image is only for db-backup below.
   db:
-    build:
-      context: ./db
-      dockerfile: ./Dockerfile
+    image: mariadb:10.5.25
     platform: linux/amd64
+    # Production ran MySQL 5.5 in its default lax mode, and the app relies on
+    # it: some inserts omit TEXT NOT NULL columns, which 5.5 cannot give a
+    # default, so MariaDB's default strict mode rejects them with a 500.
+    command: ["--sql-mode="]
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -103,8 +107,6 @@ services:
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
       - dbdata:/var/lib/mysql
-      # - todo: maybe bind mount?
-      # - ./db/conf:/etc/mysql/mysql.conf.d
     restart: always
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]

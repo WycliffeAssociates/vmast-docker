@@ -40,7 +40,7 @@ noteTemplate.json
 scripts/.env.sync
 
 # Dumps and archives the sync script produces. dump.sql.gz is the tracked
-# sample the db image seeds from; everything else here is pulled from
+# sample a new local database is seeded from; everything else here is pulled from
 # production and must never be committed.
 db/dump/*
 !db/dump/dump.sql.gz
@@ -55,3 +55,6 @@ php/htdocs/webapp/www/app/Storage/Resources/
 # has to be added here later.
 db/backup/*
 !db/backup/*.sh
+
+# Temporary compose override written by scripts/smoke-test.sh.
+.smoke-seed.yml

@@ -1,9 +1,7 @@
-# dump/ is COPYed into /docker-entrypoint-initdb.d, where MariaDB executes
-# every *.sql and *.sql.gz on first initialisation. Only the small tracked
-# sample belongs in the image: a production dump here would bake real user
-# data into a distributable image and import it automatically.
-dump/*
-!dump/dump.sql.gz
+# Nothing from dump/ belongs in the image: the tracked sample is mounted by
+# compose.local.yml in development, and a production dump here would bake real
+# user data into a distributable image.
+dump/
 
 # Written backups are data; only the scripts belong in the image.
 # Note: no "backup/*/" here - Docker cleans the trailing slash off ignore

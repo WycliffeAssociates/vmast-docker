@@ -40,6 +40,18 @@ REDIS_PASS=
 EOF
 
 read -r -a compose_files <<< "${SMOKE_COMPOSE_ARGS:--f docker-compose.yml}"
+
+# The database starts empty outside development; seed it with the tracked
+# sample, as compose.local.yml does, so the pages have data to render. Written
+# next to the compose files so the relative path resolves against the repo.
+seed_file="$(pwd)/.smoke-seed.yml"
+cat > "$seed_file" <<'SEED'
+services:
+  db:
+    volumes:
+      - ./db/dump/dump.sql.gz:/docker-entrypoint-initdb.d/dump.sql.gz:ro
+SEED
+compose_files+=(-f "$seed_file")
 compose() { docker compose -p vmast-smoke --env-file "$env_file" "${compose_files[@]}" "$@"; }
 
 cleanup() {
@@ -53,7 +65,7 @@ cleanup() {
     echo "::endgroup::"
   fi
   [ "${SMOKE_KEEP:-}" = 1 ] || compose down -v --remove-orphans >/dev/null 2>&1 || true
-  rm -f "$env_file"
+  rm -f "$env_file" "$seed_file"
   exit "$status"
 }
 trap cleanup EXIT
