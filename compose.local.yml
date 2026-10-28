@@ -61,7 +61,6 @@ services:
   # volumes:
   # - dbdata:/var/lib/mysql
   # - Probably take out? Maybe leave as a bind?
-  # - ./db/conf:/etc/mysql/mysql.conf.d
   # - ./db/backup:/backup
   # restart: always
 
