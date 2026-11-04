@@ -40,7 +40,7 @@ class AMQPMailer
             }
 
             $msg = new AMQPMessage(json_encode($message));
-            $this->channel->basic_publish($msg, '', $_ENV["RABBITMQ_ROUTING"]);
+            $this->channel->basic_publish($msg, '', $_ENV["RABBITMQ_QUEUE"]);
         }
     }
 
