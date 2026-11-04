@@ -46,7 +46,7 @@ return array (
     "facilitators" => "Facilitadores",
     "l2_checker" => "Revisión",
     "l3_checker" => "Revisar",
-    "captcha_wrong" => "El captcha no se ha resuelto correctamente",
+    "captcha_wrong" => "No se pudo completar la verificación de seguridad. Inténtelo de nuevo.",
     "success" => "Éxito",
     "admin" => "Administrador",
     "contact" => "Contacte",

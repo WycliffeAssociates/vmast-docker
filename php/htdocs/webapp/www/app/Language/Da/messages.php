@@ -46,7 +46,7 @@ return array (
     "facilitators" => "Facilitatorer",
     "l2_checker" => "Revision",
     "l3_checker" => "Revision",
-    "captcha_wrong" => "Captcha blev ikke løst korrekt",
+    "captcha_wrong" => "Sikkerhedstjekket mislykkedes. Prøv igen.",
     "success" => "Succes",
     "admin" => "Administrator",
     "contact" => "Kontakt",

@@ -84,8 +84,6 @@ class MembersController extends Controller
      */
     public function index()
     {
-        $data["menu"] = 1;
-
         if (!$this->_member) Url::redirect("members/login");
 
         if (!$this->_member->profile->complete) Url::redirect("members/profile");
@@ -785,7 +783,7 @@ class MembersController extends Controller
 
                 if($loginTry >= 3) {
                     if($loginTry > 3) {
-                        if (!ReCaptcha::check()) {
+                        if (!ReCaptcha::check('login')) {
                             $error[] = __('captcha_wrong');
                         }
                     }
@@ -936,7 +934,7 @@ class MembersController extends Controller
 
             if(Config::get("app.type") == "remote")
             {
-                if (!ReCaptcha::check())
+                if (!ReCaptcha::check('signup'))
                 {
                     $error['recaptcha'] = __('captcha_wrong');
                 }
@@ -1078,7 +1076,7 @@ class MembersController extends Controller
             $email = $_POST['email'];
 
             if(Config::get("app.type") == "remote") {
-                if (!ReCaptcha::check()) {
+                if (!ReCaptcha::check('reset')) {
                     $error[] = __('captcha_wrong');
                 }
             }

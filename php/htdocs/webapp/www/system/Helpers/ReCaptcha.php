@@ -1,6 +1,6 @@
 <?php
 /**
- * ReCaptcha - Manage the Google ReCaptcha Anti-spam protection.
+ * ReCaptcha - Cloudflare Turnstile anti-spam protection (class name kept for existing callers).
  *
  * @author Virgil-Adrian Teaca - virgil@giulianaeassociati.com
  * @version 3.0
@@ -14,14 +14,14 @@ use Support\Facades\Request as HttpRequest;
 
 
 /**
- * ReCaptcha: Google Anti-spam protection for your website.
+ * ReCaptcha: Cloudflare Turnstile anti-spam protection for your website.
  */
 class ReCaptcha
 {
     /**
-     * Constant holding the Googe API url.
+     * Cloudflare Turnstile siteverify url.
      */
-    const GOOGLEHOST = 'https://www.google.com/recaptcha/api/siteverify';
+    const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
     /**
      * Array holding the configuration.
@@ -65,44 +65,54 @@ class ReCaptcha
     }
 
     /**
-     * Compare given answer against the generated session.
+     * Widget appearance: hidden unless needed, visible after a failed captcha.
      *
-     * @param  string $response
+     * @param  mixed $error  the view's error list
+     * @return string
+     */
+    protected function appearance($error = null)
+    {
+        return in_array(__('captcha_wrong'), (array) $error, true) ? 'always' : 'interaction-only';
+    }
+
+    /**
+     * Verify the submitted Turnstile token with Cloudflare siteverify.
+     *
+     * @param  string $action  expected data-action of the widget
      * @return boolean
      */
-    protected function check($response = null)
+    protected function check($action)
     {
         if (! $this->isActive()) return true;
 
-        // Get the Http Request instance.
         $request = HttpRequest::instance();
 
-        // Get the recaptcha response value.
-        $response = $response ?: $request->input('g-recaptcha-response', '');
+        $token = $request->input('cf-turnstile-response', '');
 
-        // Build the query string.
-        $query = http_build_query(array(
-            'secret'   => $this->getSecretKey(),
-            'response' => $response,
-            'remoteip' => $request->ip()
-        ));
+        if (! is_string($token) || $token === '' || strlen($token) > 2048) return false;
 
-        // Calculate the (complete) request URL.
-        $url = static::GOOGLEHOST .'?' .$query;
+        $context = stream_context_create(array('http' => array(
+            'method'  => 'POST',
+            'header'  => 'Content-Type: application/x-www-form-urlencoded',
+            'timeout' => 10,
+            'content' => http_build_query(array(
+                'secret'   => $this->getSecretKey(),
+                'response' => $token,
+                'remoteip' => $request->ip(),
+            )),
+        )));
 
-        // Perform the request to Google server.
-        $result = file_get_contents($url);
+        // Fail closed on network error or bad response.
+        $result = @file_get_contents(static::VERIFY_URL, false, $context);
+        $data = $result ? json_decode($result, true) : null;
 
-        // Evaluate the Google server response.
-        if ($result !== false) {
-            $data = $result ? (array)json_decode($result, true) : [];
+        if (! is_array($data) || ($data['success'] ?? false) !== true) return false;
 
-            if (is_array($data)) {
-                return ($data['success'] === true);
-            }
-        }
+        // Cloudflare test keys answer with hostname "example.com" and no action.
+        if (($data['metadata']['result_with_testing_key'] ?? false) === true) return true;
 
-        return false;
+        return ($data['action'] ?? null) === $action
+            && ($data['hostname'] ?? null) === $request->getHost();
     }
 
     /**

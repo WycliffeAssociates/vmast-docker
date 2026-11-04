@@ -46,7 +46,7 @@ return array (
     "facilitators" => "Facilitators",
     "l2_checker" => "Revision",
     "l3_checker" => "Review",
-    "captcha_wrong" => "Captcha wasn't solved correctly",
+    "captcha_wrong" => "Security check failed. Please try again.",
     "success" => "Success",
     "admin" => "Admin",
     "contact" => "Contact",

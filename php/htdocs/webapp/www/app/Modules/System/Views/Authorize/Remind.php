@@ -21,7 +21,7 @@
                     </div>
                     <?php if (Config::get('recaptcha.active') === true) { ?>
                     <div class="row pull-right" style="margin-top: 10px; margin-right: 0;">
-                        <div id="captcha" style="width: 304px; height: 78px;"></div>
+                        <div id="captcha" style="width: 300px; height: 65px;"></div>
                     </div>
                     <div class="clearfix"></div>
                     <hr>
@@ -47,9 +47,9 @@
 <script type="text/javascript">
 
 var captchaCallback = function() {
-    grecaptcha.render('captcha', {'sitekey' : '<?= Config::get('recaptcha.siteKey'); ?>'});
+    turnstile.render('#captcha', {sitekey: '<?= Config::get('recaptcha.siteKey'); ?>', action: 'remind', appearance: 'interaction-only'});
 };
 
 </script>
 
-<script src="//www.google.com/recaptcha/api.js?onload=captchaCallback&render=explicit&hl=<?php echo LANGUAGE_CODE; ?>" async defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=captchaCallback&render=explicit" async defer></script>
