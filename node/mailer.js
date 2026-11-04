@@ -1,17 +1,27 @@
 const amqp = require('amqplib/callback_api');
 const nodemailer = require('nodemailer');
 
+const port = Number(process.env.MAIL_PORT) || 587;
+const hasAuth = Boolean(process.env.MAIL_USER && process.env.MAIL_PASS);
+
 const transportOptions = {
     host: process.env.MAIL_HOST,
-    port: process.env.MAIL_PORT,
-    secure: false,
-    ignoreTLS: true,
+    port: port,
+    // Port 465 uses TLS from the first byte; other ports start in plain text
+    // and upgrade with STARTTLS.
+    secure: port === 465,
+    // With credentials, refuse to send unless the connection is encrypted, so
+    // the password and mail never cross the network in plain text.
+    requireTLS: hasAuth,
+    // Without credentials (the internal relay, whose STARTTLS is broken),
+    // skip STARTTLS. Remove this once the relay's TLS certificate is fixed.
+    ignoreTLS: !hasAuth,
 };
 
 // Only log in when credentials are set. With an auth block that has an empty
 // password, nodemailer refuses to send ("Missing credentials") whenever the
 // server offers AUTH, even if the server would accept mail without logging in.
-if (process.env.MAIL_USER && process.env.MAIL_PASS) {
+if (hasAuth) {
     transportOptions.auth = {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS,
