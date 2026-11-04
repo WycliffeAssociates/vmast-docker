@@ -18,19 +18,15 @@ use Shared\Legacy\Error;
 
         <input type="hidden" name="csrfToken" value="<?php echo $data['csrfToken']; ?>"/>
 
-        <button type="submit"
-                class="g-recaptcha btn btn-primary"
-                data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>"
-                data-callback='onResetSubmit'
-                data-action='submit'><?php echo __('continue'); ?></button>
+        <?php if(Config::get("app.type") == "remote"): ?>
+        <div class="cf-turnstile" data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>" data-action="reset" data-appearance="<?php echo ReCaptcha::appearance($error ?? null); ?>"></div>
+        <?php endif; ?>
+        <button type="submit" class="btn btn-primary"><?php echo __('continue'); ?></button>
     </form>
 </div>
 
 <script>
-    function onResetSubmit(token) {
-        document.getElementById("reset_password").submit();
-    }
 </script>
 <?php if(Config::get("app.type") == "remote"): ?>
-<script src="https://www.google.com/recaptcha/api.js?hl=<?php echo Language::code()?>" async defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>

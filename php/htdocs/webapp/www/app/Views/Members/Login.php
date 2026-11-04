@@ -32,17 +32,12 @@ use Shared\Legacy\Error;
         <?php endif; ?>
 
 		<input type="hidden" name="csrfToken" value="<?php echo $data['csrfToken']; ?>" />
+    <?php if(Config::get("app.type") == "remote" && Session::get('loginTry')>=3):?>
+        <div class="cf-turnstile" data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>" data-action="login" data-appearance="<?php echo ReCaptcha::appearance($error ?? null); ?>"></div>
+    <?php endif;?>
     <div class="row">
       <div class="col-sm-4" style="border-right:1px solid #ccc">
-          <?php if(Config::get("app.type") == "remote" && Session::get('loginTry')>=3):?>
-              <button type="submit" class="g-recaptcha btn btn-primary btn-lg"
-                      style="width: 8em;"
-                      data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>"
-                      data-callback='onLoginSubmit'
-                      data-action='submit'><?php echo __('login'); ?></button>
-          <?php else: ?>
-              <button type="submit" class="btn btn-primary btn-lg" style="width: 8em;"><?php echo __('login'); ?></button>
-          <?php endif;?>
+          <button type="submit" class="btn btn-primary btn-lg" style="width: 8em;"><?php echo __('login'); ?></button>
       </div>
       <div class="col-sm-8">
 	      <a href="<?php echo SITEURL?>members/passwordreset" class=""><?php echo __('forgot_password'); ?></a><br />
@@ -52,12 +47,6 @@ use Shared\Legacy\Error;
 	</form>
 </div>
 
-<script>
-    function onLoginSubmit(token) {
-        document.getElementById("log_in").submit();
-    }
-</script>
-
 <?php if(Config::get("app.type") == "remote"): ?>
-<script src="https://www.google.com/recaptcha/api.js?hl=<?php echo Language::code()?>" async defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>

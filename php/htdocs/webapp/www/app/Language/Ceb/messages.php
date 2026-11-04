@@ -46,7 +46,7 @@ return array (
     "facilitators" => "Mga Tiggiya",
     "l2_checker" => "Ikaduhang Ang-ang sa Pagsusi",
     "l3_checker" => "Ikatulong Ang-ang sa Pasusi",
-    "captcha_wrong" => "Sayop ang Pagsulat sa Captcha",
+    "captcha_wrong" => "Napakyas ang security check. Palihug sulayi pag-usab.",
     "success" => "Nagmalampuson ka",
     "admin" => "Mga Tigdumala",
     "contact" => "Kontak",

@@ -46,7 +46,7 @@ return array (
     "facilitators" => "Para fasilitator",
     "l2_checker" => "Pemeriksaan Level 2",
     "l3_checker" => "Pemeriksaan Level 3",
-    "captcha_wrong" => "Captcha tidak diselesaikan dengan benar",
+    "captcha_wrong" => "Pemeriksaan keamanan gagal. Silakan coba lagi.",
     "success" => "Berhasil",
     "admin" => "Admin",
     "contact" => "Kontak",

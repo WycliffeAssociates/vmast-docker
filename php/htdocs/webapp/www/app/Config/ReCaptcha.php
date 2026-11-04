@@ -9,10 +9,10 @@
 use Config\Config;
 
 /**
- * Setup the Google reCAPTCHA configuration
+ * Setup the Cloudflare Turnstile configuration (config key kept as "recaptcha")
  */
 Config::set('recaptcha', array(
     'active'  => true,
-    'siteKey' => $_ENV["RECAPTCHA_SITE_KEY"],
-    'secret'  => $_ENV["RECAPTCHA_SECRET"],
+    'siteKey' => $_ENV["TURNSTILE_SITE_KEY"],
+    'secret'  => $_ENV["TURNSTILE_SECRET"],
 ));

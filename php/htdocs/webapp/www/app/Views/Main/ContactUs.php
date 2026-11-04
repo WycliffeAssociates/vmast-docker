@@ -73,11 +73,10 @@ if ($member)
 
         <input type="hidden" name="csrfToken" value="<?php echo $data['csrfToken']; ?>" />
 
-        <button type="submit"
-                class="g-recaptcha btn btn-primary btn-lg"
-                data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>"
-                data-callback='onContactSubmit'
-                data-action='submit'><?php echo __('submit'); ?></button>
+        <?php if(Config::get("app.type") == "remote"): ?>
+        <div class="cf-turnstile" data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>" data-action="contact" data-appearance="<?php echo ReCaptcha::appearance($error ?? null); ?>"></div>
+        <?php endif; ?>
+        <button type="submit" class="btn btn-primary btn-lg"><?php echo __('submit'); ?></button>
     </form>
 </div>
 
@@ -116,10 +115,6 @@ Assets::css([
 ?>
 
 <script>
-    function onContactSubmit(token) {
-        document.getElementById("contact_us").submit();
-    }
-
     (function () {
         $("select").chosen().change(function () {
             formGroup = $(this).parents(".form-group");
@@ -134,7 +129,7 @@ Assets::css([
     })()
 </script>
 <?php if(Config::get("app.type") == "remote"): ?>
-    <script src="https://www.google.com/recaptcha/api.js?hl=<?php echo Language::code()?>" async defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>
 
 

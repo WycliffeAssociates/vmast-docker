@@ -20,7 +20,8 @@ use Shared\Legacy\Error;
               content:  "<?=$v?>"
             }).popover('show');
     <?php elseif($k == 'recaptcha' && Config::get("app.type") == "remote"):?>
-      $(".g-recaptcha").popover({
+      // widget may be hidden (interaction-only), so anchor the error to the submit button
+      $("#sign_up button[type=submit]").popover({
               trigger: 'manual',
               placement: 'right',
               container: 'body',
@@ -128,11 +129,10 @@ use Shared\Legacy\Error;
 
         <input type="hidden" name="csrfToken" value="<?php echo $data['csrfToken']; ?>" />
 
-        <button type="submit"
-                class="g-recaptcha btn btn-primary btn-lg"
-                data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>"
-                data-callback='onSignupSubmit'
-                data-action='submit'><?php echo __('signup'); ?></button>
+        <?php if(Config::get("app.type") == "remote"): ?>
+        <div class="cf-turnstile" data-sitekey="<?php echo ReCaptcha::getSiteKey(); ?>" data-action="signup" data-appearance="<?php echo ReCaptcha::appearance($error ?? null); ?>"></div>
+        <?php endif; ?>
+        <button type="submit" class="btn btn-primary btn-lg"><?php echo __('signup'); ?></button>
     </form>
 </div>
 
@@ -252,10 +252,6 @@ Assets::css([
 ?>
 
 <script>
-    function onSignupSubmit(token) {
-        document.getElementById("sign_up").submit();
-    }
-
     (function () {
         $("select").chosen().change(function () {
             formGroup = $(this).parents(".form-group");
@@ -270,5 +266,5 @@ Assets::css([
     })()
 </script>
 <?php if(Config::get("app.type") == "remote"): ?>
-    <script src="https://www.google.com/recaptcha/api.js?hl=<?php echo Language::code()?>" async defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>

@@ -27,7 +27,7 @@ foreach (array(
     'MAIL_PASS',
     'REDIS_PASS',
     'RABBITMQ_PASS',
-    'RECAPTCHA_SECRET',
+    'TURNSTILE_SECRET',
     'WACS_CLIENT_SECRET',
     'DCS_CLIENT_SECRET',
     'SENTRY_DSN',

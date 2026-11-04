@@ -135,7 +135,7 @@ class MainController extends Controller
 
             if($valid_data) {
                 if(Config::get("app.type") == "remote") {
-                    if (ReCaptcha::check()) {
+                    if (ReCaptcha::check('contact')) {
                         AMQPMailer::sendView(
                             "Emails/Common/NotifyContactUs",
                             [
