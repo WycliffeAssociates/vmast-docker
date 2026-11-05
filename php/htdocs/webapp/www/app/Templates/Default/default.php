@@ -56,14 +56,13 @@ if(!isset($data)) $data = ["menu" => 1];
     </script>
 
     <?php if(Config::get("app.type") == "remote"): ?>
-    <script src='https://js.sentry-cdn.com/<?php echo Config::get("sentry.dsn_js") ?>.min.js' crossorigin="anonymous"></script>
+    <script src="https://browser.sentry-cdn.com/8.55.0/bundle.min.js" crossorigin="anonymous"></script>
     <script>
-        Sentry.onLoad(function() {
-            Sentry.init({
-                release: '<?php echo Config::get("version.release") ?>',
-                environment: '<?php echo ENVIRONMENT ?>',
-                whitelistUrls: [/https?:\/\/((.*)\.)?v-mast\.com/]
-            });
+        Sentry.init({
+            dsn: '<?php echo Config::get("sentry.dsn_js") ?>',
+            release: '<?php echo Config::get("version.release") ?>',
+            environment: '<?php echo ENVIRONMENT ?>',
+            allowUrls: [<?php echo json_encode(Config::get("app.url")) ?>]
         });
     </script>
     <?php endif; ?>
@@ -86,11 +85,7 @@ if(!isset($data)) $data = ["menu" => 1];
             <script>
                 if (typeof LogRocket === 'object') {
                     LogRocket.identify('<?php echo Session::get("userName") ?>');
-                    LogRocket.getSessionURL(sessionURL => {
-                        Sentry.configureScope(scope => {
-                            scope.setExtra("sessionURL", sessionURL);
-                        });
-                    });
+                    LogRocket.getSessionURL(sessionURL => Sentry.setExtra("sessionURL", sessionURL));
                 }
             </script>
         <?php endif; ?>

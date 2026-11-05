@@ -41,10 +41,7 @@ use Config\Config;
 
     <img style="margin-top: 50px;" width="200" src="<?php echo template_url("img/gear_broken.png") ?>" />
 
-    <script
-            src='https://js.sentry-cdn.com/<?php echo Config::get("sentry.dsn_js") ?>.min.js'
-            crossorigin="anonymous">
-    </script>
+    <script src="https://browser.sentry-cdn.com/8.55.0/bundle.min.js" crossorigin="anonymous"></script>
 
     <?php if (Sentry\SentrySdk::getCurrentHub()->getLastEventId()) { ?>
         <button
