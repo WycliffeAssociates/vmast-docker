@@ -195,7 +195,9 @@ Before it changes anything it checks production over SSH: that `mysqldump` is
 there, that the asset and font paths exist, and that the v-mast.com
 site really uses the `vmast` database. Then it asks once more before
 dropping the database. The dump is verified complete before the drop and
-deleted after the import (`--keep-dump` keeps it). `--db-only`,
+deleted after the import (`--keep-dump` keeps it). After the import, members
+without a profile (production has some) get an empty one, so they are asked to
+complete it at their next login instead of hitting errors. `--db-only`,
 `--assets-only`, `--fonts-only` and `--no-*` re-run single parts; `--help` lists
 the rest.
 
