@@ -63,7 +63,7 @@ class TranslationsController extends Controller
 
         if (!$member) Url::redirect('members/login');
         if(!$member->verified) Url::redirect("members/error/verification");
-        if(!$member->profile->exists()) Url::redirect("members/profile");
+        if(!$member->profile) Url::redirect("members/profile");
 
         $this->_model = new TranslationsModel();
         $this->_eventModel = new EventsModel($this->eventsRepo);

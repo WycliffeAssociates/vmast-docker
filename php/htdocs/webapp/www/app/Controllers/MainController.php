@@ -57,7 +57,7 @@ class MainController extends Controller
 
             if (!$member) Url::redirect("members/login");
 
-            if(!$member->profile->complete) Url::redirect("members/profile");
+            if(!$member->profile?->complete) Url::redirect("members/profile");
 
             Url::redirect("events");
         }

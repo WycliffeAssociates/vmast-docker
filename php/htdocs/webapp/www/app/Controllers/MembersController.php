@@ -108,7 +108,7 @@ class MembersController extends Controller
         $profile = $this->_member->profile;
 
         if (!$profile) {
-            $p = new Profile(["projects" => "[]", "languages" => "[]", "prefered_roles" => "[]"]);
+            $p = new Profile(["projects" => "[]", "proj_lang" => "", "languages" => "[]", "prefered_roles" => "[]"]);
             $p->mID = $this->_member->memberID;
             $p->save();
             Url::redirect('members/profile');
@@ -1281,7 +1281,7 @@ class MembersController extends Controller
                         $data["message"] = $message;
 
                         $firstLang = "en";
-                        $languages = $admin->profile->languages ? (array)json_decode($admin->profile->languages, true) : [];
+                        $languages = $admin->profile?->languages ? (array)json_decode($admin->profile->languages, true) : [];
                         if(is_array($languages) && !empty($languages))
                         {
                             $keys = array_keys($languages);
