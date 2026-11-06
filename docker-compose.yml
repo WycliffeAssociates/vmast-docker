@@ -78,6 +78,10 @@ services:
       DCS_CLIENT_SECRET: ${DCS_CLIENT_SECRET}
       WACS_SERVER: ${WACS_SERVER}
       DCS_SERVER: ${DCS_SERVER}
+      WACS_CATALOG_URL: ${WACS_CATALOG_URL}
+      DCS_CATALOG_URL: ${DCS_CATALOG_URL}
+      QA_GUIDE_URL: ${QA_GUIDE_URL}
+      BC_URL: ${BC_URL}
     volumes:
       # Written by the application at run time, so they must outlive the
       # container. One volume covers the whole of Storage, imported resources
