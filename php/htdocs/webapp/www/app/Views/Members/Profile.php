@@ -79,13 +79,13 @@ use Shared\Legacy\Error;
         <div class="form-control">
             <label><input type="checkbox" class="tr_role" name="prefered_roles[]" value="translator"
                     <?php echo isset($_POST["prefered_roles"]) && in_array("translator", $_POST["prefered_roles"]) ? "checked" :
-                        (strpos($profile->prefered_roles, "translator") !== false ? "checked" : "") ?>> <?php echo __('translator'); ?> &nbsp;</label>
+                        (str_contains($profile->prefered_roles, "translator") ? "checked" : "") ?>> <?php echo __('translator'); ?> &nbsp;</label>
             <label><input type="checkbox" class="fc_role" name="prefered_roles[]" value="facilitator"
                     <?php echo isset($_POST["prefered_roles"]) && in_array("facilitator", $_POST["prefered_roles"]) ? "checked" :
-                        (strpos($profile->prefered_roles, "facilitator") !== false ? "checked" : "") ?>> <?php echo __('facilitator'); ?> &nbsp;</label>
+                        (str_contains($profile->prefered_roles, "facilitator") ? "checked" : "") ?>> <?php echo __('facilitator'); ?> &nbsp;</label>
             <label><input type="checkbox" class="ch_role" name="prefered_roles[]" value="checker"
                     <?php echo isset($_POST["prefered_roles"]) && in_array("checker", $_POST["prefered_roles"]) ? "checked" :
-                        (strpos($profile->prefered_roles, "checker") !== false ? "checked" : "") ?>> <?php echo __('checker'); ?> &nbsp;</label>
+                        (str_contains($profile->prefered_roles, "checker") ? "checked" : "") ?>> <?php echo __('checker'); ?> &nbsp;</label>
         </div>
     </div>
 
@@ -227,16 +227,16 @@ use Shared\Legacy\Error;
         <div class="form-control">
             <label><input type="checkbox" name="mast_role[]" value="translator" disabled
                     <?php echo isset($_POST["mast_role"]) && in_array("translator", $_POST["mast_role"]) ? "checked" :
-                        (strpos($profile->mast_role, "translator") !== false ? "checked" : "") ?>> <?php echo __('translator'); ?> &nbsp;</label>
+                        (str_contains($profile->mast_role, "translator") ? "checked" : "") ?>> <?php echo __('translator'); ?> &nbsp;</label>
             <label><input type="checkbox" name="mast_role[]" value="facilitator" disabled
                     <?php echo isset($_POST["mast_role"]) && in_array("facilitator", $_POST["mast_role"]) ? "checked" :
-                        (strpos($profile->mast_role, "facilitator") !== false ? "checked" : "") ?>> <?php echo __('facilitator'); ?> &nbsp;</label>
+                        (str_contains($profile->mast_role, "facilitator") ? "checked" : "") ?>> <?php echo __('facilitator'); ?> &nbsp;</label>
             <label><input type="checkbox" name="mast_role[]" value="l2_checker" disabled
                     <?php echo isset($_POST["mast_role"]) && in_array("l2_checker", $_POST["mast_role"]) ? "checked" :
-                        (strpos($profile->mast_role, "l2_checker") !== false ? "checked" : "") ?>> <?php echo __('l2_checker'); ?> &nbsp;</label>
+                        (str_contains($profile->mast_role, "l2_checker") ? "checked" : "") ?>> <?php echo __('l2_checker'); ?> &nbsp;</label>
             <label><input type="checkbox" name="mast_role[]" value="l3_checker" disabled
                     <?php echo isset($_POST["mast_role"]) && in_array("l3_checker", $_POST["mast_role"]) ? "checked" :
-                        (strpos($profile->mast_role, "l3_checker") !== false ? "checked" : "") ?>> <?php echo __('l3_checker'); ?> &nbsp;</label>
+                        (str_contains($profile->mast_role, "l3_checker") ? "checked" : "") ?>> <?php echo __('l3_checker'); ?> &nbsp;</label>
         </div>
     </div>
 
@@ -267,7 +267,7 @@ use Shared\Legacy\Error;
 
     <div class="facilitator_section
             <?php echo isset($_POST["prefered_roles"]) && in_array("facilitator", $_POST["prefered_roles"]) ? "shown" :
-                (strpos($profile->prefered_roles, "facilitator") !== false ? "shown" : "") ?>">
+                (str_contains($profile->prefered_roles, "facilitator") ? "shown" : "") ?>">
         <h3><?php echo __('facilitator_skills'); ?></h3>
 
         <div class="form-group">
@@ -339,8 +339,8 @@ use Shared\Legacy\Error;
 
     <div class="checker_section
         <?php echo isset($_POST["prefered_roles"]) && (in_array("translator", $_POST["prefered_roles"]) || in_array("checker", $_POST["prefered_roles"])) ? "shown" :
-            (strpos($profile->prefered_roles, "translator") !== false
-                || strpos($profile->prefered_roles, "checker") !== false ? "shown" : "") ?>">
+            (str_contains($profile->prefered_roles, "translator")
+                || str_contains($profile->prefered_roles, "checker") ? "shown" : "") ?>">
         <h3><?php echo __('checker_skills'); ?></h3>
 
         <div class="form-group">
@@ -355,22 +355,22 @@ use Shared\Legacy\Error;
             <div class="form-control">
                 <label><input type="checkbox" name="church_role[]" value="Elder"
                         <?php echo isset($_POST["church_role"]) && in_array("Elder", $_POST["church_role"]) ? "checked" :
-                            (strpos($profile->church_role, "Elder") !== false ? "checked" : "") ?>> <?php echo __('elder'); ?> &nbsp;</label>
+                            (str_contains($profile->church_role, "Elder") ? "checked" : "") ?>> <?php echo __('elder'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="church_role[]" value="Bishop"
                         <?php echo isset($_POST["church_role"]) && in_array("Bishop", $_POST["church_role"]) ? "checked" :
-                            (strpos($profile->church_role, "Bishop") !== false ? "checked" : "") ?>> <?php echo __('bishop'); ?> &nbsp;</label>
+                            (str_contains($profile->church_role, "Bishop") ? "checked" : "") ?>> <?php echo __('bishop'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="church_role[]" value="Pastor"
                         <?php echo isset($_POST["church_role"]) && in_array("Pastor", $_POST["church_role"]) ? "checked" :
-                            (strpos($profile->church_role, "Pastor") !== false ? "checked" : "") ?>> <?php echo __('pastor'); ?> &nbsp;</label>
+                            (str_contains($profile->church_role, "Pastor") ? "checked" : "") ?>> <?php echo __('pastor'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="church_role[]" value="Teacher"
                         <?php echo isset($_POST["church_role"]) && in_array("Teacher", $_POST["church_role"]) ? "checked" :
-                            (strpos($profile->church_role, "Teacher") !== false ? "checked" : "") ?>> <?php echo __('teacher'); ?> &nbsp;</label>
+                            (str_contains($profile->church_role, "Teacher") ? "checked" : "") ?>> <?php echo __('teacher'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="church_role[]" value="Denominational Leader"
                         <?php echo isset($_POST["church_role"]) && in_array("Denominational Leader", $_POST["church_role"]) ? "checked" :
-                            (strpos($profile->church_role, "Denominational Leader") !== false ? "checked" : "") ?>> <?php echo __('denominational_leader'); ?> &nbsp;</label>
+                            (str_contains($profile->church_role, "Denominational Leader") ? "checked" : "") ?>> <?php echo __('denominational_leader'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="church_role[]" value="Seminary Professor"
                         <?php echo isset($_POST["church_role"]) && in_array("Seminary Professor", $_POST["church_role"]) ? "checked" :
-                            (strpos($profile->church_role, "Seminary Professor") !== false ? "checked" : "") ?>> <?php echo __('seminary_professor'); ?> &nbsp;</label>
+                            (str_contains($profile->church_role, "Seminary Professor") ? "checked" : "") ?>> <?php echo __('seminary_professor'); ?> &nbsp;</label>
             </div>
         </div>
 
@@ -441,13 +441,13 @@ use Shared\Legacy\Error;
             <div class="form-control">
                 <label><input type="checkbox" name="education[]" value="BA"
                         <?php echo isset($_POST["education"]) && in_array("BA", $_POST["education"]) ? "checked" :
-                            (strpos($profile->education, "BA") !== false ? "checked" : "") ?>> <?php echo __('ba_edu'); ?> &nbsp;</label>
+                            (str_contains($profile->education, "BA") ? "checked" : "") ?>> <?php echo __('ba_edu'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="education[]" value="MA"
                         <?php echo isset($_POST["education"]) && in_array("MA", $_POST["education"]) ? "checked" :
-                            (strpos($profile->education, "MA") !== false ? "checked" : "") ?>> <?php echo __('ma_edu'); ?> &nbsp;</label>
+                            (str_contains($profile->education, "MA") ? "checked" : "") ?>> <?php echo __('ma_edu'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="education[]" value="PHD"
                         <?php echo isset($_POST["education"]) && in_array("PHD", $_POST["education"]) ? "checked" :
-                            (strpos($profile->education, "PHD") !== false ? "checked" : "") ?>> <?php echo __('phd_edu'); ?> &nbsp;</label>
+                            (str_contains($profile->education, "PHD") ? "checked" : "") ?>> <?php echo __('phd_edu'); ?> &nbsp;</label>
             </div>
         </div>
 
@@ -463,16 +463,16 @@ use Shared\Legacy\Error;
             <div class="form-control">
                 <label><input type="checkbox" name="ed_area[]" value="Theology"
                         <?php echo isset($_POST["ed_area"]) && in_array("Theology", $_POST["ed_area"]) ? "checked" :
-                            (strpos($profile->ed_area, "Theology") !== false ? "checked" : "") ?>> <?php echo __('theology'); ?> &nbsp;</label>
+                            (str_contains($profile->ed_area, "Theology") ? "checked" : "") ?>> <?php echo __('theology'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="ed_area[]" value="Pastoral Ministry"
                         <?php echo isset($_POST["ed_area"]) && in_array("Pastoral Ministry", $_POST["ed_area"]) ? "checked" :
-                            (strpos($profile->ed_area, "Pastoral Ministry") !== false ? "checked" : "") ?>> <?php echo __('pastoral_ministry'); ?> &nbsp;</label>
+                            (str_contains($profile->ed_area, "Pastoral Ministry") ? "checked" : "") ?>> <?php echo __('pastoral_ministry'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="ed_area[]" value="Bible Translation"
                         <?php echo isset($_POST["ed_area"]) && in_array("Bible Translation", $_POST["ed_area"]) ? "checked" :
-                            (strpos($profile->ed_area, "Bible Translation") !== false ? "checked" : "") ?>> <?php echo __('bible_translation'); ?> &nbsp;</label>
+                            (str_contains($profile->ed_area, "Bible Translation") ? "checked" : "") ?>> <?php echo __('bible_translation'); ?> &nbsp;</label>
                 <label><input type="checkbox" name="ed_area[]" value="Exegetics"
                         <?php echo isset($_POST["ed_area"]) && in_array("Exegetics", $_POST["ed_area"]) ? "checked" :
-                            (strpos($profile->ed_area, "Exegetics") !== false ? "checked" : "") ?>> <?php echo __('exegetics'); ?> &nbsp;</label>
+                            (str_contains($profile->ed_area, "Exegetics") ? "checked" : "") ?>> <?php echo __('exegetics'); ?> &nbsp;</label>
             </div>
         </div>
 
