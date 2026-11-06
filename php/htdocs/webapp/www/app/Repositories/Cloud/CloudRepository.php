@@ -8,11 +8,6 @@ use Helpers\Tools;
 use File;
 
 class CloudRepository implements ICloudRepository {
-    private $wacsServer = "https://content.bibletranslationtools.org/api/v1";
-    private $wacsHostname = "content.bibletranslationtools.org";
-    private $door43Server = "https://git.door43.org/api/v1";
-    private $door43Hostname = "git.door43.org";
-
     private $server;
     private $serverUrl;
     private $authUrl;
@@ -22,9 +17,10 @@ class CloudRepository implements ICloudRepository {
 
     public function initialize($server, $getUser = true) {
         $this->server = $server;
-        $this->serverUrl = $server == "wacs" ? $this->wacsServer : $this->door43Server;
-        $this->gitServerUrl = $server == "wacs" ? $this->wacsHostname : $this->door43Hostname;
-        $this->authUrl = $server == "wacs" ? "https://$this->wacsHostname" : "https://$this->door43Hostname";
+        $this->serverUrl = rtrim($server == "wacs" ? $_ENV["WACS_SERVER"] : $_ENV["DCS_SERVER"], "/");
+        $url = parse_url($this->serverUrl);
+        $this->gitServerUrl = $url["host"] . (isset($url["port"]) ? ":" . $url["port"] : "");
+        $this->authUrl = "{$url["scheme"]}://$this->gitServerUrl";
         $this->accessToken = $this->isAuthenticated() ? Session::get($server)["access_token"] : "";
         $this->username = $getUser && $this->isAuthenticated() ? $this->getUsername($server) : "";
     }
