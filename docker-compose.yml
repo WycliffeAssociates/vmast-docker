@@ -116,11 +116,20 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
     restart: always
+    # Over TCP, as the app connects. On a first start the image loads its init
+    # scripts into a temporary server listening only on the socket, so a socket
+    # ping (-h localhost) reported healthy while connections from php were
+    # still refused. A ping needs no password: any answer means "up".
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      # Probe every 5s, not Docker's default 30s: php waits for this, and a
+      # probe that lands just before the server is up would otherwise hold
+      # the whole stack for another 30s. Misses in the first minute (a first
+      # start loading init scripts, InnoDB recovery) do not count.
+      interval: 5s
       timeout: 10s
       retries: 10
-      start_period: 15s
+      start_period: 60s
 
 #  phpmyadmin:
 #     image: phpmyadmin/phpmyadmin
