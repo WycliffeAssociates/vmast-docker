@@ -28,18 +28,15 @@ use ZipArchive;
 class ResourcesRepository implements IResourcesRepository {
     private $rootPath;
 
-    private $wacsApiUrl = "https://content.bibletranslationtools.org/api/v1/";
-    private $dcsApiUrl = "https://git.door43.org/api/v1/";
-
-    private $wacsCatalogUrl = "https://api.bibletranslationtools.org/v3/catalog.json";
-    private $dcsCatalogUrl = "https://api.door43.org/v3/catalog.json";
+    private $wacsCatalogUrl;
+    private $dcsCatalogUrl;
 
     private $wacsCatalogPath;
     private $dcsCatalogPath;
     private $languagesPath;
 
-    private $qaGuideUrl = "https://v-raft.com/api/rubric/";
-    private $bcUrl = "https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/archive/master.zip";
+    private $qaGuideUrl;
+    private $bcUrl;
 
     private $wordsDatabase = null;
     private $wordsDictionary = null;
@@ -56,6 +53,11 @@ class ResourcesRepository implements IResourcesRepository {
         $this->wacsCatalogPath = $this->rootPath . "catalog.json";
         $this->dcsCatalogPath = $this->rootPath . "catalog_dcs.json";
         $this->languagesPath = $this->rootPath . "langnames.json";
+
+        $this->wacsCatalogUrl = $_ENV["WACS_CATALOG_URL"];
+        $this->dcsCatalogUrl = $_ENV["DCS_CATALOG_URL"];
+        $this->qaGuideUrl = rtrim($_ENV["QA_GUIDE_URL"], "/") . "/";
+        $this->bcUrl = $_ENV["BC_URL"];
 
         $this->eventRepo = $eventRepo;
         $this->prefRepo = $prefRepo;
@@ -999,12 +1001,7 @@ class ResourcesRepository implements IResourcesRepository {
     }
 
     public function getApiUrl($type) {
-        switch ($type) {
-            case "wacs":
-                return $this->wacsApiUrl;
-            default:
-                return $this->dcsApiUrl;
-        }
+        return rtrim($type == "wacs" ? $_ENV["WACS_SERVER"] : $_ENV["DCS_SERVER"], "/") . "/";
     }
 
     private function parseQaGuide($lang) {

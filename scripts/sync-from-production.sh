@@ -588,10 +588,30 @@ import_database() {
 
     [[ "$tables" -gt 0 ]] || warn "No tables were created; the dump may not have applied."
 
+    backfill_profiles "$db_name"
+
     if [[ $FRESH_DUMP -eq 1 && $KEEP_DUMP -eq 0 ]]; then
         rm -f "$DUMP_FILE"
         say "Deleted the dump (it holds production's user data; --keep-dump keeps it)"
     fi
+}
+
+# Production holds members with no profile row - older accounts, and any
+# "spec" placeholder an import created before that bug was fixed - and the app
+# reads every member's profile. Give each one an empty, incomplete profile, so
+# the member is asked to fill it in at the next login. Only columns without a
+# default are set; the rest take theirs.
+backfill_profiles() {
+    local db_name="$1" added
+
+    added=$(db_root mysql -u root -N -B "$db_name" -e "
+        INSERT INTO vm_profile (mID, projects, proj_lang, languages, prefered_roles)
+        SELECT m.memberID, '[]', '', '[]', '[]'
+        FROM vm_members m LEFT JOIN vm_profile p ON p.mID = m.memberID
+        WHERE p.pID IS NULL;
+        SELECT ROW_COUNT();" | tr -d '\r')
+
+    say "Created empty profiles for $added member(s) that had none"
 }
 
 # ----------------------------------------------------------------- the assets

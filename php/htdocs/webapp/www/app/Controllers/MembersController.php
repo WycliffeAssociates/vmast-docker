@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\NewsModel;
+use App\Models\ORM\Profile;
 use App\Repositories\Cloud\ICloudRepository;
 use App\Repositories\Event\IEventRepository;
 use App\Repositories\Language\ILanguageRepository;
@@ -86,7 +87,7 @@ class MembersController extends Controller
     {
         if (!$this->_member) Url::redirect("members/login");
 
-        if (!$this->_member->profile->complete) Url::redirect("members/profile");
+        if (!$this->_member->profile?->complete) Url::redirect("members/profile");
 
         Url::redirect("events");
     }
@@ -105,6 +106,13 @@ class MembersController extends Controller
         $allLanguages = $this->languageRepo->all();
 
         $profile = $this->_member->profile;
+
+        if (!$profile) {
+            $p = new Profile(["projects" => "[]", "proj_lang" => "", "languages" => "[]", "prefered_roles" => "[]"]);
+            $p->mID = $this->_member->memberID;
+            $p->save();
+            Url::redirect('members/profile');
+        }
 
         if(!empty($_POST)) {
             $_POST = Gump::xss_clean($_POST);
@@ -1273,7 +1281,7 @@ class MembersController extends Controller
                         $data["message"] = $message;
 
                         $firstLang = "en";
-                        $languages = $admin->profile->languages ? (array)json_decode($admin->profile->languages, true) : [];
+                        $languages = $admin->profile?->languages ? (array)json_decode($admin->profile->languages, true) : [];
                         if(is_array($languages) && !empty($languages))
                         {
                             $keys = array_keys($languages);
