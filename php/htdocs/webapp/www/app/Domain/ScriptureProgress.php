@@ -64,6 +64,7 @@ class ScriptureProgress
             $verbCheckState = StepsStates::NOT_STARTED;
             $chunkingState = StepsStates::NOT_STARTED;
             $blindDraftState = StepsStates::NOT_STARTED;
+            $verbChecker = null;
 
             $members[$chapter["memberID"]] = "";
             $data["chapters"][$key]["progress"] = 0;
