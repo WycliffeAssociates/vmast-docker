@@ -2,28 +2,16 @@
 
 namespace Tests\Integration;
 
-use App\Models\EventsModel;
-use App\Models\ORM\Event;
-use App\Repositories\Event\EventRepository;
 use Helpers\Constants\EventSteps;
 
-class EventsModelTest extends DatabaseTestCase
+class EventsModelTest extends EventsModelTestCase
 {
-    use Fixtures;
-
-    private EventsModel $model;
     private int $translatorID;
     private int $eventID;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->model = new EventsModel(new EventRepository(new Event()));
-
-        $this->language('en', 'English');
-        $this->language('id', 'Indonesian');
-        $this->book('gen', 'Genesis', 50, 1);
-        $this->book('exo', 'Exodus', 40, 2);
 
         // A ULB Genesis event into Indonesian with one translator
         $this->translatorID = $this->member(['firstName' => 'John', 'lastName' => 'Smith']);
@@ -145,12 +133,10 @@ class EventsModelTest extends DatabaseTestCase
         $this->translator($this->translatorID, $this->eventID, ['step' => EventSteps::MULTI_DRAFT]);
         $this->translator($this->translatorID, $exodusID, ['step' => EventSteps::MULTI_DRAFT]);
 
-        $admins = [];
-        foreach ($this->model->getMemberEvents($this->translatorID) as $event) {
-            $admins[$event->name] = $event->admins->map(fn($m) => $m->memberID)->toArray();
-        }
-
-        $this->assertSame(['Genesis' => [$genesisAdmin], 'Exodus' => [$exodusAdmin]], $admins);
+        $this->assertSame(
+            ['Genesis' => [$genesisAdmin], 'Exodus' => [$exodusAdmin]],
+            $this->adminsByBook($this->model->getMemberEvents($this->translatorID))
+        );
     }
 
     public function testPrayingTranslatorGetsTheirNextUnfinishedChapter(): void

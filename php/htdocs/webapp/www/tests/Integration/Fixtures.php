@@ -114,4 +114,9 @@ trait Fixtures
     {
         return $this->insert('word_groups', ['eventID' => $eventID, 'words' => json_encode($words)]);
     }
+
+    protected function word(int $eventID, string $word): int
+    {
+        return $this->insert('words', ['eventID' => $eventID, 'word' => $word]);
+    }
 }
