@@ -28,7 +28,7 @@
     "swiftmailer/swiftmailer": "~6.2",
     "twbs/bootstrap": "~5.3",
     "monolog/monolog": "~3.7",
-    "predis/predis": "~2.2",
+    "predis/predis": "~3.7",
     "tecnickcom/tcpdf": "~6.7",
     "guzzlehttp/guzzle": "~7.9",
     "sentry/sdk": "~4.0.0",
