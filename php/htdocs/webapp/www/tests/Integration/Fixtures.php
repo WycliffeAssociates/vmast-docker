@@ -149,4 +149,23 @@ trait Fixtures
             'peerCheck' => '',
         ]);
     }
+
+    /** Member profile; $languages maps language codes to [fluency, years], as stored by the profile form. */
+    protected function profile(int $memberID, array $languages = [], array $row = []): int
+    {
+        return $this->insert('profile', $row + [
+            'mID' => $memberID,
+            'projects' => '[]',
+            'proj_lang' => '',
+            'prefered_roles' => '["translator"]',
+            'languages' => json_encode($languages),
+            'mast_role' => '[]',
+            'ref_person' => '',
+            'ref_email' => '',
+            'education' => '',
+            'ed_area' => '',
+            'ed_place' => '',
+            'church_role' => '[]',
+        ]);
+    }
 }
