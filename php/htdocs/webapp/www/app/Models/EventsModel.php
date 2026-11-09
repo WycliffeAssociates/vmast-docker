@@ -12,7 +12,6 @@ use App\Models\ORM\Word;
 use App\Models\ORM\WordGroup;
 use App\Repositories\Event\IEventRepository;
 use Database\Model;
-use Database\ORM\Collection;
 use DB;
 use Helpers\Constants\EventCheckSteps;
 use Helpers\Constants\EventSteps;
@@ -119,10 +118,8 @@ class EventsModel extends Model
         $eventAdmins = [];
 
         foreach ($events as $event) {
-            if (empty($eventAdmins)) {
-                $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            }
-            $event->admins = $eventAdmins;
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
+            $event->admins = $eventAdmins[$event->eventID];
 
             $checkingSteps = [
                 EventSteps::PEER_REVIEW,
@@ -310,10 +307,8 @@ class EventsModel extends Model
         $eventAdmins = [];
 
         foreach ($events as $event) {
-            if (empty($eventAdmins)) {
-                $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            }
-            $event->admins = $eventAdmins;
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
+            $event->admins = $eventAdmins[$event->eventID];
 
             $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
             $kwCheck = $event->kwCheck ? (array)json_decode($event->kwCheck, true) : [];
@@ -450,8 +445,8 @@ class EventsModel extends Model
 
         foreach ($events as $event) {
             // Checker event
-            if (empty($eventAdmins)) $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            $event->admins = $eventAdmins;
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
+            $event->admins = $eventAdmins[$event->eventID];
             $event->manageMode = $event->bookProject;
 
             $otherCheck = $event->otherCheck ? (array)json_decode($event->otherCheck, true) : [];
@@ -609,8 +604,8 @@ class EventsModel extends Model
 
         foreach ($events as $event) {
             // Checker event
-            if (empty($eventAdmins)) $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            $event->admins = $eventAdmins;
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
+            $event->admins = $eventAdmins[$event->eventID];
             $event->manageMode = $event->bookProject;
 
             $otherCheck = $event->otherCheck ? (array)json_decode($event->otherCheck, true) : [];
@@ -809,8 +804,8 @@ class EventsModel extends Model
 
         foreach ($events as $event) {
             // Checker event
-            if (empty($eventAdmins)) $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            $event->admins = $eventAdmins;
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
+            $event->admins = $eventAdmins[$event->eventID];
             $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
             foreach ($peerCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
@@ -932,10 +927,8 @@ class EventsModel extends Model
         $eventAdmins = [];
 
         foreach ($events as $event) {
-            if (empty($eventAdmins)) {
-                $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            }
-            $event->admins = $eventAdmins;
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
+            $event->admins = $eventAdmins[$event->eventID];
 
             $checkingSteps = [
                 EventCheckSteps::PEER_REVIEW,
@@ -1290,15 +1283,13 @@ class EventsModel extends Model
 
         $events = $this->db->select($sql, $prepare);
         $filtered = [];
-        $eventAdmins = new Collection();
+        $eventAdmins = [];
 
         foreach ($events as $event) {
             // First Checker events
-            if ($eventAdmins->isEmpty()) {
-                $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            }
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
 
-            $event->admins = $eventAdmins;
+            $event->admins = $eventAdmins[$event->eventID];
             $event->manageMode = "l3";
 
             if ($event->memberID == $memberID
@@ -1395,8 +1386,8 @@ class EventsModel extends Model
 
         foreach ($events as $event) {
             // Theo Check events
-            if (empty($eventAdmins)) $eventAdmins = $this->eventRepo->get($event->eventID)->admins;
-            $event->admins = $eventAdmins;
+            $eventAdmins[$event->eventID] ??= $this->eventRepo->get($event->eventID)->admins;
+            $event->admins = $eventAdmins[$event->eventID];
             $kwCheck = $event->kwCheck ? (array)json_decode($event->kwCheck, true) : [];
             foreach ($kwCheck as $chap => $data) {
                 if (!isset($chapter) || $chapter == $chap) {
