@@ -168,4 +168,29 @@ trait Fixtures
             'church_role' => '[]',
         ]);
     }
+
+    /** A translated chunk by translator $trID; $verses becomes the translator's verses in translatedVerses. */
+    protected function translation(int $trID, int $chapter, int $chunk, $verses = [], array $row = []): int
+    {
+        $translator = self::db()->table('translators')
+            ->join('events', 'events.eventID', '=', 'translators.eventID')
+            ->join('projects', 'projects.projectID', '=', 'events.projectID')
+            ->where('trID', $trID)->first();
+
+        return $this->insert('translations', $row + [
+            'projectID' => $translator->projectID,
+            'eventID' => $translator->eventID,
+            'trID' => $trID,
+            'l2chID' => 0,
+            'l3chID' => 0,
+            'targetLang' => $translator->targetLang,
+            'bookProject' => $translator->bookProject,
+            'sort' => 1,
+            'bookCode' => $translator->bookCode,
+            'chapter' => $chapter,
+            'chunk' => $chunk,
+            'firstvs' => $chunk + 1,
+            'translatedVerses' => json_encode(['translator' => ['verses' => $verses]]),
+        ]);
+    }
 }
