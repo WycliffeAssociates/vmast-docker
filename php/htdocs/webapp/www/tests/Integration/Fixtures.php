@@ -70,15 +70,19 @@ trait Fixtures
     }
 
     /** Check columns (peerCheck, kwCheck, ...) may be given as arrays and are stored as JSON. */
-    protected function translator(int $memberID, int $eventID, array $row = []): int
+    private function encodeChecks(array $row): array
     {
         foreach (['verbCheck', 'peerCheck', 'kwCheck', 'crCheck', 'otherCheck'] as $check) {
             if (isset($row[$check]) && is_array($row[$check])) {
                 $row[$check] = json_encode($row[$check]);
             }
         }
+        return $row;
+    }
 
-        return $this->insert('translators', $row + [
+    protected function translator(int $memberID, int $eventID, array $row = []): int
+    {
+        return $this->insert('translators', $this->encodeChecks($row) + [
             'memberID' => $memberID,
             'eventID' => $eventID,
             'step' => 'pray',
@@ -118,5 +122,31 @@ trait Fixtures
     protected function word(int $eventID, string $word): int
     {
         return $this->insert('words', ['eventID' => $eventID, 'word' => $word]);
+    }
+
+    /** Revision (level 2) checker. */
+    protected function checkerL2(int $memberID, int $eventID, array $row = []): int
+    {
+        return $this->insert('checkers_l2', $this->encodeChecks($row) + [
+            'memberID' => $memberID,
+            'eventID' => $eventID,
+            'step' => 'pray',
+            'currentChapter' => 0,
+            'peerCheck' => '',
+            'kwCheck' => '',
+            'crCheck' => '',
+        ]);
+    }
+
+    /** Review (level 3) checker. */
+    protected function checkerL3(int $memberID, int $eventID, array $row = []): int
+    {
+        return $this->insert('checkers_l3', $this->encodeChecks($row) + [
+            'memberID' => $memberID,
+            'eventID' => $eventID,
+            'step' => 'pray',
+            'currentChapter' => 0,
+            'peerCheck' => '',
+        ]);
     }
 }
