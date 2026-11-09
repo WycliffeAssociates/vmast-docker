@@ -1,0 +1,122 @@
+# Development overrides. docker-compose.yml passes no env_file at all, so the
+# five services that read configuration get it back here - locally the values
+# come from a plaintext .env rather than from `op run`.
+services:
+  web:
+    develop:
+      watch:
+        - action: sync
+          path: ./php/htdocs/webapp/www
+          target: /usr/share/nginx/html
+          ignore:
+            - vendor/
+        - action: rebuild
+          path: ./php/htdocs/webapp/www/composer.json
+    volumes:
+      - ./db/dump:/db_dump
+
+  php:
+    env_file:
+      - .env
+    develop:
+      watch:
+        - action: sync
+          path: ./php/htdocs/webapp/www
+          target: /usr/share/nginx/html
+          ignore:
+            - vendor/
+            # Bind mounted below, so the container already sees these live and
+            # syncing them would copy a gigabyte for nothing.
+            - app/Storage/
+            - app/Templates/Default/Assets/fonts/uploads/
+        - action: rebuild
+          path: ./php/htdocs/webapp/www/composer.json
+    volumes:
+      # Same mount points as docker-compose.yml, backed by the working tree
+      # instead of named volumes: what the sync script unpacks on the host is
+      # visible in the container immediately, with nothing to copy.
+      - ./php/htdocs/webapp/www/app/Storage:/usr/share/nginx/html/app/Storage
+      - ./php/htdocs/webapp/www/app/Templates/Default/Assets/fonts/uploads:/usr/share/nginx/html/app/Templates/Default/Assets/fonts/uploads
+    # volumes:
+    # - ./php/htdocs:/var/www/html
+    # - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+
+  db:
+    env_file:
+      - .env
+    # Seeds a new local database with the small tracked sample on its first
+    # start. Deploy hosts start empty; scripts/sync-from-production.sh fills them.
+    volumes:
+      - ./db/dump/dump.sql.gz:/docker-entrypoint-initdb.d/dump.sql.gz:ro
+
+  db-backup:
+    env_file:
+      - .env
+
+  node:
+    env_file:
+      - .env
+
+  # db:
+  # volumes:
+  # - dbdata:/var/lib/mysql
+  # - Probably take out? Maybe leave as a bind?
+  # - ./db/backup:/backup
+  # restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 512M
+    ports:
+      - 8081:80
+
+  # node:
+  # build:
+  #   context: .
+  #   dockerfile: NodeDockerfile
+  # volumes:
+  #   - ./node:/node
+  #   - ./ssl:/etc/nginx/ssl
+  #   - ./scripts:/scripts
+  # env_file:
+  #   - .env
+  # environment:
+  #   APP_TYPE: ${APP_TYPE}
+  #   MAIN_HOST: ${MAIN_HOST}
+  #   MAIL_HOST: ${MAIL_HOST}
+  #   MAIL_NAME: ${MAIL_NAME}
+  #   MAIL_FROM: ${MAIL_FROM}
+  #   MAIL_USER: ${MAIL_USER}
+  #   MAIL_PASS: ${MAIL_PASS}
+  #   SSL_CRT: ${SSL_CRT}
+  #   SSL_KEY: ${SSL_KEY}
+  #   SSL_CA: ${SSL_CA}
+  #   REDIS_HOST: ${REDIS_HOST}
+  #   REDIS_PORT: ${REDIS_PORT}
+  #   REDIS_DB: ${REDIS_DB}
+  #   RABBITMQ_HOST: ${RABBITMQ_HOST}
+  #   RABBITMQ_USER: ${RABBITMQ_USER}
+  #   RABBITMQ_PASS: ${RABBITMQ_PASS}
+  #   RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+  # ports:
+  #   - 8001:8001
+  # depends_on:
+  #   - rabbitmq
+  #   - redis
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    env_file:
+      - .env
+
+volumes:
+  dbdata:
+  db_backups:
+  app_storage:
+  fonts_uploads:

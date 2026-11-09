@@ -7,10 +7,15 @@ https = require('https'),
     }, app).listen(process.env.SOCKET_PORT),
  */
 
+// Fixed listen port inside the container. SOCKET_PORT is the port browsers
+// connect to (MAIN_HOST:SOCKET_PORT), which can differ behind a proxy or a
+// remapped host port, so it is not used here.
+const LISTEN_PORT = 8001;
+
 const app = require('express')(),
     fs = require('fs'),
     http = require('http'),
-    server = http.createServer(app).listen(process.env.SOCKET_PORT),
+    server = http.createServer(app).listen(LISTEN_PORT),
     io = require('socket.io')(server),
     redis = require("redis"),
     util = require("util"),

@@ -1,0 +1,138 @@
+name: Build vmast Docker Images
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  # Weekly rebuild of the default branch so OS packages and base images
+  # (php, nginx, mariadb, node) pick up security patches even when nothing is
+  # pushed. Scheduled builds skip the layer cache so apt and the base image
+  # tags are re-fetched; composer still installs from composer.lock.
+  schedule:
+    - cron: "41 4 * * 1"
+
+jobs:
+  # Build every image (no push) so pull requests are validated.
+  Build-Image:
+    name: Build ${{ matrix.image }} image
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: vmast-web
+            context: .
+          - image: vmast-php
+            context: ./php
+          - image: vmast-db
+            context: ./db
+          - image: vmast-node
+            context: ./node
+    steps:
+      - uses: actions/checkout@v4
+      - name: Seed default nginx vhost for the web image
+        if: matrix.image == 'vmast-web'
+        run: cp web/nginx/localhost.conf.example web/nginx/localhost.conf
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image with buildx
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile
+          platforms: linux/amd64
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  # Boot the whole stack from this commit and check that the app really serves
+  # pages (scripts/smoke-test.sh). An image build alone would not have caught a
+  # dependency update that broke routing; this does, and Push-Image waits for
+  # it, so a broken build is never published.
+  Smoke-Test:
+    name: Smoke test the stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Authenticated pulls avoid Docker Hub's anonymous rate limit. Skipped
+      # where Actions secrets are unavailable (Dependabot, forks).
+      - name: Login to Docker Hub
+        if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.fork != true }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Run smoke test
+        env:
+          SMOKE_BUILD_ARGS: ${{ github.event_name == 'schedule' && '--pull --no-cache' || '--pull' }}
+        run: scripts/smoke-test.sh
+
+  Push-Image:
+    name: Push ${{ matrix.image }} if this is a branch
+    runs-on: ubuntu-latest
+    needs: [Build-Image, Smoke-Test]
+    # Branch pushes and the weekly rebuild publish. Dependabot branches are
+    # only built and smoke tested: their runs get no Actions secrets, so the
+    # Docker Hub login would fail anyway.
+    if: ${{ contains(fromJson('["push", "schedule"]'), github.event_name) && github.actor != 'dependabot[bot]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: vmast-web
+            context: .
+          - image: vmast-php
+            context: ./php
+          - image: vmast-db
+            context: ./db
+          - image: vmast-node
+            context: ./node
+    steps:
+      - uses: actions/checkout@v4
+      - name: Seed default nginx vhost for the web image
+        if: matrix.image == 'vmast-web'
+        run: cp web/nginx/localhost.conf.example web/nginx/localhost.conf
+      - uses: FranzDiebold/github-env-vars-action@v2.8.0
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Set docker tags
+        run: |
+          IMAGE=wycliffeassociates/${{ matrix.image }}
+          # Map the pushed branch to the deploy env its images serve, so
+          # deploy.sh can run IMAGE_TAG=$DEPLOY_ENV. main serves prod; every
+          # other branch publishes a tag equal to its own (slugified) name, so
+          # deploying that branch's env (IMAGE_TAG=<branch-slug>) pulls the
+          # right image. The slug keeps it a valid Docker tag even for branch
+          # names containing '/'.
+          case "$CI_REF_NAME" in
+            main)  ENV_TAG=prod ;;
+            *)     ENV_TAG="$CI_REF_NAME_SLUG" ;;
+          esac
+          {
+            echo "TAGS<<EOF"
+            echo "$IMAGE:$GITHUB_SHA"
+            echo "$IMAGE:$CI_REF_NAME_SLUG"
+            echo "$IMAGE:latest"
+            [ -n "$ENV_TAG" ] && echo "$IMAGE:$ENV_TAG"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Build and conditional push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile
+          platforms: linux/amd64
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
+          push: true
+          tags: ${{ env.TAGS }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

@@ -1,37 +1,52 @@
-version: '3.1'
-
+# Production topology. Secrets reach the containers from the shell environment
+# only - `./run.sh` wraps `docker compose up` in `op run --env-file=.env.deploy`,
+# which resolves the op:// references in that file and exports them. There is
+# deliberately no `env_file:` here: declaring one makes a plaintext .env
+# mandatory on the host (compose refuses to start without it) and hands every
+# key in it to every service that names it. Each service below pins exactly what
+# it reads, so `rabbitmq` gets 2 variables instead of 43. compose.local.yml adds
+# `env_file: .env` back for development.
 services:
   web:
     build:
-      context: .
+      dockerfile: ./Dockerfile
     platform: linux/amd64
+    restart: unless-stopped
     depends_on:
-      - db
-      - php
+      db:
+        condition: service_healthy
+      php:
+        condition: service_started
+    # TLS terminates at Cloudflare, so nginx only serves plain HTTP on 80.
+    # Host port comes from WEB_PORT (1Password per environment; default 80) so
+    # shared docker hosts can avoid ports already in use.
     ports:
-      - 80:80
-      - 443:443
-    environment:
-      DB_HOST: ${DB_HOST}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    volumes:
-      - ./htdocs:/var/www/html
-      - ./ssl:/etc/nginx/ssl
-      - ./web/nginx:/etc/nginx/conf.d
-      - ./db/dump:/db_dump
+      - "${WEB_PORT:-80}:80"
+    # No env_file and no environment on purpose. nginx forwards every .php to
+    # php:9000 and never interprets PHP itself, and the vhost has no ${} to
+    # substitute - so this container has no use for a single credential.
+    # Passing .env here put DB_PASS, MAIL_PASS, RABBITMQ_PASS, REDIS_PASS and
+    # the WACS/DCS client secrets in a container that only serves static files.
+    # todo: watch or bind mount
+    # volumes:
+    #   - ./htdocs:/var/www/html
+    #   - ./ssl:/etc/nginx/ssl
+    #   - ./web/nginx:/etc/nginx/conf.d
+    #   - ./db/dump:/db_dump
 
   php:
     build:
-      context: .
-      dockerfile: PhpDockerfile
+      context: ./php
+      dockerfile: ./Dockerfile
     platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       APP_URL: ${APP_URL}
       APP_EMAIL: ${APP_EMAIL}
-      APP_ENV: ${APP_ENV}
+      DEPLOY_ENV: ${DEPLOY_ENV}
       APP_PREFIX: ${APP_PREFIX}
       APP_TYPE: ${APP_TYPE}
       APP_MAINTENANCE: ${APP_MAINTENANCE}
@@ -47,8 +62,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
-      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
-      RECAPTCHA_SECRET: ${RECAPTCHA_SECRET}
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET}
       SENTRY_DSN: ${SENTRY_DSN}
       SENTRY_DSN_JS: ${SENTRY_DSN_JS}
       LOG_ROCKET: ${LOG_ROCKET}
@@ -57,20 +72,42 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
-      RABBITMQ_ROUTING: ${RABBITMQ_ROUTING}
       WACS_CLIENT_ID: ${WACS_CLIENT_ID}
       WACS_CLIENT_SECRET: ${WACS_CLIENT_SECRET}
       DCS_CLIENT_ID: ${DCS_CLIENT_ID}
       DCS_CLIENT_SECRET: ${DCS_CLIENT_SECRET}
+      # Public endpoints, the same in every environment, so they default here
+      # and need no 1Password fields; set one only to point an environment
+      # elsewhere. An empty value would break WACS/DCS login and downloads.
+      WACS_SERVER: ${WACS_SERVER:-https://content.bibletranslationtools.org/api/v1}
+      DCS_SERVER: ${DCS_SERVER:-https://git.door43.org/api/v1}
+      WACS_CATALOG_URL: ${WACS_CATALOG_URL:-https://api.bibletranslationtools.org/v3/catalog.json}
+      DCS_CATALOG_URL: ${DCS_CATALOG_URL:-https://api.door43.org/v3/catalog.json}
+      QA_GUIDE_URL: ${QA_GUIDE_URL:-https://v-raft.com/api/rubric/}
+      BC_URL: ${BC_URL:-https://content.bibletranslationtools.org/WycliffeAssociates/en_bc/archive/master.zip}
     volumes:
-        - ./htdocs:/var/www/html
-        - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      # Written by the application at run time, so they must outlive the
+      # container. One volume covers the whole of Storage, imported resources
+      # (Storage/Resources) included.
+      - app_storage:/usr/share/nginx/html/app/Storage
+      # Admin-uploaded fonts only (AdminController writes SUN.woff and
+      # BackSUN.woff here). Scoped to the subdirectory so the static fonts
+      # beside it keep coming from the image and update on a rebuild.
+      - fonts_uploads:/usr/share/nginx/html/app/Templates/Default/Assets/fonts/uploads
+      # todo: watch or bind mount
+    # volumes:
+    #     - ./htdocs:/var/www/html
+    #     - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
 
+  # The official image, unmodified: nothing here needs building. The custom
+  # ./db image is only for db-backup below.
   db:
-    build:
-      context: .
-      dockerfile: DbDockerfile
+    image: mariadb:10.5.25
     platform: linux/amd64
+    # Production ran MySQL 5.5 in its default lax mode, and the app relies on
+    # it: some inserts omit TEXT NOT NULL columns, which 5.5 cannot give a
+    # default, so MariaDB's default strict mode rejects them with a 500.
+    command: ["--sql-mode="]
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -78,39 +115,80 @@ services:
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
       - dbdata:/var/lib/mysql
-      - ./db/conf:/etc/mysql/mysql.conf.d
-      - ./db/backup:/backup
     restart: always
+    # Over TCP, as the app connects. On a first start the image loads its init
+    # scripts into a temporary server listening only on the socket, so a socket
+    # ping (-h localhost) reported healthy while connections from php were
+    # still refused. A ping needs no password: any answer means "up".
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      # Probe every 5s, not Docker's default 30s: php waits for this, and a
+      # probe that lands just before the server is up would otherwise hold
+      # the whole stack for another 30s. Misses in the first minute (a first
+      # start loading init scripts, InnoDB recovery) do not count.
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    links:
-      - db
+#  phpmyadmin:
+#     image: phpmyadmin/phpmyadmin
+#     links:
+#       - db
+#     environment:
+#       PMA_HOST: db
+#       PMA_PORT: 3306
+#       PMA_ARBITRARY: 1
+#       UPLOAD_LIMIT: 512M
+#     ports:
+#       - "8081:80"
+
+  # Daily logical backups of the application database. Its own service rather
+  # than cron inside db, where mysqld is PID 1 and there is no cron daemon.
+  db-backup:
+    build:
+      context: ./db
+      dockerfile: ./Dockerfile
+    platform: linux/amd64
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_ARBITRARY: 1
-      UPLOAD_LIMIT: 512M
-    ports:
-      - 8081:80
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      BACKUP_HOUR: ${BACKUP_HOUR:-2}
+      DUMP_HOUR: ${DUMP_HOUR:-3}
+      BACKUP_KEEP: ${BACKUP_KEEP:-7}
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:-}
+    volumes:
+      # mariadb-backup reads the data files directly, so the datadir has to be
+      # here too - read-only, since it only ever reads during --backup.
+      - dbdata:/var/lib/mysql:ro
+      - db_backups:/backup
+    entrypoint: ["scheduler.sh"]
+    restart: unless-stopped
 
   node:
     build:
-      context: .
-      dockerfile: NodeDockerfile
-    volumes:
-        - ./node:/node
-        - ./ssl:/etc/nginx/ssl
-        - ./scripts:/scripts
+      context: ./node
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    # volumes:
+    # watch;
+    # - ./node:/node
+    # - remove these two beneath;
+    # - ./ssl:/etc/nginx/ssl
+    # - ./scripts:/scripts
     environment:
-      APP_TYPE: ${APP_TYPE}
       MAIN_HOST: ${MAIN_HOST}
-      SOCKET_PORT: ${SOCKET_PORT}
       MAIL_HOST: ${MAIL_HOST}
       MAIL_NAME: ${MAIL_NAME}
       MAIL_FROM: ${MAIL_FROM}
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
+      MAIL_PORT: ${MAIL_PORT}
       SSL_CRT: ${SSL_CRT}
       SSL_KEY: ${SSL_KEY}
       SSL_CA: ${SSL_CA}
@@ -121,22 +199,49 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+    # server.js always listens on 8001 inside the container. The host port comes
+    # from NODE_PORT (1Password per environment; default 8001). SOCKET_PORT is
+    # only the port browsers connect to (MAIN_HOST:SOCKET_PORT, see default.php)
+    # and is read by php, not node.
     ports:
-      - 8001:8001
+      - "${NODE_PORT:-8001}:8001"
     depends_on:
-      - rabbitmq
-      - redis
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - 15672:15672
+    image: rabbitmq:3.13
+    restart: unless-stopped
+#    ports:
+#      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    # check_port_connectivity, not ping: ping passes as soon as the Erlang node
+    # is up, before the AMQP listener on 5672 accepts connections, so node's
+    # mailer (which waits on this check) connected too early and crashed.
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
 
   redis:
-    image: redis:latest
-
+    # todo: valkey?
+    # image: redis:7.2
+    image: valkey/valkey:7.2.5
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 volumes:
   dbdata:
+  db_backups:
+  app_storage:
+  fonts_uploads:

@@ -4,7 +4,7 @@ server {
     
     server_name localhost;
     
-    root "/var/www/html/webapp/www/public";
+    root "/usr/share/nginx/html/public";
 
     index index.html index.htm index.php;
 
@@ -17,8 +17,10 @@ server {
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
 
-    access_log off;
-    error_log  /var/log/nginx/error.log error;
+    # Both go to the container's log (`docker logs`): the requests to stdout,
+    # in nginx.conf's "main" format, and errors to stderr.
+    access_log /dev/stdout main;
+    error_log  /dev/stderr error;
 
     sendfile off;
 
@@ -33,10 +35,11 @@ server {
         fastcgi_param REQUEST_URI $request_uri;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param PATH_INFO $fastcgi_path_info;
-        
+
         fastcgi_intercept_errors off;
         fastcgi_buffer_size 16k;
         fastcgi_buffers 4 16k;
+
         fastcgi_connect_timeout 600;
         fastcgi_send_timeout 600;
         fastcgi_read_timeout 600;
@@ -49,4 +52,3 @@ server {
     #ssl_certificate     /etc/nginx/ssl/example.com.crt;
     #ssl_certificate_key /etc/nginx/ssl/example.com.key;
 }
-

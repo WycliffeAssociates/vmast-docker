@@ -1,0 +1,31 @@
+# Bare names only match at the context root, so these need **/ to catch the
+# copies under php/htdocs/webapp/www.
+**/node_modules
+**/vendor
+
+# User-created content, held in named volumes (see docker-compose.yml) rather
+# than baked into the image: roughly a gigabyte that would otherwise be sent to
+# the daemon on every build and then walked by COPY --chmod.
+#
+# User resources, volume-backed and never in the image. Docker creates the
+# mount point itself, so the directory need not exist here. Everything under
+# it - words_db.csv and words_dict.csv included, which ResourcesRepository
+# needs for translationWords - arrives via the sync script or an import.
+**/app/Storage/Resources
+
+# Run-time state, also volume-backed. The directories themselves are kept so
+# the volume is seeded with the skeleton the application expects.
+**/app/Storage/Cache/*
+**/app/Storage/Files/*
+**/app/Storage/Logs/*
+**/app/Storage/Sessions/*
+
+.git
+.idea
+.DS_Store
+
+# Admin-uploaded fonts, volume-backed like the rest of the user content. The
+# directory itself is kept so the mount point exists in the image; the static
+# fonts beside it are untouched.
+**/app/Templates/Default/Assets/fonts/uploads/*
+!**/app/Templates/Default/Assets/fonts/uploads/.gitkeep

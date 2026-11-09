@@ -1,0 +1,251 @@
+# Deploying vmast-docker
+
+Two deploy paths. They share the same secret model (1password, resolved on the
+host at deploy time, never written to disk) and the same compose base file. They
+differ only in where the images come from.
+
+## Secrets model (both paths)
+
+`.env.deploy` holds `op://` references, not values, and is the single source of
+truth for which secrets the stack needs. On the host, `deploy.sh` resolves each
+reference from 1password through the **containerized** op CLI (`1password/op:2` -
+nothing is installed on the host) straight into the deploy process's
+environment, and docker compose interpolates them into each service's
+`environment:` block. The production `docker-compose.yml` declares no
+`env_file:`, so no plaintext secrets file is ever required or written. Both
+paths need:
+
+Every plain `KEY=op://…` line in `.env.deploy` is required: if that
+environment's section lacks the field, the deploy stops before touching the
+stack. A line written `#?KEY=op://…` is optional (`deploy.sh` only; to `op run`
+it is a comment): a section that has the field overrides the default in
+`docker-compose.yml`, and one that does not gets the default. The WACS/DCS
+server and resource URLs are optional this way, so a section only needs them
+to point that environment somewhere else.
+
+- `DEPLOY_ENV` - the 1password section to read and the env image tag (e.g. `prod`).
+- `OP_SERVICE_ACCOUNT_TOKEN` - a 1password service-account token.
+
+## Path 1: build on the host (Maxim's `run.sh`, unchanged)
+
+Manual / single-host deploy that builds the images from the checked-out source,
+run on the docker host itself:
+
+```sh
+export DEPLOY_ENV=prod
+export OP_SERVICE_ACCOUNT_TOKEN=...
+./run.sh
+```
+
+## Path 2: pull CI-built images (Jenkins -> host, `deploy.sh`)
+
+This mirrors the `WACS_deploy_dev` Jenkins job. CI
+(`.github/workflows/docker-build.yml`) builds and pushes
+`wycliffeassociates/vmast-{web,php,db,node}` to Docker Hub. The production
+overlay `docker-compose.prod.yml` points the services at those images, and
+`deploy.sh` (run on the host) resolves secrets and starts the stack:
+
+1. Jenkins checks out this repo on the `docker` node and binds the 1password
+   token to `OP_SERVICE_ACCOUNT_TOKEN`.
+2. Publish Over SSH copies `docker-compose.yml`, `docker-compose.prod.yml`,
+   `deploy.sh` and `.env.deploy` to the deploy host, then runs on that host:
+
+   ```sh
+   cd <deploy dir>
+   export DEPLOY_ENV=dev
+   export IMAGE_TAG=dev            # or a specific tag; blank -> DEPLOY_ENV
+   export OP_SERVICE_ACCOUNT_TOKEN=${OP_SERVICE_ACCOUNT_TOKEN}
+   source deploy.sh
+   ```
+3. `deploy.sh` runs op as the `1password/op:2` container, reads each `op://` ref
+   from `.env.deploy` into its environment, then
+   `docker compose -f docker-compose.yml -f docker-compose.prod.yml pull` and
+   `up -d`.
+
+Only the compose files, `deploy.sh` and `.env.deploy` are copied to the host;
+the build contexts are not, because the images are pulled, not built. No secret
+is ever written to a file or copied. The host needs docker (with the compose
+plugin) and outbound HTTPS to 1password and Docker Hub.
+
+### Jenkins: pipeline
+
+`Jenkinsfile` implements Path 2 with the `sshPublisher` step. It runs on agent
+label `docker` and reads every deploy setting from these job parameters, which
+it registers itself:
+
+| Parameter | Repo default | Value |
+|---|---|---|
+| `DEPLOY_ENV` | `dev` | 1Password section and env image tag (`dev`, `prod`, ...) |
+| `IMAGE_TAG` | blank | image tag to deploy; blank = `DEPLOY_ENV` |
+| `VMAST_SSH_SERVER` | blank | name of the Publish Over SSH "SSH Server" for the host |
+| `VMAST_REMOTE_DIR` | blank | deploy dir on that host |
+| `VMAST_OP_CREDENTIALS_ID` | blank | ID of the Secret text credential holding the 1Password service-account token (the one `WACS_deploy_dev` binds); bound to `OP_SERVICE_ACCOUNT_TOKEN` |
+
+Each parameter's default is declared as `params.X ?: <repo default>`, so a value
+already set on the job is kept as its default instead of being reset by the
+Jenkinsfile. The host, directory and credential ID default to blank in the repo,
+so their real values live only in each Jenkins job.
+
+Setting up a job:
+
+1. Run it once. That registers the parameters; with blank defaults the build
+   stops at "Missing job parameter(s)" before touching any host.
+2. Fill in the values in the job configuration (parameter defaults), or enter
+   them with "Build with Parameters".
+
+### Ports
+
+The host ports come from the same 1Password section as the rest of the
+configuration, via `.env.deploy`:
+
+| 1Password field | Typical value | Meaning |
+|---|---|---|
+| `WEB_PORT` | `80` | host port published for the web (nginx) container |
+| `NODE_PORT` | `8001` | host port published for the node (socket) container |
+| `SOCKET_PORT` | `8001` | port browsers connect to for the socket |
+
+Every section `deploy.sh` or `run.sh` reads (e.g. `dev`, `prod`) must have
+`WEB_PORT` and `NODE_PORT` fields; a missing field fails the deploy. Inside its
+container node always listens on `8001`; `NODE_PORT` only picks the host port.
+Browsers connect to the socket at `MAIN_HOST:SOCKET_PORT` (see `default.php`),
+so `SOCKET_PORT` must be the port clients actually reach: `NODE_PORT` itself
+when they connect to the host directly, or the public port of a reverse proxy
+in front of it (e.g. `443` when the proxy routes `/socket.io/` on `MAIN_HOST`
+to `NODE_PORT`). Local dev uses the defaults (`80`, `8001`) from `.env`.
+
+Building with parameters makes the values used the job's new defaults, so a
+one-off `IMAGE_TAG` sticks for later builds until you change it back.
+
+### Jenkins: freestyle (matching WACS_deploy_dev)
+
+If you configure a freestyle job (as WACS does), clone `WACS_deploy_dev` and
+change:
+
+- **Git**: `git@github.com:WycliffeAssociates/vmast-docker.git`, the deploy
+  branch, same SSH credential.
+- **Restrict to node**: `docker`.
+- **Build Environment -> secret text binding**: keep the WACS job's binding of
+  the 1Password service-account token -> variable `OP_SERVICE_ACCOUNT_TOKEN`.
+- **Send files or execute commands over SSH** (Publish Over SSH):
+  - SSH Server: the vmast deploy host (configured in Jenkins).
+  - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy,scripts/sync-from-production.sh`
+  - Remote directory: the deploy dir on that host.
+  - Exec command:
+
+    ```sh
+    #!/bin/bash
+    cd <deploy dir>
+    export IMAGE_TAG=dev
+    export DEPLOY_ENV=dev
+    export OP_SERVICE_ACCOUNT_TOKEN=${OP_SERVICE_ACCOUNT_TOKEN}
+    source deploy.sh
+    ```
+
+The only differences from the WACS job are the repo, the added
+`docker-compose.prod.yml` in source files, and dropping the WACS-gitea-specific
+`READER_BASE_LINK` / `LINTER_BASE_LINK` / `GREEKROOM_BASE_LINK` exports (vmast
+reads everything it needs from `.env.deploy`).
+
+### Keeping the deploy host out of the repo
+
+The deploy host's name and address are not in this repository. Its hostname,
+user and key live in the Publish Over SSH "SSH Server" entry (Manage Jenkins >
+System > Publish over SSH); a freestyle job selects that entry in its own
+config, and the pipeline reads its name from the job parameter
+`VMAST_SSH_SERVER`. The same goes for the 1Password credential, whose ID comes
+from the job parameter `VMAST_OP_CREDENTIALS_ID`. Keep it that way: don't put host names, IPs, deploy
+paths or credential IDs in this file, the Jenkinsfile, or commit messages.
+
+## Logs
+
+Every container logs to stdout/stderr only, so `docker logs` (or `docker compose
+logs`) is the one place to look; nothing is written to log files inside the
+containers. From the deploy directory:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f web php
+```
+
+- **web**: every request (real URL and status, in nginx's `main` format) and
+  nginx errors.
+- **php**: application errors with their stack traces, and PHP's own errors
+  (fatals the application's handler never sees). Errors are never shown to
+  the visitor.
+- **node**: both pm2 processes (chat server and mailer), including crashes and
+  restarts.
+- **db, db-backup, rabbitmq, redis**: their images' defaults, already stdout.
+
+## Copying production data
+
+`scripts/sync-from-production.sh` copies the production database, resources
+and admin-uploaded fonts into a running stack. It finds the stack by its compose
+project and writes through its containers: the database through the db
+container, using that container's own credentials, and the files to wherever
+the php container keeps them (named volumes when deployed, the working tree in
+development). It needs no `.env` and no compose files, so it runs the same on a
+deploy host as on a laptop.
+
+The deploy job ships the script into the deploy directory. On the deploy host:
+
+1. Deploy first, so the stack is running.
+2. From the deploy directory, run it (`--ask-pass` if you have no SSH key on
+   the production host):
+
+   ```sh
+   cd <deploy dir>
+   bash scripts/sync-from-production.sh --ask-pass
+   ```
+
+It asks for the production host, the SSH user (and password), and the
+production database user and password. The site (v-mast.com) and its database
+(vmast) are fixed in the script.
+Before it changes anything it checks production over SSH: that `mysqldump` is
+there, that the asset and font paths exist, and that the v-mast.com
+site really uses the `vmast` database. Then it asks once more before
+dropping the database. The dump is verified complete before the drop and
+deleted after the import (`--keep-dump` keeps it). After the import, members
+without a profile (production has some) get an empty one, so they are asked to
+complete it at their next login instead of hitting errors. `--db-only`,
+`--assets-only`, `--fonts-only` and `--no-*` re-run single parts; `--help` lists
+the rest.
+
+Run from the deploy directory, the stack's project name is found
+automatically. From anywhere else, pass `--project NAME` (`docker compose ls`
+shows it).
+
+Before copying production data into a non-production stack, point that
+environment's `MAIL_*` settings in 1Password at a mail sink: with real user
+data, password resets and event notifications would otherwise email real users.
+
+## Image tags
+
+CI tags every pushed image with the commit SHA, the branch slug, and `latest`,
+and additionally with an environment name so `IMAGE_TAG=$DEPLOY_ENV` lines up.
+The branch -> environment mapping lives in the workflow's "Set docker tags" step:
+
+```sh
+case "$CI_REF_NAME" in
+  main)  ENV_TAG=prod ;;
+  *)     ENV_TAG="$CI_REF_NAME_SLUG" ;;
+esac
+```
+
+`main` publishes `wycliffeassociates/vmast-*:prod`, every other branch publishes
+its slugified name. Set `IMAGE_TAG` in the deploy job to whichever tag you want
+to run (an env name, a branch slug, or a specific SHA).
+
+## CI safeguards
+
+- **Smoke test.** `scripts/smoke-test.sh` boots the whole stack from the commit
+  and checks the home page, login, a redirect, a 404, the socket.io handshake
+  and that `app/Storage/Logs/error.log` stayed empty. `Push-Image` waits for it,
+  so an image that fails is never published. Run it locally from the repo root
+  with `scripts/smoke-test.sh`.
+- **Pinned PHP dependencies.** `composer.lock` fixes the versions that go into
+  the php image. Dependabot opens a grouped PR each week for minor and patch
+  updates, and security-update PRs as soon as an advisory lands (enable
+  Dependabot alerts and security updates in the repo settings). The
+  `Composer security audit` workflow checks the lock daily.
+- **Weekly rebuild.** Every Monday the default branch is rebuilt without the
+  layer cache, so base images and OS packages pick up security patches. That
+  publishes fresh `prod` images; run the deploy job to put them on the host.
