@@ -11,13 +11,41 @@ jobs:
     defaults:
       run:
         working-directory: php/htdocs/webapp/www
+    services:
+      # Test database for the Integration suite, same engine and version as production
+      db:
+        image: mariadb:10.5.25
+        env:
+          MARIADB_ROOT_PASSWORD: test
+          MARIADB_DATABASE: vmast_test
+          MARIADB_USER: test
+          MARIADB_PASSWORD: test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=2s
+          --health-timeout=5s
+          --health-retries=30
+    env:
+      DB_HOST: 127.0.0.1
+      DB_NAME: vmast_test
+      DB_USER: test
+      DB_PASS: test
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"
-          extensions: sockets, intl, zip
+          extensions: sockets, intl, zip, pdo_mysql
           coverage: none
+      - name: Load database schema
+        working-directory: .
+        # Service containers cannot take server flags, so match production's
+        # non-strict SQL mode (docker-compose.yml) at runtime instead
+        run: |
+          mysql -h 127.0.0.1 -u root -ptest -e "SET GLOBAL sql_mode = ''"
+          mysql -h 127.0.0.1 -u test -ptest vmast_test < db/schema.sql
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
       - name: Run PHPUnit
