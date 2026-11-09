@@ -80,7 +80,7 @@ class InformationController extends Controller {
 
             if (!$this->member->verified) {
                 Url::redirect("members/error/verification");
-            } elseif (!$this->member->profile->complete) {
+            } elseif (!$this->member->profile?->complete) {
                 Url::redirect("members/profile");
             }
 

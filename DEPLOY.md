@@ -15,6 +15,14 @@ environment, and docker compose interpolates them into each service's
 `env_file:`, so no plaintext secrets file is ever required or written. Both
 paths need:
 
+Every plain `KEY=op://…` line in `.env.deploy` is required: if that
+environment's section lacks the field, the deploy stops before touching the
+stack. A line written `#?KEY=op://…` is optional (`deploy.sh` only; to `op run`
+it is a comment): a section that has the field overrides the default in
+`docker-compose.yml`, and one that does not gets the default. The WACS/DCS
+server and resource URLs are optional this way, so a section only needs them
+to point that environment somewhere else.
+
 - `DEPLOY_ENV` - the 1password section to read and the env image tag (e.g. `prod`).
 - `OP_SERVICE_ACCOUNT_TOKEN` - a 1password service-account token.
 
@@ -195,7 +203,9 @@ Before it changes anything it checks production over SSH: that `mysqldump` is
 there, that the asset and font paths exist, and that the v-mast.com
 site really uses the `vmast` database. Then it asks once more before
 dropping the database. The dump is verified complete before the drop and
-deleted after the import (`--keep-dump` keeps it). `--db-only`,
+deleted after the import (`--keep-dump` keeps it). After the import, members
+without a profile (production has some) get an empty one, so they are asked to
+complete it at their next login instead of hitting errors. `--db-only`,
 `--assets-only`, `--fonts-only` and `--no-*` re-run single parts; `--help` lists
 the rest.
 

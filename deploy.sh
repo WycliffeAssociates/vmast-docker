@@ -32,9 +32,26 @@ op() { docker run --rm -e OP_SERVICE_ACCOUNT_TOKEN 1password/op:2 op "$@"; }
 # Resolve every op:// reference in .env.deploy into this process's environment.
 # .env.deploy stays the single source of truth, shared with run.sh; only
 # $DEPLOY_ENV is expanded in the reference path.
+#
+# A plain KEY=ref line is required: a field missing from the section stops the
+# deploy. A "#?KEY=ref" line is optional: used when the section has the field,
+# otherwise left unset so the default in docker-compose.yml applies. (To op run
+# in run.sh it is just a comment.)
 while IFS='=' read -r key ref; do
-  case "$key" in ''|'#'*|DEPLOY_ENV) continue ;; esac
+  optional=0
+  case "$key" in
+    '#?'*) optional=1; key=${key#'#?'} ;;
+    ''|'#'*|DEPLOY_ENV) continue ;;
+  esac
   ref=${ref//\$DEPLOY_ENV/$DEPLOY_ENV}
+  if [ "$optional" = 1 ]; then
+    if value=$(op read "$ref" 2>/dev/null); then
+      export "$key=$value"
+    else
+      echo "Note: $key is not set in 1Password section $DEPLOY_ENV; using the docker-compose.yml default."
+    fi
+    continue
+  fi
   value=$(op read "$ref") || { echo "Error: could not read $ref" >&2; exit 1; }
   export "$key=$value"
 done < .env.deploy

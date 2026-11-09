@@ -1714,7 +1714,7 @@ class AdminController extends Controller {
                 "active" => true,
                 "verified" => true
             ];
-            $member = $this->memberRepo->create($memberData, ["complete", true]);
+            $member = $this->memberRepo->create($memberData, ["complete" => true]);
         }
 
         $project = $this->projectRepo->get($projectID);
@@ -2081,7 +2081,7 @@ class AdminController extends Controller {
                 "active" => true,
                 "verified" => true
             ];
-            $member = $this->memberRepo->create($memberData, ["complete", true]);
+            $member = $this->memberRepo->create($memberData, ["complete" => true]);
         }
 
         $project = $this->projectRepo->get($projectID);

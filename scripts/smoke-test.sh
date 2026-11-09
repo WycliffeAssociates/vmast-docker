@@ -60,8 +60,6 @@ cleanup() {
     echo "::group::Diagnostics"
     compose ps -a || true
     compose logs --tail 80 || true
-    echo "--- app/Storage/Logs/error.log"
-    compose exec -T php cat app/Storage/Logs/error.log 2>/dev/null || true
     echo "::endgroup::"
   fi
   [ "${SMOKE_KEEP:-}" = 1 ] || compose down -v --remove-orphans >/dev/null 2>&1 || true
@@ -119,10 +117,12 @@ for _ in $(seq 1 60); do
 done
 [ "$code" = 200 ] && pass "socket.io handshake -> 200" || fail "socket.io handshake -> $code, want 200"
 
-if compose exec -T php test -s app/Storage/Logs/error.log; then
-  fail "app/Storage/Logs/error.log has entries"
+# The application logs to stderr (docker logs), not to a file.
+php_errors=$(compose logs --no-log-prefix php 2>&1 | grep -cE 'production\.(ERROR|CRITICAL)|PHP (Fatal error|Parse error)' || true)
+if [ "$php_errors" -gt 0 ]; then
+  fail "php logged $php_errors error(s)"
 else
-  pass "error.log empty"
+  pass "php logged no errors"
 fi
 
 if [ "$failures" -ne 0 ]; then
