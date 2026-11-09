@@ -193,7 +193,7 @@ class TnProgress
                 $arr = [];
                 foreach ($data["chapters"][$key]["chunksData"] as $chunkData) {
                     $verses = $chunkData->translatedVerses ? (array)json_decode($chunkData->translatedVerses, true) : [];
-                    if (isset($verses["checker"]) && !empty($verses["checker"]->verses))
+                    if (isset($verses["checker"]) && !empty($verses["checker"]["verses"]))
                         $arr[] = "";
                 }
 
