@@ -58,3 +58,7 @@ db/backup/*
 
 # Temporary compose override written by scripts/smoke-test.sh.
 .smoke-seed.yml
+
+# PHPUnit run cache
+.phpunit.result.cache
+.phpunit.cache/

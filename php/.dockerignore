@@ -29,3 +29,7 @@
 # fonts beside it are untouched.
 **/app/Templates/Default/Assets/fonts/uploads/*
 !**/app/Templates/Default/Assets/fonts/uploads/.gitkeep
+
+# Unit tests and their config are dev-only.
+**/tests
+**/phpunit.xml

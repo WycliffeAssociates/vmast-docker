@@ -37,3 +37,7 @@ db/
 node/
 scripts/
 composer.phar
+
+# Unit tests and their config are dev-only.
+**/tests
+**/phpunit.xml

@@ -1,0 +1,24 @@
+name: Unit tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: php/htdocs/webapp/www
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: sockets, intl, zip
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
