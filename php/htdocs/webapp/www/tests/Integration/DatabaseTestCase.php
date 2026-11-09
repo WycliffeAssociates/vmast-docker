@@ -41,9 +41,17 @@ abstract class DatabaseTestCase extends TestCase
     protected function tearDown(): void
     {
         self::db()->rollBack();
+        $_SESSION = [];
 
         Facade::clearResolvedInstances();
         Facade::setFacadeApplication(null);
+    }
+
+    /** Signs $memberID in for both the Session facade and the legacy Helpers\Session ($_SESSION). */
+    protected function loginAs(int $memberID): void
+    {
+        $this->session->set('memberID', $memberID);
+        $_SESSION[PREFIX . 'memberID'] = $memberID;
     }
 
     protected static function db(): Connection
