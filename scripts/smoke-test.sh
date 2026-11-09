@@ -72,7 +72,8 @@ trap cleanup EXIT
 
 if [ "${SMOKE_NO_BUILD:-}" != 1 ]; then
   read -r -a build_args <<< "${SMOKE_BUILD_ARGS:-}"
-  compose build "${build_args[@]}"
+  # bash 3.2 (macOS) calls an empty "${arr[@]}" unbound under set -u
+  compose build ${build_args[@]+"${build_args[@]}"}
 fi
 compose up -d --wait --wait-timeout 300
 
