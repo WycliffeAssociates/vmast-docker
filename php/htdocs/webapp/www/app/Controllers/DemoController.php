@@ -7,7 +7,6 @@ namespace App\Controllers;
 
 use App\Domain\RenderNotifications;
 use App\Helpers\DemoData;
-use App\Models\SailDictionaryModel;
 use Helpers\Constants\InputMode;
 use Support\Facades\View;
 use Config\Config;
@@ -892,8 +891,6 @@ class DemoController extends Controller {
         $data["menu"] = 5;
         $data["comments"] = DemoData::getComments();
 
-        $this->_saildictModel = new SailDictionaryModel();
-
         $view = View::make("Events/SUN/Demo/DemoHeader");
         $data["step"] = "";
 
@@ -1144,8 +1141,6 @@ class DemoController extends Controller {
         $data["next_step"] = EventSteps::PRAY;
         $data["menu"] = 5;
         $data["comments"] = DemoData::getComments();
-
-        $this->_saildictModel = new SailDictionaryModel();
 
         $view = View::make("Events/ODBSUN/Demo/DemoHeader");
         $data["step"] = "";
