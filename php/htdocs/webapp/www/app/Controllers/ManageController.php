@@ -33,6 +33,7 @@ use Helpers\Constants\EventCheckSteps;
 use Helpers\Constants\EventStates;
 use Helpers\Constants\EventMembers;
 use AMQPMailer;
+use Response;
 
 class ManageController extends Controller {
     private $eventModel;
@@ -1307,8 +1308,7 @@ class ManageController extends Controller {
                         if ($action == "add") {
                             if ($manageMode == "l2" || $manageMode == "l3") {
                                 $response["error"] = __("error_occurred", ["This chapter hasn't been translated."]);
-                                echo json_encode($response);
-                                exit;
+                                return Response::json($response);
                             }
 
                             $translator = $event->translators->find($memberID);
