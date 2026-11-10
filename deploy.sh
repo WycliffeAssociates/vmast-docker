@@ -15,7 +15,7 @@
 # Optional:
 #   IMAGE_TAG                 image tag to deploy (default: $DEPLOY_ENV)
 #
-# Everything else, including the published host ports (WEB_PORT, NODE_PORT),
+# Everything else, including the published host port (WEB_PORT),
 # comes from the 1Password section via .env.deploy.
 
 set -euo pipefail
