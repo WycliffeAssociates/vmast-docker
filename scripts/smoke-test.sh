@@ -17,7 +17,6 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 WEB_PORT=${SMOKE_WEB_PORT:-8080}
-NODE_PORT=${SMOKE_NODE_PORT:-8001}
 BASE="http://localhost:$WEB_PORT"
 
 # The web image bakes in web/nginx/localhost.conf, which is gitignored.
@@ -28,14 +27,13 @@ BASE="http://localhost:$WEB_PORT"
 # (no debug output, no profiler).
 env_file=$(mktemp)
 sed -e '/^DEPLOY_ENV=/d' -e '/^APP_URL=/d' -e '/^MAIN_HOST=/d' \
-    -e '/^SOCKET_PORT=/d' -e '/^WEB_PORT=/d' -e '/^NODE_PORT=/d' .env.example > "$env_file"
+    -e '/^SOCKET_PORT=/d' -e '/^WEB_PORT=/d' .env.example > "$env_file"
 cat >> "$env_file" <<EOF
 DEPLOY_ENV=smoke
 APP_URL=$BASE/
 MAIN_HOST=localhost
-SOCKET_PORT=$NODE_PORT
+SOCKET_PORT=$WEB_PORT
 WEB_PORT=$WEB_PORT
-NODE_PORT=$NODE_PORT
 REDIS_PASS=
 EOF
 
@@ -110,11 +108,19 @@ check /does-not-exist  404
 # node starts independently of web and php, so give the socket a little time
 # after the web page is up.
 for _ in $(seq 1 60); do
-  code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$NODE_PORT/socket.io/?EIO=4&transport=polling" || true)
+  code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/socket.io/?EIO=4&transport=polling" || true)
   [ "$code" = 200 ] && break
   sleep 2
 done
 [ "$code" = 200 ] && pass "socket.io handshake -> 200" || fail "socket.io handshake -> $code, want 200"
+
+# Browsers connect with transports: ["websocket"], so the upgrade through nginx
+# is the path that matters. 101 means nginx handed the connection to node.
+code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
+  -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Version: 13' \
+  -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
+  "$BASE/socket.io/?EIO=4&transport=websocket" || true)
+[ "$code" = 101 ] && pass "socket.io websocket upgrade -> 101" || fail "socket.io websocket upgrade -> $code, want 101"
 
 # The application logs to stderr (docker logs), not to a file.
 php_errors=$(compose logs --no-log-prefix php 2>&1 | grep -cE 'production\.(ERROR|CRITICAL)|PHP (Fatal error|Parse error)' || true)
