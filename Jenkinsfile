@@ -95,7 +95,10 @@ source deploy.sh"""
                                  'scripts/sync-from-production.sh',
                     remoteDirectory: remoteDir,
                     execCommand: remoteCmd,
-                    execTimeout: 240000
+                    // Covers the whole remote run: ~50 op reads, pulling every
+                    // image (minutes when several changed) and `up`. Four
+                    // minutes cut real deploys off mid-pull.
+                    execTimeout: 900000
                   )
                 ]
               )

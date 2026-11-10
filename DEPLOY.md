@@ -130,6 +130,8 @@ change:
   - SSH Server: the vmast deploy host (configured in Jenkins).
   - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy,scripts/sync-from-production.sh`
   - Remote directory: the deploy dir on that host.
+  - Advanced -> Exec timeout (ms): `900000` (15 minutes; the default is too
+    short for a deploy that pulls several new images).
   - Exec command:
 
     ```sh
