@@ -1219,32 +1219,30 @@ class MembersController extends Controller
         $member = $this->memberRepo->get($memberID);
         $event = $this->eventsRepo->get($eventID);
 
-        if($member && $event)
-        {
-            if ($member->authToken == $authToken) {
-                $isAdmin = $event->admins->contains($member)
-                    || $event->project->admins->contains($member)
-                    || $event->project->gatewayLanguage->admins->contains($member);
-
-                $isParticipant = $event->translators->contains($member)
-                    || $event->checkersL2->contains($member)
-                    || $event->checkersL3->contains($member);
-
-                if ($isAdmin || $isParticipant) {
-                    $member->isAdmin = $isAdmin;
-                    $member->lastName = mb_substr($member->lastName, 0, 1).".";
-                    echo json_encode($member);
-                } else {
-                    echo json_encode(array());
-                }
-            } else {
-                echo json_encode(array());
-            }
+        if (!$member || !$event || $member->authToken != $authToken) {
+            return Response::json([]);
         }
-        else
-        {
-            echo json_encode(array());
+
+        $isAdmin = $event->admins->contains($member)
+            || $event->project->admins->contains($member)
+            || $event->project->gatewayLanguage->admins->contains($member);
+
+        $isParticipant = $event->translators->contains($member)
+            || $event->checkersL2->contains($member)
+            || $event->checkersL3->contains($member);
+
+        if (!$isAdmin && !$isParticipant) {
+            return Response::json([]);
         }
+
+        return Response::json([
+            "memberID"  => $member->memberID,
+            "userName"  => $member->userName,
+            "firstName" => $member->firstName,
+            "lastName"  => mb_substr($member->lastName, 0, 1).".",
+            "isAdmin"   => $isAdmin,
+            "projectID" => $event->projectID,
+        ]);
     }
 
 
