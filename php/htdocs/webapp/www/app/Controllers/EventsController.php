@@ -38,6 +38,7 @@ use Helpers\Constants\EventStates;
 use Helpers\Constants\EventMembers;
 use Support\Facades\Language;
 use AMQPMailer;
+use Response;
 
 class EventsController extends Controller {
     private $eventModel;
@@ -4212,8 +4213,7 @@ class EventsController extends Controller {
                             $this->eventModel->updateTranslator($postdata, array("trID" => $data["event"][0]->trID));
 
                             $response["success"] = true;
-                            echo json_encode($response);
-                            exit;
+                            return Response::json($response);
                         }
                     }
                 } else {
@@ -4728,8 +4728,7 @@ class EventsController extends Controller {
                                         ["trID" => $data["event"][0]->trID]);
 
                                     $response["success"] = true;
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -5050,8 +5049,7 @@ class EventsController extends Controller {
                                         ["trID" => $data["event"][0]->trID]);
 
                                     $response["success"] = true;
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -5373,8 +5371,7 @@ class EventsController extends Controller {
                                         ["trID" => $data["event"][0]->trID]);
 
                                     $response["success"] = true;
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -6412,8 +6409,7 @@ class EventsController extends Controller {
                                         ["trID" => $event->trID]);
 
                                     $response["success"] = true;
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -6737,8 +6733,7 @@ class EventsController extends Controller {
                                         ["trID" => $event->trID]);
 
                                     $response["success"] = true;
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -7067,8 +7062,7 @@ class EventsController extends Controller {
                                         ["trID" => $event->trID]);
 
                                     $response["success"] = true;
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -7796,8 +7790,7 @@ class EventsController extends Controller {
                             $this->eventModel->updateL2Checker($postdata, array("l2chID" => $data["event"][0]->l2chID));
 
                             $response["success"] = true;
-                            echo json_encode($response);
-                            exit;
+                            return Response::json($response);
                         }
                     }
                 } else {
@@ -8803,8 +8796,7 @@ class EventsController extends Controller {
                                         $error[] = __("peer_checker_not_ready_error");
                                         $response["errors"] = $error;
                                     }
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -9273,8 +9265,7 @@ class EventsController extends Controller {
                                         $error[] = __("peer_checker_not_ready_error");
                                         $response["errors"] = $error;
                                     }
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -9738,8 +9729,7 @@ class EventsController extends Controller {
                                         $error[] = __("peer_checker_not_ready_error");
                                         $response["errors"] = $error;
                                     }
-                                    echo json_encode($response);
-                                    exit;
+                                    return Response::json($response);
                                 }
                             }
                         }
@@ -10444,8 +10434,7 @@ class EventsController extends Controller {
                 } else {
                     $response["errorType"] = "error";
                     $response["error"] = "POST data incorrect: memberID, chapter";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             } elseif ($level == "tnContinue") {
                 if (isset($post["memberID"]) && isset($post["chapter"])) {
@@ -10458,8 +10447,7 @@ class EventsController extends Controller {
                 } else {
                     $response["errorType"] = "error";
                     $response["error"] = "POST data incorrect: memberID, chapter";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             } elseif (in_array($level, ["tqContinue", "twContinue", "obsContinue", "bcContinue", "bcaContinue"])) {
                 if (isset($post["memberID"]) && isset($post["chapter"])) {
@@ -10472,8 +10460,7 @@ class EventsController extends Controller {
                 } else {
                     $response["errorType"] = "error";
                     $response["error"] = "POST data incorrect: memberID, chapter";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             } elseif ($level == "radContinue") {
                 if (isset($post["memberID"]) && isset($post["chapter"])) {
@@ -10486,8 +10473,7 @@ class EventsController extends Controller {
                 } else {
                     $response["errorType"] = "error";
                     $response["error"] = "POST data incorrect: memberID, chapter";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -10564,8 +10550,7 @@ class EventsController extends Controller {
                         if ($event[0]->step == EventSteps::PEER_REVIEW && $event[0]->checkDone) {
                             $response["errorType"] = "checkDone";
                             $response["error"] = __("not_possible_to_save_error");
-                            echo json_encode($response);
-                            exit;
+                            return Response::json($response);
                         }
 
                         $response = $this->saveVersesWithMarkers($post, $event[0]);
@@ -11774,8 +11759,7 @@ class EventsController extends Controller {
         if ($eventID && $step && $chapter !== null) {
             if ($type != NotificationType::STARTED && !$toMemberID) {
                 $response["error"] = __("error_occurred", ["wrong parameters"]);
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
 
             $exists = $this->eventRepo->notificationExists(

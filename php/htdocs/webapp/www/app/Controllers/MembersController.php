@@ -11,6 +11,7 @@ use App\Repositories\Member\IMemberRepository;
 use Helpers\Constants\Projects;
 use Support\Facades\Language;
 use View;
+use Response;
 use Helpers\Csrf;
 use Helpers\Gump;
 use Config\Config;
@@ -633,8 +634,7 @@ class MembersController extends Controller
                 $response["error"] = __("choose_filter_option");
             }
 
-            echo json_encode($response);
-            exit;
+            return Response::json($response);
         }
         else
         {
@@ -1255,8 +1255,7 @@ class MembersController extends Controller
         if(Config::get("app.type") != "remote") {
             $response["errorType"] = "local";
             $response["error"] = __("local_use_restriction");
-            echo json_encode($response);
-            exit;
+            return Response::json($response);
         }
 
         if(!empty($_POST)) {
@@ -1322,7 +1321,7 @@ class MembersController extends Controller
             }
         }
 
-        echo json_encode($response);
+        return Response::json($response);
     }
 
     public function oauth($server) {
@@ -1348,7 +1347,7 @@ class MembersController extends Controller
         if($this->cloudRepo->isAuthenticated()) {
             $response["success"] = true;
         }
-        echo json_encode($response);
+        return Response::json($response);
     }
 
 
