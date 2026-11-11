@@ -19,7 +19,7 @@
     "symfony/http-foundation": "~7.1",
     "symfony/http-kernel": "~7.1",
     "symfony/routing": "~7.1",
-    "symfony/yaml": "~7.1",
+    "symfony/yaml": "~8.1",
     "symfony/mime": "~7.1",
     "doctrine/inflector": "~2.0",
     "phpmailer/phpmailer": "~6.9",
