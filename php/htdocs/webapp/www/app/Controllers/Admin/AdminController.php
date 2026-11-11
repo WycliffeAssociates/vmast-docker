@@ -146,7 +146,7 @@ class AdminController extends Controller {
     }
 
 
-    public function gatewayLanguage($glID)
+    public function gatewayLanguage(int $glID)
     {
         if(!$this->_member->isGlAdmin() && !$this->_member->isProjectAdmin()) {
             Url::redirect('');
@@ -186,7 +186,7 @@ class AdminController extends Controller {
             ->shares("data", $data);
     }
 
-    public function project($projectID)
+    public function project(int $projectID)
     {
         if(!$this->_member->isGlAdmin() && !$this->_member->isProjectAdmin()) {
             Url::redirect('');

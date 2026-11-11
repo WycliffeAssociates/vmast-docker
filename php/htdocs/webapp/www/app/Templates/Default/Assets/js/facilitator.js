@@ -118,7 +118,7 @@ $(function () {
                         $.each(data.members, function () {
                             const exist = $(".assign_chapter[data-userid="+this.memberID+"]");
                             if(exist.length > 0) return true;
-                            if(this.blocked === "1") return true;
+                            if(this.blocked == 1) return true;
 
                             const li = '<li>' +
                                 '<label>' +

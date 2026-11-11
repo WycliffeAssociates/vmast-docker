@@ -122,7 +122,7 @@ Assets::js([
     (Session::get("isBookAdmin")
     || Session::get("isProjectAdmin")
     || Session::get("isGlAdmin")
-    || Session::get("isSuperAdmin") ?  template_url('js/facilitator.js?v=42') : ''),
+    || Session::get("isSuperAdmin") ?  template_url('js/facilitator.js?v=43') : ''),
     (Session::get("isBookAdmin")
     || Session::get("isProjectAdmin")
     || Session::get("isGlAdmin")
