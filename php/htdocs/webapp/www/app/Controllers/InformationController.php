@@ -30,6 +30,7 @@ use Helpers\Url;
 use Helpers\Session;
 use App\Core\Controller;
 use App\Models\EventsModel;
+use Response;
 
 class InformationController extends Controller {
     private $eventModel;
@@ -137,8 +138,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -148,8 +148,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -237,8 +236,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -248,8 +246,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -335,8 +332,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -346,8 +342,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -433,8 +428,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -444,8 +438,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -531,8 +524,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -542,8 +534,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -629,8 +620,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -640,8 +630,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -727,8 +716,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -738,8 +726,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -822,8 +809,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -833,8 +819,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -920,8 +905,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -931,8 +915,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -1016,8 +999,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -1027,8 +1009,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -1116,8 +1097,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -1127,8 +1107,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -1214,8 +1193,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -1225,8 +1203,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 
@@ -1318,8 +1295,7 @@ class InformationController extends Controller {
                     $error[] = __("empty_or_not_permitted_event_error");
                 else {
                     $response["errorType"] = "empty_no_permission";
-                    echo json_encode($response);
-                    exit;
+                    return Response::json($response);
                 }
             }
 
@@ -1329,8 +1305,7 @@ class InformationController extends Controller {
                 $error[] = __("empty_or_not_permitted_event_error");
             else {
                 $response["errorType"] = "empty_no_permission";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
 

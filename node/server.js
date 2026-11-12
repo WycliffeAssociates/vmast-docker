@@ -413,7 +413,7 @@ function registerNewMemberEvent(data, sct, member) {
                 if(!_.isEmpty(response)) {
                     const newEvent = new Event();
                     newEvent.eventID = data.eventID;
-                    newEvent.projectID = data.projectID;
+                    newEvent.projectID = response.projectID;
                     newEvent.sockets.push(sct.id);
 
                     // Add pair to checkers chat
@@ -451,13 +451,13 @@ function registerNewMemberEvent(data, sct, member) {
                     }
 
                     sct.join("eventroom" + data.eventID);
-                    sct.join("projectroom" + data.projectID);
+                    sct.join("projectroom" + newEvent.projectID);
 
                     const eventRoomMates = getMembersByRoomID(data.eventID, "event");
                     io.to("eventroom" + data.eventID).emit('event room update', eventRoomMates);
 
-                    const projectRoomMates = getMembersByRoomID(data.projectID, "project");
-                    io.to("projectroom" + data.projectID).emit('project room update', projectRoomMates);
+                    const projectRoomMates = getMembersByRoomID(newEvent.projectID, "project");
+                    io.to("projectroom" + newEvent.projectID).emit('project room update', projectRoomMates);
 
                     sendSavedMessages(sct, newEvent, checkPair);
                 } else {

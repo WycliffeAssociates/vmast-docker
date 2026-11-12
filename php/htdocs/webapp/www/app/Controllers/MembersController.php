@@ -11,6 +11,7 @@ use App\Repositories\Member\IMemberRepository;
 use Helpers\Constants\Projects;
 use Support\Facades\Language;
 use View;
+use Response;
 use Helpers\Csrf;
 use Helpers\Gump;
 use Config\Config;
@@ -633,8 +634,7 @@ class MembersController extends Controller
                 $response["error"] = __("choose_filter_option");
             }
 
-            echo json_encode($response);
-            exit;
+            return Response::json($response);
         }
         else
         {
@@ -1219,32 +1219,30 @@ class MembersController extends Controller
         $member = $this->memberRepo->get($memberID);
         $event = $this->eventsRepo->get($eventID);
 
-        if($member && $event)
-        {
-            if ($member->authToken == $authToken) {
-                $isAdmin = $event->admins->contains($member)
-                    || $event->project->admins->contains($member)
-                    || $event->project->gatewayLanguage->admins->contains($member);
-
-                $isParticipant = $event->translators->contains($member)
-                    || $event->checkersL2->contains($member)
-                    || $event->checkersL3->contains($member);
-
-                if ($isAdmin || $isParticipant) {
-                    $member->isAdmin = $isAdmin;
-                    $member->lastName = mb_substr($member->lastName, 0, 1).".";
-                    echo json_encode($member);
-                } else {
-                    echo json_encode(array());
-                }
-            } else {
-                echo json_encode(array());
-            }
+        if (!$member || !$event || $member->authToken != $authToken) {
+            return Response::json([]);
         }
-        else
-        {
-            echo json_encode(array());
+
+        $isAdmin = $event->admins->contains($member)
+            || $event->project->admins->contains($member)
+            || $event->project->gatewayLanguage->admins->contains($member);
+
+        $isParticipant = $event->translators->contains($member)
+            || $event->checkersL2->contains($member)
+            || $event->checkersL3->contains($member);
+
+        if (!$isAdmin && !$isParticipant) {
+            return Response::json([]);
         }
+
+        return Response::json([
+            "memberID"  => $member->memberID,
+            "userName"  => $member->userName,
+            "firstName" => $member->firstName,
+            "lastName"  => mb_substr($member->lastName, 0, 1).".",
+            "isAdmin"   => $isAdmin,
+            "projectID" => $event->projectID,
+        ]);
     }
 
 
@@ -1255,8 +1253,7 @@ class MembersController extends Controller
         if(Config::get("app.type") != "remote") {
             $response["errorType"] = "local";
             $response["error"] = __("local_use_restriction");
-            echo json_encode($response);
-            exit;
+            return Response::json($response);
         }
 
         if(!empty($_POST)) {
@@ -1322,7 +1319,7 @@ class MembersController extends Controller
             }
         }
 
-        echo json_encode($response);
+        return Response::json($response);
     }
 
     public function oauth($server) {
@@ -1348,7 +1345,7 @@ class MembersController extends Controller
         if($this->cloudRepo->isAuthenticated()) {
             $response["success"] = true;
         }
-        echo json_encode($response);
+        return Response::json($response);
     }
 
 

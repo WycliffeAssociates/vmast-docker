@@ -95,23 +95,19 @@ Setting up a job:
 
 ### Ports
 
-The host ports come from the same 1Password section as the rest of the
-configuration, via `.env.deploy`:
+The stack publishes one port, nginx's. nginx serves the site and forwards the
+chat socket (`/socket.io/`) to the node container over the Docker network, so
+whatever is in front - a Cloudflare tunnel in prod, Traefik in dev - needs a
+single plain route to `WEB_PORT`, with no path rules.
 
 | 1Password field | Typical value | Meaning |
 |---|---|---|
-| `WEB_PORT` | `80` | host port published for the web (nginx) container |
-| `NODE_PORT` | `8001` | host port published for the node (socket) container |
-| `SOCKET_PORT` | `8001` | port browsers connect to for the socket |
+| `WEB_PORT` | `80`, or a free port on a shared host | host port published for nginx |
+| `SOCKET_PORT` | `443` | port browsers use for the socket: the site's public port |
 
-Every section `deploy.sh` or `run.sh` reads (e.g. `dev`, `prod`) must have
-`WEB_PORT` and `NODE_PORT` fields; a missing field fails the deploy. Inside its
-container node always listens on `8001`; `NODE_PORT` only picks the host port.
 Browsers connect to the socket at `MAIN_HOST:SOCKET_PORT` (see `default.php`),
-so `SOCKET_PORT` must be the port clients actually reach: `NODE_PORT` itself
-when they connect to the host directly, or the public port of a reverse proxy
-in front of it (e.g. `443` when the proxy routes `/socket.io/` on `MAIN_HOST`
-to `NODE_PORT`). Local dev uses the defaults (`80`, `8001`) from `.env`.
+so `SOCKET_PORT` is the port people reach the site on: `443` behind Cloudflare
+or Traefik, `WEB_PORT` when they hit the host directly (local dev: `80`).
 
 Building with parameters makes the values used the job's new defaults, so a
 one-off `IMAGE_TAG` sticks for later builds until you change it back.
@@ -130,6 +126,8 @@ change:
   - SSH Server: the vmast deploy host (configured in Jenkins).
   - Source files: `docker-compose.yml,docker-compose.prod.yml,deploy.sh,.env.deploy,scripts/sync-from-production.sh`
   - Remote directory: the deploy dir on that host.
+  - Advanced -> Exec timeout (ms): `900000` (15 minutes; the default is too
+    short for a deploy that pulls several new images).
   - Exec command:
 
     ```sh

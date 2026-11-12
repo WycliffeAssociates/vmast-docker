@@ -199,12 +199,9 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
-    # server.js always listens on 8001 inside the container. The host port comes
-    # from NODE_PORT (1Password per environment; default 8001). SOCKET_PORT is
-    # only the port browsers connect to (MAIN_HOST:SOCKET_PORT, see default.php)
-    # and is read by php, not node.
-    ports:
-      - "${NODE_PORT:-8001}:8001"
+    # No published port: server.js listens on 8001 inside the Docker network,
+    # and nginx (web) forwards /socket.io/ to it. Browsers reach the socket at
+    # MAIN_HOST:SOCKET_PORT (see default.php), which is the site's own port.
     depends_on:
       rabbitmq:
         condition: service_healthy

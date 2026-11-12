@@ -45,6 +45,7 @@ use Support\Facades\Cache;
 use Support\Facades\Input;
 use Support\Facades\View;
 use USFM\USFMParser\USFMParser;
+use Response;
 
 class AdminController extends Controller {
 
@@ -146,7 +147,7 @@ class AdminController extends Controller {
     }
 
 
-    public function gatewayLanguage($glID)
+    public function gatewayLanguage(int $glID)
     {
         if(!$this->_member->isGlAdmin() && !$this->_member->isProjectAdmin()) {
             Url::redirect('');
@@ -186,7 +187,7 @@ class AdminController extends Controller {
             ->shares("data", $data);
     }
 
-    public function project($projectID)
+    public function project(int $projectID)
     {
         if(!$this->_member->isGlAdmin() && !$this->_member->isProjectAdmin()) {
             Url::redirect('');
@@ -734,8 +735,7 @@ class AdminController extends Controller {
         $response = ["success" => false];
 
         if(!$this->_member->isGlAdmin()) {
-            echo json_encode(array("login" => true));
-            exit;
+            return Response::json(array("login" => true));
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -776,8 +776,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isGlAdmin() && !$this->_member->isProjectAdmin()) {
             $response["error"] = "admin";
-            echo json_encode($response);
-            exit;
+            return Response::json($response);
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -878,8 +877,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isSuperAdmin())
         {
-            echo json_encode(array());
-            exit;
+            return Response::json(array());
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -915,8 +913,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isSuperAdmin())
         {
-            echo json_encode(array());
-            exit;
+            return Response::json(array());
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -941,8 +938,7 @@ class AdminController extends Controller {
     public function createProject()
     {
         if(!$this->_member->isGlAdmin()) {
-            echo json_encode(array("login" => true));
-            exit;
+            return Response::json(array("login" => true));
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -1084,8 +1080,7 @@ class AdminController extends Controller {
             if(!$project)
             {
                 $error[] = __("error_occurred");
-                echo json_encode(array("error" => Error::display($error)));
-                exit;
+                return Response::json(array("error" => Error::display($error)));
             }
 
             $projectMode = $project->bookProject;
@@ -1153,8 +1148,7 @@ class AdminController extends Controller {
             && !$this->_member->isGlAdmin()
             && !$this->_member->isProjectAdmin()
             && !$this->_member->isBookAdmin()) {
-            echo json_encode(array());
-            exit;
+            return Response::json(array());
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -1183,8 +1177,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isSuperAdmin())
         {
-            echo json_encode(array());
-            exit;
+            return Response::json(array());
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -1215,8 +1208,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $response["error"] = "not_allowed";
-            echo json_encode($response);
-            exit;
+            return Response::json($response);
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -1279,8 +1271,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $response["error"] = "not_allowed";
-            echo json_encode($response);
-            exit;
+            return Response::json($response);
         }
 
         $_POST = Gump::xss_clean($_POST);
@@ -1307,8 +1298,7 @@ class AdminController extends Controller {
             else
             {
                 $response["error"] = "no_member";
-                echo json_encode($response);
-                exit;
+                return Response::json($response);
             }
         }
         else
@@ -2456,8 +2446,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $reDownload = Input::get("download", false);
@@ -2469,8 +2458,7 @@ class AdminController extends Controller {
         if (!$languagesResponse["success"]) {
             $result["error"] = $languagesResponse["error"];
             $result["oldUrl"] = $this->preferencesRepo->langNamesUrl()->prefValue;
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $this->languageRepo->upsertAll($languagesResponse["languages"]);
@@ -2485,8 +2473,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isSuperAdmin()) {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $reDownload = Input::get("download", false);
@@ -2510,8 +2497,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $this->_apiModel->clearAllCache();
@@ -2527,8 +2513,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $amount = (integer)Input::get("amount", "50");
@@ -2538,8 +2523,7 @@ class AdminController extends Controller {
         if(mb_strlen(trim($password)) < 6)
         {
             $result["error"] = __("password_short_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         if($amount <= 0)
@@ -2579,8 +2563,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $word = Input::get("word", "");
@@ -2604,8 +2587,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $word = Input::get("word", "");
@@ -2656,8 +2638,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $font_file = Input::file("file");
@@ -2681,8 +2662,7 @@ class AdminController extends Controller {
                     {
                         $result["success"] = true;
                         $result["message"] = __("font_uploaded", ["name" => $fileName]);
-                        echo json_encode($result);
-                        exit;
+                        return Response::json($result);
                     }
                 }
                 elseif(preg_match("/sun/i", $name))
@@ -2694,29 +2674,25 @@ class AdminController extends Controller {
                     {
                         $result["success"] = true;
                         $result["message"] = __("font_uploaded", ["name" => $fileName]);
-                        echo json_encode($result);
-                        exit;
+                        return Response::json($result);
                     }
                 }
                 else
                 {
                     $result["error"] = __("font_name_error");
-                    echo json_encode($result);
-                    exit;
+                    return Response::json($result);
                 }
             }
             else
             {
                 $result["error"] = __("font_format_error");
-                echo json_encode($result);
-                exit;
+                return Response::json($result);
             }
         }
         else
         {
             $result["error"] = __("error_occurred", "Empty input!");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
     }
 
@@ -2726,8 +2702,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $dict_file = Input::file("file");
@@ -2766,28 +2741,24 @@ class AdminController extends Controller {
 
                     $result["success"] = true;
                     $result["message"] = __("dictionary_updated");
-                    echo json_encode($result);
-                    exit;
+                    return Response::json($result);
                 }
                 else
                 {
                     $result["error"] = __("empty_dictionary");
-                    echo json_encode($result);
-                    exit;
+                    return Response::json($result);
                 }
             }
             else
             {
                 $result["error"] = __("not_csv_format_error");
-                echo json_encode($result);
-                exit;
+                return Response::json($result);
             }
         }
         else
         {
             $result["error"] = __("error_occurred", "Empty input!");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
     }
 
@@ -2798,8 +2769,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $image_file = Input::file("image");
@@ -2819,22 +2789,19 @@ class AdminController extends Controller {
                     $result["success"] = true;
                     $result["ext"] = $fileExtension;
                     $result["url"] = template_url("faq/".$fileName);
-                    echo json_encode($result);
-                    exit;
+                    return Response::json($result);
                 }
             }
             else
             {
                 $result["error"] = __("wrong_image_format_error");
-                echo json_encode($result);
-                exit;
+                return Response::json($result);
             }
         }
         else
         {
             $result["error"] = __("error_occurred");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
     }
 
@@ -2843,8 +2810,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isGlAdmin()) {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $sourceZip = Input::file("file");
@@ -2905,8 +2871,7 @@ class AdminController extends Controller {
             $result["error"] = __("wrong_parameters");
         }
 
-        echo json_encode($result);
-        exit;
+        return Response::json($result);
     }
 
     public function updateSource() {
@@ -2914,8 +2879,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isGlAdmin()) {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $src = Input::get("src", "");
@@ -2957,8 +2921,7 @@ class AdminController extends Controller {
             $result["error"] = __("wrong_parameters");
         }
 
-        echo json_encode($result);
-        exit;
+        return Response::json($result);
     }
 
     public function createFaq()
@@ -2968,8 +2931,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $question = Input::get("question", "");
@@ -3017,8 +2979,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $questionID = Input::get("id", 0);
@@ -3042,8 +3003,7 @@ class AdminController extends Controller {
         if(!$this->_member->isSuperAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $title = Input::get("title", "");
@@ -3085,8 +3045,7 @@ class AdminController extends Controller {
 
         if(!$this->_member->isGlAdmin() && !$this->_member->isProjectAdmin()) {
             $result["error"] = __("not_loggedin_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $event = $this->eventRepo->get($eventID);
@@ -3123,8 +3082,7 @@ class AdminController extends Controller {
         if(!$this->_member->isGlAdmin())
         {
             $result["error"] = __("not_enough_rights_error");
-            echo json_encode($result);
-            exit;
+            return Response::json($result);
         }
 
         $lang = Input::get("lang", "");
