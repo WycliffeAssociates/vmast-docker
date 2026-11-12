@@ -86,8 +86,11 @@ class EventsController extends Controller {
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 $response["errorType"] = "logout";
                 $response["error"] = __("not_loggedin_error");
-                echo json_encode($response);
-                exit;
+                // Answer before any action runs
+                $this->beforeFilter(function() use ($response) {
+                    return Response::json($response);
+                });
+                return;
             } else {
                 Url::redirect('members/login');
             }
@@ -9935,8 +9938,7 @@ class EventsController extends Controller {
                 if ($event->checkDone) {
                     $response["errorType"] = "checkDone";
                     $response["error"] = __("not_possible_to_save_error");
-                    echo json_encode($response);
-                    exit;
+                    return $response;
                 }
             }
 
@@ -10099,8 +10101,7 @@ class EventsController extends Controller {
                 if ($event->checkDone) {
                     $response["errorType"] = "checkDone";
                     $response["error"] = __("not_possible_to_save_error");
-                    echo json_encode($response);
-                    exit;
+                    return $response;
                 }
             } elseif ($event->step == EventCheckSteps::PEER_EDIT_L3) {
                 $peerCheck = $event->peerCheck ? (array)json_decode($event->peerCheck, true) : [];
@@ -10108,8 +10109,7 @@ class EventsController extends Controller {
                     $peerCheck[$event->currentChapter]["done"] == 2) {
                     $response["errorType"] = "checkDone";
                     $response["error"] = __("not_possible_to_save_error");
-                    echo json_encode($response);
-                    exit;
+                    return $response;
                 }
             }
         }
@@ -10272,8 +10272,7 @@ class EventsController extends Controller {
                         EventSteps::FINAL_REVIEW
                     ])) {
                         $response["error"] = "empty input";
-                        echo json_encode($response);
-                        exit;
+                        return $response;
                     } else {
                         continue;
                     }
@@ -10303,8 +10302,7 @@ class EventsController extends Controller {
                         } else {
                             $response["errorType"] = "json";
                             $response["error"] = "Json error: " . $json_error;
-                            echo json_encode($response);
-                            exit;
+                            return $response;
                         }
                         break;
                     }
@@ -10339,8 +10337,7 @@ class EventsController extends Controller {
                     } else {
                         $response["errorType"] = "json";
                         $response["error"] = "Json error: " . $json_error;
-                        echo json_encode($response);
-                        exit;
+                        return $response;
                     }
                 }
             }
@@ -10932,7 +10929,6 @@ class EventsController extends Controller {
                     "memberID" => $memberID));
 
             Url::redirect("events/checker-$bookProject/$eventID/$memberID/$chapter");
-            exit;
         } else {
             $error[] = __("cannot_apply_checker");
         }
@@ -10944,7 +10940,6 @@ class EventsController extends Controller {
             ->shares("title", __("apply_checker_l1"))
             ->shares("data", $data)
             ->shares("error", @$error);
-        exit;
     }
 
     /**

@@ -69,8 +69,11 @@ class ManageController extends Controller {
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
                 $response["errorType"] = "logout";
                 $response["error"] = __("not_loggedin_error");
-                echo json_encode($response);
-                exit;
+                // Answer before any action runs
+                $this->beforeFilter(function() use ($response) {
+                    return Response::json($response);
+                });
+                return;
             } else {
                 Url::redirect('members/login');
             }

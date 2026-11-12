@@ -99,6 +99,30 @@ class AjaxTest extends HttpTestCase
         $this->assertSame('Old', $this->translations($eventID)[0]['translator']['blind']);
     }
 
+    public function testTranslatorCannotChangeAChapterWhosePeerCheckIsDone(): void
+    {
+        $peer = $this->member();
+        [$eventID, $trID] = $this->eventAt('peer-review');
+        self::db()->table('translators')->where('trID', $trID)
+            ->update(['peerCheck' => json_encode([1 => ['memberID' => $peer, 'done' => 1]])]);
+        $this->translation($trID, 1, 0, [], ['translatedVerses' => json_encode(['translator' => ['blind' => 'Checked']])]);
+        $this->loginAs($this->translator);
+
+        $answer = $this->rpc('autosave_chunk', ['eventID' => $eventID, 'isChecking' => true, 'checkingChapter' => 1,
+            'chunks' => ['Changed']]);
+
+        $this->assertSame([false, 'checkDone'], [$answer['success'], $answer['errorType']]);
+        $this->assertSame('Checked', $this->translations($eventID)[0]['translator']['blind']);
+    }
+
+    public function testSignedOutRequestsAreToldToSignIn(): void
+    {
+        foreach (['/events/rpc/autosave_chunk', '/events/information/1', '/events/rpc/assign_chapter'] as $endpoint) {
+            $answer = $this->json($this->post($endpoint, [], true));
+            $this->assertSame('logout', $answer['errorType'], $endpoint);
+        }
+    }
+
     // --- Comments
 
     private function comment(int $eventID, string $text, bool $autoSaver = false): array
