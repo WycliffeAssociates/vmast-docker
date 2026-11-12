@@ -140,6 +140,7 @@ abstract class HttpTestCase extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_POST = $method === 'POST' ? $data : [];
         $_GET = $method === 'GET' ? $data : [];
+        $_REQUEST = $data;
         unset($_SERVER['HTTP_X_REQUESTED_WITH']);
         $server = [];
         if ($ajax) {

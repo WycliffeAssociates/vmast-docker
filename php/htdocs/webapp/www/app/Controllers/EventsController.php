@@ -9976,8 +9976,8 @@ class EventsController extends Controller {
                 }
 
                 $translationData = $this->translationModel->getEventTranslationByEventID(
-                    $event[0]->eventID,
-                    $event[0]->currentChapter
+                    $event->eventID,
+                    $event->currentChapter
                 );
             }
 
