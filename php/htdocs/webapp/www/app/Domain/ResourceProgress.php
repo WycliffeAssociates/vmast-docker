@@ -14,13 +14,16 @@ class ResourceProgress
         $data["overall_progress"] = 0;
         $data["chapters"] = [];
 
-        $totalChapters = $event->project->bookProject == "bca"
-            ? $event->words->count()
-            : $event->bookInfo->chaptersNum;
-
-        $firstChapter = $event->project->bookProject == "bc" ? 0 : 1;
-        for ($i = $firstChapter; $i <= $totalChapters; $i++) {
-            $data["chapters"][$i] = [];
+        if ($event->project->bookProject == "bca") {
+            // BCA chapters are words, numbered by word ID
+            foreach ($event->words as $word) {
+                $data["chapters"][$word->wordID] = [];
+            }
+        } else {
+            $firstChapter = $event->project->bookProject == "bc" ? 0 : 1;
+            for ($i = $firstChapter; $i <= $event->bookInfo->chaptersNum; $i++) {
+                $data["chapters"][$i] = [];
+            }
         }
 
         $overallProgress = 0;

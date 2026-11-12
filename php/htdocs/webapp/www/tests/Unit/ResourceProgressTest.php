@@ -26,7 +26,7 @@ class ResourceProgressTest extends TestCase
     }
 
     /**
-     * Book of 2 chapters (BCA: 3 words) where only chapter 1 is assigned, split into 2 chunks.
+     * Book of 2 chapters (BCA: 3 words, IDs 1, 5 and 9) where only chapter 1 is assigned, split into 2 chunks.
      * $drafted is how many chunks have a translation (0 = drafting not started).
      */
     private function event(object $translator, int $drafted = 0, string $bookProject = 'obs'): object
@@ -34,7 +34,7 @@ class ResourceProgressTest extends TestCase
         return (object)[
             'project' => (object)['bookProject' => $bookProject],
             'bookInfo' => (object)['chaptersNum' => 2],
-            'words' => new Collection(['a', 'b', 'c']),
+            'words' => new Collection(array_map(fn($id) => (object)['wordID' => $id], [1, 5, 9])),
             'chapters' => [(object)[
                 'chapter' => 1,
                 'trID' => 7,
@@ -74,7 +74,7 @@ class ResourceProgressTest extends TestCase
 
         $this->assertSame([1, 2], $chapters('obs'));
         $this->assertSame([0, 1, 2], $chapters('bc'), 'BC has a book intro as chapter 0');
-        $this->assertSame([1, 2, 3], $chapters('bca'), 'BCA has one chapter per word');
+        $this->assertSame([1, 5, 9], $chapters('bca'), 'BCA has one chapter per word, numbered by word ID');
     }
 
     // --- OBS before drafting
