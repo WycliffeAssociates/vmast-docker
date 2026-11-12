@@ -49,4 +49,4 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
       - name: Run PHPUnit
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --testdox
