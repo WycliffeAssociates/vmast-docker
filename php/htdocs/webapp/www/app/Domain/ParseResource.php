@@ -129,7 +129,8 @@ class ParseResource
             case 5:
                 $type = ResourceChunkType::HEADING_5;
                 break;
-            case $type = ResourceChunkType::HEADING_6;
+            default:
+                $type = ResourceChunkType::HEADING_6;
                 break;
         }
         return $type;

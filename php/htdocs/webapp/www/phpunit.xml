@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnWarning="true"
+         failOnDeprecation="true">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <!-- Needs the test database: run via `make test` (see compose.test.yml) -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <!-- Boots the whole app per test (separate processes); also needs the test database -->
+        <testsuite name="Http">
+            <directory>tests/Http</directory>
+        </testsuite>
+    </testsuites>
+    <!-- The code folders only: app/Storage holds ~200k runtime files (the resource store), and walking it,
+         even to exclude it, added 20+ seconds to every isolated test -->
+    <source>
+        <include>
+            <directory>app/Boot</directory>
+            <directory>app/Config</directory>
+            <directory>app/Controllers</directory>
+            <directory>app/Core</directory>
+            <directory>app/Data</directory>
+            <directory>app/Domain</directory>
+            <directory>app/Helpers</directory>
+            <directory>app/Models</directory>
+            <directory>app/Modules</directory>
+            <directory>app/Providers</directory>
+            <directory>app/Repositories</directory>
+            <directory>app/Support</directory>
+            <directory>shared</directory>
+        </include>
+    </source>
+</phpunit>

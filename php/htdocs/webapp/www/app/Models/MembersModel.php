@@ -122,9 +122,11 @@ class MembersModel extends Model {
         return $this->db->table("members")
             //->where("isSuperAdmin", false)
             ->where("verified", true)
-            ->where("userName", "LIKE", "%$search%")
-            ->orWhere("firstName", "LIKE", "%$search%")
-            ->orWhere("lastName", "LIKE", "%$search%")->get();
+            ->where(function($query) use ($search) {
+                $query->where("userName", "LIKE", "%$search%")
+                    ->orWhere("firstName", "LIKE", "%$search%")
+                    ->orWhere("lastName", "LIKE", "%$search%");
+            })->get();
     }
 
     /**
@@ -184,41 +186,31 @@ class MembersModel extends Model {
                     ->orWhere("members.lastName", "LIKE", "%$name%"); // search in last names
             });
 
-        // search facilitators in events they are assigned to
-        if(($role == "facilitators" || $role == "all") && $languages)
-        {
-            $builder->crossJoin("projects")
-                ->leftJoin("events", "events.projectID", "=", "projects.projectID")
-                ->where(function($query) use ($languages) {
-                    $query->where(function($query) use ($languages) {
-                        $query->whereIn("projects.gwLang", $languages)
-                            ->orWhereIn("projects.targetLang", $languages);
-                    });
+        // Facilitators are event admins; with languages, admins of events in those languages
+        $facilitators = function($query) use ($languages) {
+            $query->select("member_event.memberID")->from("member_event")
+                ->join("events", "events.eventID", "=", "member_event.eventID")
+                ->join("projects", "projects.projectID", "=", "events.projectID");
+            if($languages)
+                $query->where(function($query) use ($languages) {
+                    $query->whereIn("projects.gwLang", $languages)
+                        ->orWhereIn("projects.targetLang", $languages);
                 });
-        }
+        };
+        // Translators by the languages in their profiles
+        $speakers = function($query) use ($languages) {
+            foreach ($languages as $language)
+                $query->orWhere("profile.languages", "LIKE", "%\"$language\"%");
+        };
 
-        // search by language
-        if($languages)
-        {
-            // search translators by language in their profiles
-            if($role == "translators")
-                $builder->where(function($query) use ($languages) {
-                    foreach ($languages as $language)
-                        $query->orWhere("profile.languages", "LIKE", "%\"$language\"%");
-                });
-            elseif($role == "facilitators")
-                $builder->where(function($query) use ($languages) {
-                    foreach ($languages as $language)
-                        $query->orWhere("profile.languages", "LIKE", "%\"$language\"%");
-                });
-            else
-                $builder->where(function ($query) use ($languages) {
-                    $query->where(function($query) use ($languages) {
-                        foreach ($languages as $language)
-                            $query->orWhere("profile.languages", "LIKE", "%\"$language\"%");
-                    });
-                });
-        }
+        if($role == "facilitators")
+            $builder->whereIn("members.memberID", $facilitators);
+        elseif($languages && $role == "translators")
+            $builder->where($speakers);
+        elseif($languages)
+            $builder->where(function($query) use ($speakers, $facilitators) {
+                $query->where($speakers)->orWhereIn("members.memberID", $facilitators);
+            });
 
         if(!$count)
         {

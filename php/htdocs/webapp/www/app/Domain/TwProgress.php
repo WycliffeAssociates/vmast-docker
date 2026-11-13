@@ -174,7 +174,8 @@ class TwProgress
             $overallProgress += $data["chapters"][$key]["progress"];
         }
 
-        $data["overall_progress"] = $overallProgress / sizeof($data["chapters"]);
+        // No word groups are assigned when the event has just started
+        $data["overall_progress"] = $overallProgress / max(1, sizeof($data["chapters"]));
         $data["members"] = $members;
 
         if ($progressOnly) {

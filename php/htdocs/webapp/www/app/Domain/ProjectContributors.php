@@ -48,9 +48,9 @@ class ProjectContributors
     }
 
     private function setAdmins($event) {
-        $this->contributorsIDs += $event->admins->map(function($item) {
+        $this->contributorsIDs = Arrays::append($this->contributorsIDs, $event->admins->map(function($item) {
             return $item->memberID;
-        })->toArray();
+        })->toArray());
     }
 
     private function setTranslators($chapters) {

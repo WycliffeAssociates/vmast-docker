@@ -1,0 +1,43 @@
+# Throwaway stack for `make test`: a MariaDB with only the schema (db/schema.sql,
+# no data) and the php image with the working tree mounted. Its own project
+# name keeps it apart from the dev stack, and tmpfs means nothing persists.
+name: vmast-test
+
+services:
+  db-test:
+    # Same engine, version and SQL mode as production (docker-compose.yml):
+    # non-strict mode is what lets the app omit columns that have no default.
+    image: mariadb:10.5.25
+    platform: linux/amd64
+    command: ["--sql-mode="]
+    environment:
+      MARIADB_ROOT_PASSWORD: test
+      MARIADB_DATABASE: vmast_test
+      MARIADB_USER: test
+      MARIADB_PASSWORD: test
+    tmpfs:
+      - /var/lib/mysql
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      # Over TCP, so it only passes once the init scripts are done and the
+      # real server (not the networkless init one) is up.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 2s
+      retries: 60
+
+  php-test:
+    # Reuses the dev php image when it exists; builds it otherwise.
+    build: ./php
+    image: vmast-docker-php
+    platform: linux/amd64
+    depends_on:
+      db-test:
+        condition: service_healthy
+    environment:
+      DB_HOST: db-test
+      DB_NAME: vmast_test
+      DB_USER: test
+      DB_PASS: test
+    volumes:
+      - ./php/htdocs/webapp/www:/usr/share/nginx/html

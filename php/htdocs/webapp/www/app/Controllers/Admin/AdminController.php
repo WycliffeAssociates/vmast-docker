@@ -196,6 +196,10 @@ class AdminController extends Controller {
         $data['menu'] = 1;
         $project = $this->projectRepo->get($projectID);
 
+        if($project && !$this->adminsProject($project)) {
+            Url::redirect('');
+        }
+
         $page = 'Admin/Main/Project';
         $category = 'bible';
 
@@ -787,7 +791,11 @@ class AdminController extends Controller {
 
         $event = $this->eventRepo->get($eventID);
 
-        if($event)
+        if($event && !$this->adminsProject($event->project))
+        {
+            $response["error"] = __("not_enough_rights_error");
+        }
+        elseif($event)
         {
             $eventContributors = new EventContributors($event, $level, $mode);
             $contributors = $eventContributors->get();
@@ -1356,6 +1364,12 @@ class AdminController extends Controller {
                 $bookInfo = $this->bookInfoRepo->where("code", $bookCode)->first();
             }
 
+            if (!$this->adminsProject($project)) {
+                $error[] = __("not_enough_rights_error");
+                echo json_encode(array("error" => Error::display($error)));
+                return;
+            }
+
             $postdata = [];
 
             switch($act)
@@ -1586,6 +1600,12 @@ class AdminController extends Controller {
                 $project = $event->project;
             } else {
                 $project = $this->projectRepo->get($projectID);
+            }
+
+            if (!$this->adminsProject($project)) {
+                $error[] = __("not_enough_rights_error");
+                echo json_encode(array("error" => Error::display($error)));
+                return;
             }
 
             $postdata = [];
@@ -3049,6 +3069,10 @@ class AdminController extends Controller {
         }
 
         $event = $this->eventRepo->get($eventID);
+        if ($event && !$this->adminsProject($event->project)) {
+            $result["error"] = __("not_enough_rights_error");
+            return Response::json($result);
+        }
         if ($event) {
             switch ($event->state) {
                 case EventStates::L2_RECRUIT:
@@ -3681,5 +3705,13 @@ class AdminController extends Controller {
         array_unshift($chunks, [0]);
         $chapter->chunks = json_encode($chunks);
         $chapter->save();
+    }
+
+    /** Whether the signed-in member administers $project or its gateway language. */
+    private function adminsProject($project): bool
+    {
+        return $project
+            && ($project->admins->contains($this->_member)
+                || $project->gatewayLanguage->admins->contains($this->_member));
     }
 }

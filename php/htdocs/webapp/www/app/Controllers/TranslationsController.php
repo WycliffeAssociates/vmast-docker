@@ -410,7 +410,7 @@ class TranslationsController extends Controller
         if($lang != null && $bookProject != null && $sourceBible != null && $bookCode != null) {
             if($bookCode == "dl") {
                 echo "Not Implemented!";
-                exit;
+                return;
             }
 
             $book = $this->_model->getTranslation($lang, $bookProject, $sourceBible, $bookCode);

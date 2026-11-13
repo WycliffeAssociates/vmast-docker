@@ -143,7 +143,7 @@ class EventContributors
             $crCheck = $translator->pivot->crCheck ? (array)json_decode($translator->pivot->crCheck) : [];
             $otherCheck = $translator->pivot->otherCheck ? (array)json_decode($translator->pivot->otherCheck) : [];
 
-            if (in_array($this->mode, ["tn", "sun", "tw", "tq", "rad", "ulb", "udb"])) {
+            if (in_array($this->mode, ["tn", "sun", "tw", "tq", "rad", "ulb", "udb", "obs", "bc", "bca"])) {
                 $this->checkersArr = Arrays::append($this->checkersArr, array_values(array_map(function ($elm) {
                     return $elm->memberID;
                 }, $peerCheck)));
